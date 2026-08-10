@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Quotation Builder</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        color: #333;
+      }
+      h1 {
+        margin-bottom: 16px;
+      }
+      form {
+        max-width: 900px;
+      }
+      fieldset {
+        border: 1px solid #ccc;
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+      legend {
+        font-weight: bold;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 12px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      th {
+        background: #f4f4f4;
+      }
+      button {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 4px;
+        background: #0078d4;
+        color: #fff;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #555;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Quotation Builder</h1>
+    <p>Enter company, customer, quotation details and products below. When you submit, a PDF will be generated.</p>
+    <form method="post" action="/quotations/form">
+      <fieldset>
+        <legend>Quotation Info</legend>
+        <label>
+          Reference Number
+          <input type="text" name="reference_number" value="Q-2026-001" required />
+        </label>
+        <label>
+          Title
+          <input type="text" name="title" value="Sample Quotation" required />
+        </label>
+        <label>
+          Description
+          <textarea name="description" rows="3">Generated from the UI form.</textarea>
+        </label>
+        <label>
+          Issued Date
+          <input type="date" name="issued_at" value="2026-08-05" required />
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Company Info</legend>
+        <label>
+          Company Name
+          <input type="text" name="company_name" value="Example Co." required />
+        </label>
+        <label>
+          Company Address
+          <input type="text" name="company_address" value="123 Example Street" />
+        </label>
+        <label>
+          Company Email
+          <input type="email" name="company_email" value="info@example.com" />
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Customer Info</legend>
+        <label>
+          Customer Name
+          <input type="text" name="customer_name" value="Test Customer" required />
+        </label>
+        <label>
+          Customer Email
+          <input type="email" name="customer_email" value="customer@example.com" />
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Products</legend>
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="product-rows">
+            <tr>
+              <td><input type="text" name="product_name" value="Service A" required /></td>
+              <td><input type="number" name="quantity" value="2" min="1" required /></td>
+              <td><input type="text" name="unit_price" value="100.00" required /></td>
+              <td><button type="button" class="secondary" onclick="removeRow(this)">Remove</button></td>
+            </tr>
+            <tr>
+              <td><input type="text" name="product_name" value="Service B" required /></td>
+              <td><input type="number" name="quantity" value="1" min="1" required /></td>
+              <td><input type="text" name="unit_price" value="1034.56" required /></td>
+              <td><button type="button" class="secondary" onclick="removeRow(this)">Remove</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="actions">
+          <button type="button" onclick="addRow()">Add product</button>
+          <button type="submit">Generate PDF</button>
+        </div>
+      </fieldset>
+    </form>
+
+    <script>
+      function addRow() {
+        const tbody = document.getElementById('product-rows');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="text" name="product_name" required /></td>
+          <td><input type="number" name="quantity" value="1" min="1" required /></td>
+          <td><input type="text" name="unit_price" value="0.00" required /></td>
+          <td><button type="button" class="secondary" onclick="removeRow(this)">Remove</button></td>
+        `;
+        tbody.appendChild(row);
+      }
+
+      function removeRow(button) {
+        const row = button.closest('tr');
+        if (row) {
+          row.remove();
+        }
+      }
+    </script>
+  </body>
+</html>

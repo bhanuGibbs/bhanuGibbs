@@ -1,0 +1,114 @@
+Quotation Generator - Run Instructions
+=======================================
+
+This file describes how to run the backend and UI separately for the QuotationGenerator_UI project.
+
+1. Prerequisites
+----------------
+- Node.js 18+
+- npm
+- Python 3.12+
+- pip
+- PostgreSQL 14+ (or compatible)
+- Git (optional)
+
+2. Backend Setup and Run
+------------------------
+
+The backend code lives in:
+  backend/backend/
+
+2.1 Create and configure the environment
+----------------------------------------
+- Copy the example env file if it exists:
+  cd backend/backend
+  copy .env.example .env
+
+- Open `backend/backend/.env` and update values:
+  DATABASE_URL=postgresql+asyncpg://<user>:<password>@<host>:<port>/<database>
+  SECRET_KEY=<your-secret-key>
+  JWT_SECRET_KEY=<your-jwt-secret-key>
+  ALGORITHM=HS256
+
+2.2 Create the Python virtual environment
+-----------------------------------------
+  cd backend/backend
+  python -m venv venv
+  venv\Scripts\activate
+
+2.3 Install backend dependencies
+--------------------------------
+  pip install -r requirements.txt
+
+2.4 Run the backend locally
+---------------------------
+  cd backend/backend
+  venv\Scripts\activate
+  py -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+
+- Backend should be available at:
+  http://127.0.0.1:8000
+
+- Health check:
+  http://127.0.0.1:8000/health
+
+2.5 Optional Docker Compose
+---------------------------
+- From `backend/docker` folder:
+  docker compose -f ../backend/docker/docker-compose.yml up --build
+
+3. Frontend Setup and Run
+-------------------------
+
+The frontend code lives in the root workspace:
+  c:\Users\Laxma\QuotationGenerator_UI
+
+3.1 Install dependencies
+------------------------
+  cd c:\Users\Laxma\QuotationGenerator_UI
+  npm install
+
+3.2 Run the Vite development server
+-----------------------------------
+  cd c:\Users\Laxma\QuotationGenerator_UI
+  npm run dev -- --host 0.0.0.0 --port 3001
+
+- Frontend should be available at:
+  http://localhost:3001
+
+3.3 Build for production
+-------------------------
+  cd c:\Users\Laxma\QuotationGenerator_UI
+  npm run build
+
+3.4 Preview production build
+----------------------------
+  cd c:\Users\Laxma\QuotationGenerator_UI
+  npm run preview
+
+4. Notes and Important Points
+-----------------------------
+- The frontend talks to the backend through Vite proxy and local API routes.
+- Make sure the backend is running before using the UI.
+- If port 8000 or 3001 is already in use, stop the process or use another port.
+- Log in via the app using the backend credentials.
+
+5. Common Commands Summary
+--------------------------
+Backend:
+  cd backend/backend
+  venv\Scripts\activate
+  py -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+
+Frontend:
+  cd c:\Users\Laxma\QuotationGenerator_UI
+  npm install
+  npm run dev -- --host 0.0.0.0 --port 3001
+
+6. Helpful Files
+----------------
+- Frontend entry: package.json
+- Backend readme: backend/backend/README.md
+- Backend env: backend/backend/.env
+- Frontend auth helper: src/integration/backend/auth.js
+- Backend auth router: backend/backend/app/api/auth_router.py
