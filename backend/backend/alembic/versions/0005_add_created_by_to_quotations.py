@@ -9,19 +9,14 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        'quotations',
-        sa.Column('created_by_id', pg.UUID(as_uuid=True), nullable=True),
-    )
-    op.create_foreign_key(
-        'fk_quotations_created_by_id_users',
-        'quotations',
-        'users',
-        ['created_by_id'],
-        ['id'],
-    )
+    with op.batch_alter_table("quotations") as batch_op:
+        batch_op.add_column(sa.Column("created_by_id", pg.UUID(as_uuid=True), nullable=True))
+        batch_op.create_foreign_key(
+            "fk_quotations_created_by_id_users", "users", ["created_by_id"], ["id"]
+        )
 
 
 def downgrade() -> None:
-    op.drop_constraint('fk_quotations_created_by_id_users', 'quotations', type_='foreignkey')
-    op.drop_column('quotations', 'created_by_id')
+    with op.batch_alter_table("quotations") as batch_op:
+        batch_op.drop_constraint("fk_quotations_created_by_id_users", type_="foreignkey")
+        batch_op.drop_column("created_by_id")

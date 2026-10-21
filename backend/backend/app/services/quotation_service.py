@@ -2,24 +2,27 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.quotation import Quotation
 from app.models.quotation_item import QuotationItem
-from app.models.quotation_sequence import QuotationSequence
 from app.models.product import Product
 from app.models.customer import Customer
 from app.models.company import Company
+from app.repositories.quotation_daily_sequence_repository import QuotationDailySequenceRepository
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.product_repository import ProductRepository
 from app.repositories.quotation_item_repository import QuotationItemRepository
 from app.repositories.quotation_repository import QuotationRepository
-from app.repositories.quotation_sequence_repository import QuotationSequenceRepository
 from app.services.exceptions import BadRequestError, ConflictError, NotFoundError
+
+
+def _money(value: Decimal) -> Decimal:
+    return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 class QuotationService:
@@ -31,23 +34,24 @@ class QuotationService:
         self.customer_repository = CustomerRepository(session)
         self.company_repository = CompanyRepository(session)
         self.product_repository = ProductRepository(session)
-        self.sequence_repository = QuotationSequenceRepository(session)
+        self.daily_sequence_repository = QuotationDailySequenceRepository(session)
 
     async def find_or_create_draft(
-        self,
-        reference_number: str | None,
-        title: str,
-        customer_id: str,
-        company_id: str,
-        issued_at: str,
-        items: list[dict[str, str | Decimal | int]],
-        created_by_id: str,
-        created_by_username: str,
-        description: str | None = None,
-        valid_until: str | None = None,
-        notes: str | None = None,
-        terms: str | None = None,
-        currency: str | None = None,
+            self,
+            reference_number: str | None,
+            title: str,
+            customer_id: str,
+            company_id: str,
+            issued_at: str,
+            items: list[dict[str, str | Decimal | int | None]],
+            created_by_id: str,
+            created_by_username: str,
+            description: str | None = None,
+            valid_until: str | None = None,
+            notes: str | None = None,
+            terms: str | None = None,
+            currency: str | None = None,
+            shipping_amount: Decimal = Decimal("0.00"),
     ) -> Quotation:
         """Create or update a draft quotation for preview."""
         draft = await self.repository.get_latest_draft_by_user(created_by_id, company_id)
@@ -68,13 +72,18 @@ class QuotationService:
                 terms=terms,
                 currency=currency,
                 customer_id=customer_id,
+                shipping_amount=shipping_amount,
+                user_id=created_by_id,
             )
             return updated
 
         if not reference_number or not reference_number.strip():
-            reference_number = await self.get_next_reference_number(created_by_id, created_by_username)
+            prefix = "INV" if title.lower() == "billing" else "QT"
+            reference_number = await self.get_next_reference_number(created_by_id, created_by_username, prefix)
 
         existing = await self.repository.get_by_reference(reference_number, company_id)
+        if existing and str(existing.created_by_id) != created_by_id:
+            raise ConflictError("Quotation reference number is already in use.")
         if existing and existing.status != 'Draft':
             raise ConflictError("Quotation with this reference number already exists.")
 
@@ -92,36 +101,41 @@ class QuotationService:
             notes=notes,
             terms=terms,
             currency=currency,
+            shipping_amount=shipping_amount,
         )
         await self.repository.add(quotation)
         await self.repository.flush()
 
         await self._sync_items_and_totals(quotation, items, company_id, customer_id)
         await self.repository.commit()
-        return quotation
+        return await self._refresh_quotation(quotation)
 
     async def create_quotation(
-        self,
-        reference_number: str | None,
-        title: str,
-        customer_id: str,
-        company_id: str,
-        issued_at: str,
-        items: list[dict[str, str | Decimal | int]],
-        created_by_id: str,
-        created_by_username: str,
-        description: str | None = None,
-        valid_until: str | None = None,
-        notes: str | None = None,
-        terms: str | None = None,
-        currency: str | None = None,
+            self,
+            reference_number: str | None,
+            title: str,
+            customer_id: str,
+            company_id: str,
+            issued_at: str,
+            items: list[dict[str, str | Decimal | int | None]],
+            created_by_id: str,
+            created_by_username: str,
+            description: str | None = None,
+            valid_until: str | None = None,
+            notes: str | None = None,
+            terms: str | None = None,
+            currency: str | None = None,
+            shipping_amount: Decimal = Decimal("0.00"),
     ) -> Quotation:
         """Create a new quotation or finalize an existing draft."""
         if not reference_number or not reference_number.strip():
-            reference_number = await self.get_next_reference_number(created_by_id, created_by_username)
+            prefix = "INV" if title.lower() == "billing" else "QT"
+            reference_number = await self.get_next_reference_number(created_by_id, created_by_username, prefix)
 
         existing = await self.repository.get_by_reference(reference_number, company_id)
         if existing:
+            if str(existing.created_by_id) != created_by_id:
+                raise ConflictError("Quotation reference number is already in use.")
             if existing.status == 'Draft':
                 updated = await self.update_quotation(
                     quotation_id=str(existing.id),
@@ -136,8 +150,10 @@ class QuotationService:
                     terms=terms,
                     currency=currency,
                     customer_id=customer_id,
+                    shipping_amount=shipping_amount,
+                    user_id=created_by_id,
                 )
-                return await self.finalize_quotation(str(existing.id), company_id)
+                return await self.finalize_quotation(str(existing.id), company_id, created_by_id)
             raise ConflictError("Quotation with this reference number already exists.")
 
         quotation = Quotation(
@@ -154,21 +170,24 @@ class QuotationService:
             notes=notes,
             terms=terms,
             currency=currency,
+            shipping_amount=shipping_amount,
         )
         await self.repository.add(quotation)
         await self.repository.flush()
 
         await self._sync_items_and_totals(quotation, items, company_id, customer_id)
         await self.repository.commit()
-        return await self.finalize_quotation(str(quotation.id), company_id)
+        return await self.finalize_quotation(str(quotation.id), company_id, created_by_id)
 
-    async def finalize_quotation(self, quotation_id: str, company_id: str) -> Quotation:
+    async def finalize_quotation(self, quotation_id: str, company_id: str, user_id: str) -> Quotation:
         quotation = await self.repository.get(quotation_id)
         if not quotation:
             raise NotFoundError("Quotation not found.")
 
         if str(quotation.company_id) != company_id:
             raise BadRequestError("Quotation does not belong to the current company.")
+        if str(quotation.created_by_id) != user_id:
+            raise NotFoundError("Quotation not found.")
 
         if quotation.status == 'Draft':
             quotation.status = 'Final'
@@ -180,31 +199,21 @@ class QuotationService:
             if not company:
                 raise NotFoundError("Company does not exist.")
 
-            year = datetime.utcnow().year
-            sequence = await self.sequence_repository.get_by_company_and_year(company_id, year)
-            if not sequence:
-                sequence = QuotationSequence(
-                    company_id=UUID(company_id),
-                    year=year,
-                    prefix=company.quotation_prefix or "QT",
-                    next_number=1,
-                )
-                await self.sequence_repository.add(sequence)
-                await self.sequence_repository.flush()
-
-            quotation.quotation_number = f"{sequence.prefix}-{year}-{sequence.next_number:04d}"
-            quotation.quotation_year = year
-            sequence.next_number += 1
+            sequence_date = quotation.issued_at.date()
+            sequence_number = await self.daily_sequence_repository.next_number(company_id, sequence_date)
+            prefix = "INV" if quotation.title.lower() == "billing" else company.quotation_prefix or "QT"
+            quotation.quotation_number = f"{prefix}-{sequence_date:%d%m%Y}-{sequence_number:03d}"
+            quotation.quotation_year = sequence_date.year
 
         await self.repository.commit()
-        return quotation
+        return await self._refresh_quotation(quotation)
 
     async def _sync_items_and_totals(
-        self,
-        quotation: Quotation,
-        items: list[dict[str, str | Decimal | int]],
-        company_id: str,
-        customer_id: str,
+            self,
+            quotation: Quotation,
+            items: list[dict[str, str | Decimal | int | None]],
+            company_id: str,
+            customer_id: str,
     ) -> None:
         existing_items = await self.item_repository.list_by_quotation(str(quotation.id))
         for item in existing_items:
@@ -224,16 +233,18 @@ class QuotationService:
                 raise NotFoundError("Product does not exist.")
             if str(product.company_id) != company_id:
                 raise BadRequestError("Product does not belong to the current company.")
+            if str(product.created_by_id) != str(quotation.created_by_id):
+                raise NotFoundError("Product not found.")
 
             quantity = int(item_data["quantity"])
-            unit_price = Decimal(item_data.get("unit_price", product.price))
-            discount_value = Decimal(item_data.get("discount", 0))
-            gst_rate = Decimal(item_data.get("gst", 0))
-            line_total = unit_price * Decimal(quantity)
-            discount_amount = (line_total * discount_value) / Decimal("100")
+            unit_price = _money(Decimal(item_data["unit_price"]))
+            discount_value = Decimal(item_data.get("discount") or 0)
+            gst_rate = Decimal(item_data.get("gst") or 0)
+            line_total = _money(unit_price * Decimal(quantity))
+            discount_amount = _money((line_total * discount_value) / Decimal("100"))
             taxable_amount = line_total - discount_amount
-            tax_amount = (taxable_amount * gst_rate) / Decimal("100")
-            amount = taxable_amount + tax_amount
+            tax_amount = _money((taxable_amount * gst_rate) / Decimal("100"))
+            amount = _money(taxable_amount + tax_amount)
 
             subtotal += line_total
             total_discount += discount_amount
@@ -245,13 +256,23 @@ class QuotationService:
                 quantity=quantity,
                 unit_price=unit_price,
                 total_price=amount,
+                item_name=str(item_data.get("item_name") or product.name),
+                description=item_data.get("description"),
+                unit=item_data.get("unit"),
+                discount=discount_value,
+                tax_percentage=gst_rate,
+                tax_amount=tax_amount,
+                amount=amount,
             )
             await self.item_repository.add(item)
 
-        quotation.subtotal = subtotal
-        quotation.discount = total_discount
-        quotation.tax_amount = total_tax
-        quotation.total_amount = subtotal - total_discount + total_tax
+        quotation.subtotal = _money(subtotal)
+        quotation.discount = _money(total_discount)
+        quotation.tax_amount = _money(total_tax)
+        quotation.shipping_amount = _money(quotation.shipping_amount or Decimal("0.00"))
+        quotation.total_amount = _money(
+            quotation.subtotal - quotation.discount + quotation.tax_amount + quotation.shipping_amount
+        )
 
         customer = await self.customer_repository.get(customer_id)
         if not customer:
@@ -259,6 +280,8 @@ class QuotationService:
 
         if str(customer.company_id) != company_id:
             raise BadRequestError("Customer does not belong to the current company.")
+        if str(customer.created_by_id) != str(quotation.created_by_id):
+            raise NotFoundError("Customer not found.")
 
         company = await self.company_repository.get(company_id)
         if not company:
@@ -275,43 +298,55 @@ class QuotationService:
         quotation.company_website = company.website
         quotation.company_gstin = company.gstin
 
-    async def get_next_reference_number(self, created_by_id: str, created_by_username: str) -> str:
+    async def get_next_reference_number(
+            self,
+            created_by_id: str,
+            created_by_username: str,
+            prefix: str = "QT",
+    ) -> str:
         """Generate the next user-specific quotation reference number."""
         username_key = re.sub(r'[^A-Za-z0-9]', '', created_by_username).upper() or 'USER'
-        prefix = f"QT-{username_key}"
+        reference_prefix = f"{prefix}-{username_key}"
         quotations = await self.repository.list_by_user(created_by_id)
 
         highest = 0
         for quotation in quotations:
-            if quotation.reference_number and quotation.reference_number.startswith(f"{prefix}-"):
-                suffix = quotation.reference_number[len(prefix) + 1 :]
+            if quotation.reference_number and quotation.reference_number.startswith(f"{reference_prefix}-"):
+                suffix = quotation.reference_number[len(reference_prefix) + 1:]
                 if suffix.isdigit():
                     highest = max(highest, int(suffix))
 
-        return f"{prefix}-{highest + 1:04d}"
+        return f"{reference_prefix}-{highest + 1:04d}"
 
-    async def list_quotations(self, company_id: str) -> list[Quotation]:
-        """List quotations scoped to a company."""
-        return await self.repository.list_by_company(company_id)
+    async def list_quotations(self, company_id: str, user_id: str) -> list[Quotation]:
+        """List quotations owned by a user within a company."""
+        return await self.repository.list_by_company(company_id, user_id)
 
     async def get_quotation(self, quotation_id: str) -> Quotation | None:
         """Retrieve a quotation by UUID."""
         return await self.repository.get(quotation_id)
 
+    async def _refresh_quotation(self, quotation: Quotation) -> Quotation:
+        await self.repository.session.refresh(quotation)
+        await self.repository.session.refresh(quotation, attribute_names=["items"])
+        return quotation
+
     async def update_quotation(
-        self,
-        quotation_id: str,
-        company_id: str,
-        title: str | None = None,
-        description: str | None = None,
-        issued_at: str | None = None,
-        items: list[dict[str, str | Decimal | int]] | None = None,
-        status: str | None = None,
-        valid_until: str | None = None,
-        notes: str | None = None,
-        terms: str | None = None,
-        currency: str | None = None,
-        customer_id: str | None = None,
+            self,
+            quotation_id: str,
+            company_id: str,
+            title: str | None = None,
+            description: str | None = None,
+            issued_at: str | None = None,
+            items: list[dict[str, str | Decimal | int | None]] | None = None,
+            status: str | None = None,
+            valid_until: str | None = None,
+            notes: str | None = None,
+            terms: str | None = None,
+            currency: str | None = None,
+            customer_id: str | None = None,
+            shipping_amount: Decimal | None = None,
+            user_id: str | None = None,
     ) -> Quotation:
         """Update an existing quotation."""
         quotation = await self.repository.get(quotation_id)
@@ -320,6 +355,8 @@ class QuotationService:
 
         if str(quotation.company_id) != company_id:
             raise BadRequestError("Quotation does not belong to the current company.")
+        if user_id and str(quotation.created_by_id) != user_id:
+            raise NotFoundError("Quotation not found.")
 
         if title is not None:
             quotation.title = title
@@ -337,6 +374,8 @@ class QuotationService:
             quotation.terms = terms
         if currency is not None:
             quotation.currency = currency
+        if shipping_amount is not None:
+            quotation.shipping_amount = _money(shipping_amount)
 
         if customer_id is not None:
             customer = await self.customer_repository.get(customer_id)
@@ -344,6 +383,8 @@ class QuotationService:
                 raise NotFoundError("Customer does not exist.")
             if str(customer.company_id) != company_id:
                 raise BadRequestError("Customer does not belong to the current company.")
+            if user_id and str(customer.created_by_id) != user_id:
+                raise NotFoundError("Customer not found.")
             quotation.customer_id = UUID(customer_id)
 
         if items is not None:
@@ -353,20 +394,27 @@ class QuotationService:
                 company_id,
                 customer_id or str(quotation.customer_id),
             )
+        else:
+            quotation.total_amount = _money(
+                quotation.subtotal - quotation.discount + quotation.tax_amount + quotation.shipping_amount
+            )
 
         await self.repository.commit()
-        return quotation
+        return await self._refresh_quotation(quotation)
 
-    async def delete_quotation(self, quotation_id: str) -> None:
+    async def delete_quotation(self, quotation_id: str, user_id: str) -> None:
         """Delete an existing quotation."""
         quotation = await self.repository.get(quotation_id)
         if not quotation:
+            raise NotFoundError("Quotation not found.")
+        if str(quotation.created_by_id) != user_id:
             raise NotFoundError("Quotation not found.")
 
         await self.repository.delete(quotation)
         await self.repository.commit()
 
-    async def get_quotation_with_details(self, quotation_id: str) -> tuple[Quotation, list[QuotationItem], Customer, Company, dict[str, Product]]:
+    async def get_quotation_with_details(self, quotation_id: str) -> tuple[
+        Quotation, list[QuotationItem], Customer, Company, dict[str, Product]]:
         """Return quotation with related customer, company, items, and products."""
         quotation = await self.repository.get(quotation_id)
         if not quotation:

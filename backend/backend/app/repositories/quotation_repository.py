@@ -29,9 +29,11 @@ class QuotationRepository(BaseRepository[Quotation]):
         result = await self.session.execute(statement)
         return result.scalars().all()
 
-    async def list_by_company(self, company_id: str) -> list[Quotation]:
-        """Return all quotations for a specific company."""
-        statement = select(Quotation).where(Quotation.company_id == UUID(company_id)).order_by(Quotation.created_at.desc())
+    async def list_by_company(self, company_id: str, user_id: str) -> list[Quotation]:
+        """Return quotations owned by a user within a company."""
+        statement = select(Quotation).where(
+            Quotation.company_id == UUID(company_id), Quotation.created_by_id == UUID(user_id)
+        ).order_by(Quotation.created_at.desc())
         result = await self.session.execute(statement)
         return result.scalars().all()
 

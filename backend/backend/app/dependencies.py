@@ -7,6 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
+from app.models.role import Role
 from app.security import decode_token
 from app.services.user_service import UserService
 
@@ -38,14 +39,16 @@ async def get_optional_current_user(
 
     user_service = UserService(session)
     user = await user_service.get_user_by_id(payload.get("sub", ""))
-    if not user:
+    if not user or not user.is_active:
         return None
 
+    role = await session.get(Role, user.role_id)
+
     return {
-        "id": payload["sub"],
-        "username": payload["username"],
-        "role": payload["role"],
-        "company_id": payload.get("company_id"),
+        "id": str(user.id),
+        "username": user.username,
+        "role": role.name if role else "Viewer",
+        "company_id": str(user.company_id) if user.company_id else None,
     }
 
 

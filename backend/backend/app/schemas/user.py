@@ -31,6 +31,14 @@ class UserRegister(BaseModel):
     mobile_number: str | None = Field(default=None, max_length=50)
 
 
+class UserProfileUpdate(BaseModel):
+    """Editable self-service profile fields; role and access flags are excluded."""
+
+    username: str | None = Field(default=None, min_length=3, max_length=100)
+    email: EmailStr | None = None
+    mobile_number: str | None = Field(default=None, max_length=50)
+
+
 class ForgotPasswordRequest(BaseModel):
     """Request schema for forgot password."""
 
@@ -60,6 +68,12 @@ class UserRead(UserBase):
     role: str | None = None
     company_id: UUID | str | None = None
     is_profile_complete: bool = False
+    company_name: str | None = None
+    company_address: str | None = None
+    company_phone_number: str | None = None
+    company_email: str | None = None
+    company_website: str | None = None
+    company_gstin: str | None = None
     created_at: datetime
     updated_at: datetime
 

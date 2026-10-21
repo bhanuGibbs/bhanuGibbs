@@ -19,7 +19,7 @@ async def create_product(
     session: AsyncSession = Depends(get_db_session),
 ) -> ProductRead:
     """Create a new product."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager"}:
+    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -31,7 +31,11 @@ async def create_product(
         price=payload.price,
         description=payload.description,
         sku=payload.sku,
+        gst_percentage=payload.gst_percentage,
+        unit=payload.unit,
+        hsn_code=payload.hsn_code,
         company_id=current_user["company_id"],
+        created_by_id=current_user["id"],
     )
     return ProductRead.from_orm(product)
 
@@ -45,7 +49,7 @@ async def list_products(
     service = ProductService(session)
     if not current_user["company_id"]:
         return []
-    products = await service.list_products(current_user["company_id"])
+    products = await service.list_products(current_user["company_id"], current_user["id"])
     return [ProductRead.from_orm(product) for product in products]
 
 
@@ -58,7 +62,7 @@ async def get_product(
     """Get a single product by ID."""
     service = ProductService(session)
     product = await service.get_product(product_id)
-    if not product or str(product.company_id) != current_user["company_id"]:
+    if not product or str(product.company_id) != current_user["company_id"] or str(product.created_by_id) != current_user["id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
     return ProductRead.from_orm(product)
 
@@ -73,7 +77,7 @@ async def update_product(
     """Update a product."""
     service = ProductService(session)
     product = await service.get_product(product_id)
-    if not product or str(product.company_id) != current_user["company_id"]:
+    if not product or str(product.company_id) != current_user["company_id"] or str(product.created_by_id) != current_user["id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
 
     updated = await service.update_product(
@@ -82,6 +86,9 @@ async def update_product(
         description=payload.description,
         price=payload.price,
         sku=payload.sku,
+        gst_percentage=payload.gst_percentage,
+        unit=payload.unit,
+        hsn_code=payload.hsn_code,
     )
     return ProductRead.from_orm(updated)
 
@@ -95,7 +102,7 @@ async def delete_product(
     """Delete a product."""
     service = ProductService(session)
     product = await service.get_product(product_id)
-    if not product or str(product.company_id) != current_user["company_id"]:
+    if not product or str(product.company_id) != current_user["company_id"] or str(product.created_by_id) != current_user["id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
 
     await service.delete_product(product_id)

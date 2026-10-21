@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
@@ -15,6 +15,9 @@ class Quotation(BaseModel):
     """Model representing a quotation document."""
 
     __tablename__ = "quotations"
+    __table_args__ = (
+        UniqueConstraint("company_id", "quotation_number", name="uq_quotations_company_quotation_number"),
+    )
 
     reference_number: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     quotation_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
@@ -24,9 +27,11 @@ class Quotation(BaseModel):
     customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"), nullable=False)
     company_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("companies.id"), nullable=False)
     created_by_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
+    issued_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
     discount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
     tax_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
+    shipping_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
     total_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
     currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="Draft")
@@ -50,4 +55,4 @@ class Quotation(BaseModel):
     customer = relationship("Customer", backref="quotations")
     company = relationship("Company", backref="quotations")
     created_by = relationship("User", backref="quotations")
-    items = relationship("QuotationItem", back_populates="quotation", cascade="all, delete-orphan")
+    items = relationship("QuotationItem", back_populates="quotation", cascade="all, delete-orphan", lazy="selectin")

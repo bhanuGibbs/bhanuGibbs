@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import AuthLayout from '../components/AuthLayout';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -22,8 +23,8 @@ const Register = () => {
         password: form.password,
         mobile_number: form.mobile_number.trim() || undefined,
       });
-      toast.success('Account created successfully');
-      navigate('/login');
+      toast.success('Account created — welcome to your workspace');
+      navigate('/');
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -32,12 +33,12 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
-      <div className="mx-auto w-full max-w-md rounded-[32px] border border-slate-200 bg-white p-8 shadow-soft">
-        <h1 className="text-2xl font-semibold text-slate-900">Create an account</h1>
-        <p className="mt-2 text-sm text-slate-500">Set up your account and start generating quotations today.</p>
-
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+    <AuthLayout
+      eyebrow="Create your workspace"
+      title="Good business starts here."
+      description="Set up your account and bring your billing workflow together."
+    >
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-slate-700">
             Username
             <input
@@ -45,6 +46,7 @@ const Register = () => {
               value={form.username}
               onChange={(event) => setForm({ ...form, username: event.target.value })}
               placeholder="Choose a username"
+              autoComplete="username"
               required
             />
           </label>
@@ -57,6 +59,7 @@ const Register = () => {
               value={form.email}
               onChange={(event) => setForm({ ...form, email: event.target.value })}
               placeholder="Enter your email"
+              autoComplete="email"
               required
             />
           </label>
@@ -68,6 +71,7 @@ const Register = () => {
               value={form.mobile_number}
               onChange={(event) => setForm({ ...form, mobile_number: event.target.value })}
               placeholder="Optional mobile number"
+              autoComplete="tel"
             />
           </label>
 
@@ -75,10 +79,12 @@ const Register = () => {
             Password
             <input
               type="password"
+              minLength={8}
               className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
               value={form.password}
               onChange={(event) => setForm({ ...form, password: event.target.value })}
               placeholder="Create a strong password"
+              autoComplete="new-password"
               required
             />
           </label>
@@ -88,9 +94,9 @@ const Register = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? 'Setting up your workspace…' : 'Create account'}
           </button>
         </form>
 
@@ -100,8 +106,7 @@ const Register = () => {
             Sign in
           </Link>
         </p>
-      </div>
-    </div>
+    </AuthLayout>
   );
 };
 

@@ -14,6 +14,11 @@ class CustomerBase(BaseModel):
     phone_number: str | None = Field(default=None, max_length=50)
     address: str | None = Field(default=None, max_length=512)
     company_name: str | None = Field(default=None, max_length=255)
+    gstin: str | None = Field(default=None, max_length=20)
+    country: str | None = Field(default=None, max_length=100)
+    state: str | None = Field(default=None, max_length=100)
+    city: str | None = Field(default=None, max_length=100)
+    pincode: str | None = Field(default=None, max_length=20)
 
 
 class CustomerCreate(CustomerBase):
@@ -28,6 +33,11 @@ class CustomerUpdate(BaseModel):
     phone_number: str | None = Field(default=None, max_length=50)
     address: str | None = Field(default=None, max_length=512)
     company_name: str | None = Field(default=None, max_length=255)
+    gstin: str | None = Field(default=None, max_length=20)
+    country: str | None = Field(default=None, max_length=100)
+    state: str | None = Field(default=None, max_length=100)
+    city: str | None = Field(default=None, max_length=100)
+    pincode: str | None = Field(default=None, max_length=20)
 
 
 class CustomerRead(CustomerBase):

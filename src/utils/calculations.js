@@ -1,38 +1,48 @@
-export const calculateItemAmount = (item) => {
-  const baseAmount = Number(item.quantity || 0) * Number(item.rate || 0);
-  const discountValue = (baseAmount * Number(item.discount || 0)) / 100;
-  const discountedAmount = baseAmount - discountValue;
-  const gstValue = (discountedAmount * Number(item.gst || 0)) / 100;
-  return discountedAmount + gstValue;
+export const roundCurrency = (value) => {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return 0;
+    return Math.round((amount + Math.sign(amount) * Number.EPSILON) * 100) / 100;
 };
 
-export const calculateSummary = (items, shipping) => {
-  const subtotal = items.reduce((sum, item) => {
-    const baseAmount = Number(item.quantity || 0) * Number(item.rate || 0);
-    return sum + baseAmount;
-  }, 0);
+export const calculateLineAmounts = (item) => {
+    const baseAmount = roundCurrency(Number(item.quantity || 0) * Number(item.rate || 0));
+    const discount = roundCurrency((baseAmount * Number(item.discount || 0)) / 100);
+    const taxableAmount = roundCurrency(baseAmount - discount);
+    const gst = roundCurrency((taxableAmount * Number(item.gst || 0)) / 100);
 
-  const discount = items.reduce((sum, item) => {
-    const baseAmount = Number(item.quantity || 0) * Number(item.rate || 0);
-    const discountValue = (baseAmount * Number(item.discount || 0)) / 100;
-    return sum + discountValue;
-  }, 0);
-
-  const gstTotal = items.reduce((sum, item) => {
-    const baseAmount = Number(item.quantity || 0) * Number(item.rate || 0);
-    const discountValue = (baseAmount * Number(item.discount || 0)) / 100;
-    const discountedAmount = baseAmount - discountValue;
-    const gstValue = (discountedAmount * Number(item.gst || 0)) / 100;
-    return sum + gstValue;
-  }, 0);
-
-  const grandTotal = subtotal - discount + gstTotal + Number(shipping || 0);
-
-  return {
-    subtotal: Number(subtotal.toFixed(2)),
-    discount: Number(discount.toFixed(2)),
-    gstTotal: Number(gstTotal.toFixed(2)),
-    shipping: Number(Number(shipping || 0).toFixed(2)),
-    grandTotal: Number(grandTotal.toFixed(2)),
-  };
+    return {
+        baseAmount,
+        discount,
+        taxableAmount,
+        gst,
+        amount: roundCurrency(taxableAmount + gst),
+    };
 };
+
+export const calculateItemAmount = (item) => calculateLineAmounts(item).amount;
+
+export const calculateSummary = (items = [], shipping = 0) => {
+    const totals = items.reduce(
+        (summary, item) => {
+            const line = calculateLineAmounts(item);
+            summary.subtotal = roundCurrency(summary.subtotal + line.baseAmount);
+            summary.discount = roundCurrency(summary.discount + line.discount);
+            summary.gstTotal = roundCurrency(summary.gstTotal + line.gst);
+            return summary;
+        },
+        {subtotal: 0, discount: 0, gstTotal: 0},
+    );
+    const shippingTotal = roundCurrency(shipping || 0);
+    const grandTotal = roundCurrency(totals.subtotal - totals.discount + totals.gstTotal + shippingTotal);
+
+    return {
+        ...totals,
+        shipping: shippingTotal,
+        grandTotal,
+    };
+};
+
+export const normalizeDocumentTotals = (data) => ({
+    ...data,
+    summary: calculateSummary(data.items || [], data.shipping ?? data.summary?.shipping),
+});

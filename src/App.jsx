@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
+import Billing from './pages/Billing';
+import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
 import Products from './pages/Products';
 import Quotations from './pages/Quotations';
@@ -8,6 +10,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import SetupCompany from './pages/SetupCompany';
+import Profile from './pages/Profile';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const RequireAuth = ({ children }) => {
@@ -43,7 +46,23 @@ function App() {
           path="/"
           element={
             <RequireAuth>
+              <Dashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/new"
+          element={
+            <RequireAuth>
               <Home />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/billing"
+          element={
+            <RequireAuth>
+              <Billing />
             </RequireAuth>
           }
         />
@@ -76,6 +95,14 @@ function App() {
           element={
             <RequireAuth>
               <SetupCompany />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <Profile />
             </RequireAuth>
           }
         />

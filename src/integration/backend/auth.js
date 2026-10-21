@@ -149,20 +149,32 @@ export const getCurrentUser = async () => {
   return response.json();
 };
 
-export const setupCompany = async ({ name, address, phone_number, email, website }) => {
+export const updateCurrentUser = async (profile) => {
+  const response = await fetch(`${API_BASE}/auth/me`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthorizedHeaders(),
+    },
+    body: JSON.stringify(profile),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || 'Unable to update your profile');
+  }
+
+  return response.json();
+};
+
+export const setupCompany = async (company) => {
   const response = await fetch(`${API_BASE}/auth/setup-company`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthorizedHeaders(),
     },
-    body: JSON.stringify({
-      name,
-      address,
-      phone_number,
-      email,
-      website,
-    }),
+    body: JSON.stringify(company),
   });
 
   if (!response.ok) {

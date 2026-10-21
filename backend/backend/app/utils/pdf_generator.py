@@ -27,11 +27,12 @@ def generate_pdf_from_data(context: dict[str, Any]) -> bytes:
     pdf.add_page()
 
     pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, f"Quotation {context['quotation']['reference_number']}", ln=True)
+    document_label = "Invoice" if context["quotation"]["title"].lower() == "billing" else "Quotation"
+    pdf.cell(0, 10, f"{document_label} {context['quotation']['reference_number']}", ln=True)
     pdf.ln(4)
 
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 8, "Quotation Details", ln=True)
+    pdf.cell(0, 8, f"{document_label} Details", ln=True)
     pdf.set_font("Arial", size=11)
     pdf.cell(0, 8, f"Title: {context['quotation']['title']}", ln=True)
     if context['quotation'].get('description'):
@@ -47,14 +48,35 @@ def generate_pdf_from_data(context: dict[str, Any]) -> bytes:
         pdf.cell(0, 8, f"{context['company']['address']}", ln=True)
     if context['company'].get('email'):
         pdf.cell(0, 8, f"{context['company']['email']}", ln=True)
+    if context['company'].get('phone_number'):
+        pdf.cell(0, 8, f"{context['company']['phone_number']}", ln=True)
+    if context['company'].get('website'):
+        pdf.cell(0, 8, f"{context['company']['website']}", ln=True)
+    if context['company'].get('gstin'):
+        pdf.cell(0, 8, f"GSTIN: {context['company']['gstin']}", ln=True)
     pdf.ln(4)
 
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 8, "Customer", ln=True)
     pdf.set_font("Arial", size=11)
     pdf.cell(0, 8, f"{context['customer']['name']}", ln=True)
+    if context['customer'].get('company_name'):
+        pdf.cell(0, 8, f"{context['customer']['company_name']}", ln=True)
+    if context['customer'].get('address'):
+        pdf.multi_cell(0, 8, f"{context['customer']['address']}")
+    if context['customer'].get('phone_number'):
+        pdf.cell(0, 8, f"{context['customer']['phone_number']}", ln=True)
     if context['customer'].get('email'):
         pdf.cell(0, 8, f"{context['customer']['email']}", ln=True)
+    if context['customer'].get('gstin'):
+        pdf.cell(0, 8, f"GSTIN: {context['customer']['gstin']}", ln=True)
+    customer_location = ", ".join(
+        str(context["customer"][field])
+        for field in ("city", "state", "country", "pincode")
+        if context["customer"].get(field)
+    )
+    if customer_location:
+        pdf.cell(0, 8, customer_location, ln=True)
     pdf.ln(6)
 
     pdf.set_font("Arial", "B", 12)
@@ -74,6 +96,11 @@ def generate_pdf_from_data(context: dict[str, Any]) -> bytes:
 
     pdf.ln(4)
     pdf.set_font("Arial", "B", 12)
+    if context["quotation"].get("subtotal") is not None:
+        pdf.cell(0, 7, f"Subtotal: {context['quotation']['subtotal']}", ln=True, align="R")
+        pdf.cell(0, 7, f"Discount: -{context['quotation']['discount']}", ln=True, align="R")
+        pdf.cell(0, 7, f"Tax: {context['quotation']['tax_amount']}", ln=True, align="R")
+        pdf.cell(0, 7, f"Shipping: {context['quotation']['shipping_amount']}", ln=True, align="R")
     pdf.cell(0, 8, f"Grand Total: {context['quotation']['total_amount']}", ln=True, align="R")
 
     return bytes(pdf.output(dest="S"))

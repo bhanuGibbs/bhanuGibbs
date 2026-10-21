@@ -20,7 +20,7 @@ const QuotationDetailsForm = ({ register, errors }) => {
         <div>
           <label className={labelClass}>Quotation Number</label>
           <input className={inputClass} readOnly value="Auto generated" />
-          <p className="mt-2 text-xs text-slate-500">Example: QT-001</p>
+          <p className="mt-2 text-xs text-slate-500">Assigned when finalized, for example QT-09082026-001</p>
         </div>
 
         <div>

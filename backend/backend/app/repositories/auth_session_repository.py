@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,6 +26,6 @@ class AuthSessionRepository(BaseRepository[AuthSession]):
         return result.scalars().first()
 
     async def list_for_user(self, user_id: str) -> list[AuthSession]:
-        statement = select(AuthSession).where(AuthSession.user_id == user_id)
+        statement = select(AuthSession).where(AuthSession.user_id == UUID(user_id))
         result = await self.session.execute(statement)
         return result.scalars().all()

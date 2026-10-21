@@ -20,6 +20,11 @@ class CompanyService:
         phone_number: str | None = None,
         email: str | None = None,
         website: str | None = None,
+        gstin: str | None = None,
+        country: str | None = None,
+        state: str | None = None,
+        city: str | None = None,
+        pincode: str | None = None,
     ) -> Company:
         """Create a new company in the system."""
         existing = await self.repository.get_by_name(name)
@@ -34,6 +39,11 @@ class CompanyService:
             phone_number=phone_number,
             email=str(email) if email is not None else None,
             website=str(website) if website is not None else None,
+            gstin=gstin,
+            country=country,
+            state=state,
+            city=city,
+            pincode=pincode,
         )
         await self.repository.add(company)
         await self.repository.commit()

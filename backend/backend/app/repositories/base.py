@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Generic, TypeVar
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
@@ -42,6 +43,11 @@ class BaseRepository(Generic[ModelType]):
 
     async def get(self, id_: object) -> ModelType | None:
         """Get a model instance by primary key."""
+        if isinstance(id_, str):
+            try:
+                id_ = UUID(id_)
+            except ValueError:
+                return None
         return await self.session.get(self.model, id_)
 
     async def delete(self, instance: ModelType) -> None:

@@ -9,65 +9,74 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.drop_constraint('companies_name_key', 'companies', type_='unique')
-    op.add_column('companies', sa.Column('gstin', sa.String(length=20), nullable=True))
-    op.add_column('companies', sa.Column('country', sa.String(length=100), nullable=True))
-    op.add_column('companies', sa.Column('state', sa.String(length=100), nullable=True))
-    op.add_column('companies', sa.Column('city', sa.String(length=100), nullable=True))
-    op.add_column('companies', sa.Column('pincode', sa.String(length=20), nullable=True))
-    op.add_column('companies', sa.Column('currency', sa.String(length=10), nullable=True, server_default='INR'))
-    op.add_column('companies', sa.Column('default_terms', sa.String(length=2048), nullable=True))
-    op.add_column('companies', sa.Column('quotation_prefix', sa.String(length=50), nullable=False, server_default='QT'))
-    op.add_column('companies', sa.Column('default_validity_days', sa.Integer(), nullable=True, server_default='30'))
-    op.add_column('companies', sa.Column('logo_path', sa.String(length=1024), nullable=True))
-    op.add_column('companies', sa.Column('signature_path', sa.String(length=1024), nullable=True))
+    with op.batch_alter_table("companies") as batch_op:
+        if op.get_bind().dialect.name != "sqlite":
+            batch_op.drop_constraint("companies_name_key", type_="unique")
+        for name, type_, nullable, default in (
+            ("gstin", sa.String(20), True, None),
+            ("country", sa.String(100), True, None),
+            ("state", sa.String(100), True, None),
+            ("city", sa.String(100), True, None),
+            ("pincode", sa.String(20), True, None),
+            ("currency", sa.String(10), True, "INR"),
+            ("default_terms", sa.String(2048), True, None),
+            ("quotation_prefix", sa.String(50), False, "QT"),
+            ("default_validity_days", sa.Integer(), True, "30"),
+            ("logo_path", sa.String(1024), True, None),
+            ("signature_path", sa.String(1024), True, None),
+        ):
+            batch_op.add_column(sa.Column(name, type_, nullable=nullable, server_default=default))
 
-    op.add_column('customers', sa.Column('company_id', pg.UUID(as_uuid=True), sa.ForeignKey('companies.id'), nullable=True))
-    op.add_column('customers', sa.Column('gstin', sa.String(length=20), nullable=True))
-    op.add_column('customers', sa.Column('country', sa.String(length=100), nullable=True))
-    op.add_column('customers', sa.Column('state', sa.String(length=100), nullable=True))
-    op.add_column('customers', sa.Column('city', sa.String(length=100), nullable=True))
-    op.add_column('customers', sa.Column('pincode', sa.String(length=20), nullable=True))
+    with op.batch_alter_table("customers") as batch_op:
+        batch_op.add_column(sa.Column("company_id", pg.UUID(as_uuid=True), nullable=True))
+        batch_op.create_foreign_key("fk_customers_company_id_companies", "companies", ["company_id"], ["id"])
+        for name, size in (("gstin", 20), ("country", 100), ("state", 100), ("city", 100), ("pincode", 20)):
+            batch_op.add_column(sa.Column(name, sa.String(size), nullable=True))
 
-    op.add_column('products', sa.Column('company_id', pg.UUID(as_uuid=True), sa.ForeignKey('companies.id'), nullable=True))
-    op.add_column('products', sa.Column('hsn_code', sa.String(length=50), nullable=True))
-    op.add_column('products', sa.Column('gst_percentage', sa.Numeric(5, 2), nullable=True))
-    op.add_column('products', sa.Column('unit', sa.String(length=50), nullable=True))
-    op.add_column('products', sa.Column('status', sa.String(length=20), nullable=False, server_default='active'))
+    with op.batch_alter_table("products") as batch_op:
+        batch_op.add_column(sa.Column("company_id", pg.UUID(as_uuid=True), nullable=True))
+        batch_op.create_foreign_key("fk_products_company_id_companies", "companies", ["company_id"], ["id"])
+        batch_op.add_column(sa.Column("hsn_code", sa.String(50), nullable=True))
+        batch_op.add_column(sa.Column("gst_percentage", sa.Numeric(5, 2), nullable=True))
+        batch_op.add_column(sa.Column("unit", sa.String(50), nullable=True))
+        batch_op.add_column(sa.Column("status", sa.String(20), nullable=False, server_default="active"))
 
-    op.add_column('quotation_items', sa.Column('item_name', sa.String(length=255), nullable=True))
-    op.add_column('quotation_items', sa.Column('description', sa.String(length=1024), nullable=True))
-    op.add_column('quotation_items', sa.Column('unit', sa.String(length=50), nullable=True))
-    op.add_column('quotation_items', sa.Column('discount', sa.Numeric(12, 2), nullable=False, server_default='0'))
-    op.add_column('quotation_items', sa.Column('tax_percentage', sa.Numeric(5, 2), nullable=False, server_default='0'))
-    op.add_column('quotation_items', sa.Column('tax_amount', sa.Numeric(14, 2), nullable=False, server_default='0'))
-    op.add_column('quotation_items', sa.Column('amount', sa.Numeric(14, 2), nullable=False, server_default='0'))
+    with op.batch_alter_table("quotation_items") as batch_op:
+        batch_op.add_column(sa.Column("item_name", sa.String(255), nullable=True))
+        batch_op.add_column(sa.Column("description", sa.String(1024), nullable=True))
+        batch_op.add_column(sa.Column("unit", sa.String(50), nullable=True))
+        batch_op.add_column(sa.Column("discount", sa.Numeric(12, 2), nullable=False, server_default="0"))
+        batch_op.add_column(sa.Column("tax_percentage", sa.Numeric(5, 2), nullable=False, server_default="0"))
+        batch_op.add_column(sa.Column("tax_amount", sa.Numeric(14, 2), nullable=False, server_default="0"))
+        batch_op.add_column(sa.Column("amount", sa.Numeric(14, 2), nullable=False, server_default="0"))
 
-    op.add_column('quotations', sa.Column('quotation_number', sa.String(length=100), nullable=True))
-    op.add_column('quotations', sa.Column('quotation_year', sa.Integer(), nullable=True))
-    op.add_column('quotations', sa.Column('subtotal', sa.Numeric(14, 2), nullable=False, server_default='0'))
-    op.add_column('quotations', sa.Column('discount', sa.Numeric(14, 2), nullable=False, server_default='0'))
-    op.add_column('quotations', sa.Column('tax_amount', sa.Numeric(14, 2), nullable=False, server_default='0'))
-    op.add_column('quotations', sa.Column('currency', sa.String(length=10), nullable=True))
-    op.add_column('quotations', sa.Column('status', sa.String(length=50), nullable=False, server_default='Draft'))
-    op.add_column('quotations', sa.Column('valid_until', sa.DateTime(), nullable=True))
-    op.add_column('quotations', sa.Column('notes', sa.String(length=2048), nullable=True))
-    op.add_column('quotations', sa.Column('terms', sa.String(length=2048), nullable=True))
-    op.add_column('quotations', sa.Column('company_name', sa.String(length=255), nullable=True))
-    op.add_column('quotations', sa.Column('company_address', sa.String(length=512), nullable=True))
-    op.add_column('quotations', sa.Column('company_phone_number', sa.String(length=50), nullable=True))
-    op.add_column('quotations', sa.Column('company_email', sa.String(length=255), nullable=True))
-    op.add_column('quotations', sa.Column('company_website', sa.String(length=255), nullable=True))
-    op.add_column('quotations', sa.Column('company_gstin', sa.String(length=20), nullable=True))
-    op.add_column('quotations', sa.Column('company_logo_path', sa.String(length=1024), nullable=True))
-    op.add_column('quotations', sa.Column('company_signature_path', sa.String(length=1024), nullable=True))
-    op.add_column('quotations', sa.Column('customer_name', sa.String(length=255), nullable=True))
-    op.add_column('quotations', sa.Column('customer_email', sa.String(length=255), nullable=True))
-    op.add_column('quotations', sa.Column('customer_phone_number', sa.String(length=50), nullable=True))
-    op.add_column('quotations', sa.Column('customer_address', sa.String(length=512), nullable=True))
-    op.add_column('quotations', sa.Column('customer_gstin', sa.String(length=20), nullable=True))
-
-    op.create_unique_constraint('uq_quotations_company_quotation_number', 'quotations', ['company_id', 'quotation_number'])
+    with op.batch_alter_table("quotations") as batch_op:
+        batch_op.add_column(sa.Column("quotation_number", sa.String(100), nullable=True))
+        batch_op.add_column(sa.Column("quotation_year", sa.Integer(), nullable=True))
+        batch_op.add_column(sa.Column("subtotal", sa.Numeric(14, 2), nullable=False, server_default="0"))
+        batch_op.add_column(sa.Column("discount", sa.Numeric(14, 2), nullable=False, server_default="0"))
+        batch_op.add_column(sa.Column("tax_amount", sa.Numeric(14, 2), nullable=False, server_default="0"))
+        batch_op.add_column(sa.Column("currency", sa.String(10), nullable=True))
+        batch_op.add_column(sa.Column("status", sa.String(50), nullable=False, server_default="Draft"))
+        batch_op.add_column(sa.Column("valid_until", sa.DateTime(), nullable=True))
+        batch_op.add_column(sa.Column("notes", sa.String(2048), nullable=True))
+        batch_op.add_column(sa.Column("terms", sa.String(2048), nullable=True))
+        batch_op.add_column(sa.Column("company_name", sa.String(255), nullable=True))
+        batch_op.add_column(sa.Column("company_address", sa.String(512), nullable=True))
+        batch_op.add_column(sa.Column("company_phone_number", sa.String(50), nullable=True))
+        batch_op.add_column(sa.Column("company_email", sa.String(255), nullable=True))
+        batch_op.add_column(sa.Column("company_website", sa.String(255), nullable=True))
+        batch_op.add_column(sa.Column("company_gstin", sa.String(20), nullable=True))
+        batch_op.add_column(sa.Column("company_logo_path", sa.String(1024), nullable=True))
+        batch_op.add_column(sa.Column("company_signature_path", sa.String(1024), nullable=True))
+        batch_op.add_column(sa.Column("customer_name", sa.String(255), nullable=True))
+        batch_op.add_column(sa.Column("customer_email", sa.String(255), nullable=True))
+        batch_op.add_column(sa.Column("customer_phone_number", sa.String(50), nullable=True))
+        batch_op.add_column(sa.Column("customer_address", sa.String(512), nullable=True))
+        batch_op.add_column(sa.Column("customer_gstin", sa.String(20), nullable=True))
+        batch_op.create_unique_constraint(
+            "uq_quotations_company_quotation_number", ["company_id", "quotation_number"]
+        )
 
     op.create_table(
         'quotation_sequences',

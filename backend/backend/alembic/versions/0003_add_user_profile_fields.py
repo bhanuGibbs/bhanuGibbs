@@ -9,10 +9,17 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column('users', sa.Column('company_id', pg.UUID(as_uuid=True), sa.ForeignKey('companies.id'), nullable=True))
-    op.add_column('users', sa.Column('is_profile_complete', sa.Boolean(), nullable=False, server_default=sa.text('false')))
+    with op.batch_alter_table("users") as batch_op:
+        batch_op.add_column(sa.Column("company_id", pg.UUID(as_uuid=True), nullable=True))
+        batch_op.create_foreign_key(
+            "fk_users_company_id_companies", "companies", ["company_id"], ["id"]
+        )
+        batch_op.add_column(
+            sa.Column("is_profile_complete", sa.Boolean(), nullable=False, server_default=sa.text("false"))
+        )
 
 
 def downgrade() -> None:
-    op.drop_column('users', 'is_profile_complete')
-    op.drop_column('users', 'company_id')
+    with op.batch_alter_table("users") as batch_op:
+        batch_op.drop_column("is_profile_complete")
+        batch_op.drop_column("company_id")

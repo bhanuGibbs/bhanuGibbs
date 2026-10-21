@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import secrets
+from uuid import UUID
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -97,4 +98,34 @@ class UserService:
 
     async def get_user_by_id(self, user_id: str) -> User | None:
         """Return a user by its UUID identifier."""
-        return await self.repository.get(user_id)
+        try:
+            user_uuid = UUID(user_id)
+        except ValueError:
+            return None
+        return await self.repository.get(user_uuid)
+
+    async def update_profile(self, user_id: str, changes: dict[str, str | None]) -> User:
+        """Update only the authenticated user's basic contact fields."""
+        user = await self.get_user_by_id(user_id)
+        if not user:
+            raise NotFoundError("User not found.")
+
+        username = changes.get("username")
+        if username is not None and username != user.username:
+            existing = await self.repository.get_by_username(username)
+            if existing and existing.id != user.id:
+                raise ConflictError("Username already exists.")
+            user.username = username
+
+        email = changes.get("email")
+        if email is not None and email != user.email:
+            existing = await self.repository.get_by_email(email)
+            if existing and existing.id != user.id:
+                raise ConflictError("Email already exists.")
+            user.email = email
+
+        if "mobile_number" in changes:
+            user.mobile_number = changes["mobile_number"]
+
+        await self.repository.commit()
+        return user

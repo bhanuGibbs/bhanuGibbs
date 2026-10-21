@@ -30,6 +30,11 @@ async def create_company(
         phone_number=payload.phone_number,
         email=payload.email,
         website=payload.website,
+        gstin=payload.gstin,
+        country=payload.country,
+        state=payload.state,
+        city=payload.city,
+        pincode=payload.pincode,
     )
     return CompanyRead.from_orm(company)
 
@@ -39,7 +44,9 @@ async def list_companies(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> list[CompanyRead]:
-    """List all companies."""
+    """List only the authenticated user's company."""
     service = CompanyService(session)
-    companies = await service.list_companies()
-    return [CompanyRead.from_orm(company) for company in companies]
+    if not current_user["company_id"]:
+        return []
+    company = await service.get_company(current_user["company_id"])
+    return [CompanyRead.from_orm(company)] if company else []

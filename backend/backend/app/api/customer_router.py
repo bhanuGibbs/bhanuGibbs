@@ -31,6 +31,12 @@ async def create_customer(
         address=payload.address,
         company_name=payload.company_name,
         company_id=current_user["company_id"],
+        gstin=payload.gstin,
+        country=payload.country,
+        state=payload.state,
+        city=payload.city,
+        pincode=payload.pincode,
+        created_by_id=current_user["id"],
     )
     return CustomerRead.from_orm(customer)
 
@@ -44,7 +50,7 @@ async def list_customers(
     service = CustomerService(session)
     if not current_user["company_id"]:
         return []
-    customers = await service.list_customers(current_user["company_id"])
+    customers = await service.list_customers(current_user["company_id"], current_user["id"])
     return [CustomerRead.from_orm(customer) for customer in customers]
 
 
@@ -57,7 +63,7 @@ async def get_customer(
     """Get a single customer by ID."""
     service = CustomerService(session)
     customer = await service.get_customer(customer_id)
-    if not customer or str(customer.company_id) != current_user["company_id"]:
+    if not customer or str(customer.company_id) != current_user["company_id"] or str(customer.created_by_id) != current_user["id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found.")
     return CustomerRead.from_orm(customer)
 
@@ -72,7 +78,7 @@ async def update_customer(
     """Update a customer."""
     service = CustomerService(session)
     customer = await service.get_customer(customer_id)
-    if not customer or str(customer.company_id) != current_user["company_id"]:
+    if not customer or str(customer.company_id) != current_user["company_id"] or str(customer.created_by_id) != current_user["id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found.")
 
     updated = await service.update_customer(
@@ -82,6 +88,11 @@ async def update_customer(
         phone_number=payload.phone_number,
         address=payload.address,
         company_name=payload.company_name,
+        gstin=payload.gstin,
+        country=payload.country,
+        state=payload.state,
+        city=payload.city,
+        pincode=payload.pincode,
     )
     return CustomerRead.from_orm(updated)
 
@@ -95,7 +106,7 @@ async def delete_customer(
     """Delete a customer."""
     service = CustomerService(session)
     customer = await service.get_customer(customer_id)
-    if not customer or str(customer.company_id) != current_user["company_id"]:
+    if not customer or str(customer.company_id) != current_user["company_id"] or str(customer.created_by_id) != current_user["id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found.")
 
     await service.delete_customer(customer_id)

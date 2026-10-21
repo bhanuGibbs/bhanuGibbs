@@ -13,6 +13,7 @@ class Customer(BaseModel):
     __tablename__ = "customers"
 
     company_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("companies.id"), nullable=True)
+    created_by_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     phone_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
@@ -25,3 +26,4 @@ class Customer(BaseModel):
     pincode: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     company = relationship("Company", backref="customers")
+    created_by = relationship("User", backref="customers")

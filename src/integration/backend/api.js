@@ -12,17 +12,30 @@ export const buildBackendQuotationPayload = (documentData) => {
     valid_until: documentData?.quotation?.validUntil || null,
     terms: documentData?.quotation?.terms || null,
     currency: documentData?.quotation?.currency || null,
+    shipping_amount: Number(documentData?.shipping || 0),
     customer: {
       name: documentData?.customer?.name || '',
       email: documentData?.customer?.email || null,
       phone_number: documentData?.customer?.phone || documentData?.customer?.phone_number || null,
       address: documentData?.customer?.address || null,
       company_name: documentData?.customer?.companyName || null,
+      gstin: documentData?.customer?.gstNumber || null,
+      country: documentData?.customer?.country || null,
+      state: documentData?.customer?.state || null,
+      city: documentData?.customer?.city || null,
+      pincode: documentData?.customer?.pincode || null,
     },
     items: (documentData?.items || []).map((item) => ({
       product_name: item.itemName || 'Product',
+      product_id: item.catalogProductId || null,
+      description: item.description || null,
+      unit: item.unit || null,
       quantity: Number(item.quantity || 0),
       unit_price: Number(item.rate || 0),
+      discount: Number(item.discount || 0),
+      gst: Number(item.gst || 0),
+      sku: item.sku || null,
+      hsn_code: item.hsnCode || null,
     })),
   };
 
@@ -287,4 +300,26 @@ export const deleteQuotation = async (quotationId) => {
   }
 
   return true;
+};
+
+export const downloadQuotationPdf = async (quotationId, filename) => {
+  const response = await fetch(`${API_BASE}/quotations/${quotationId}/pdf`, {
+    headers: {
+      ...getAuthorizedHeaders(),
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || 'Unable to download document');
+  }
+
+  const fileUrl = URL.createObjectURL(await response.blob());
+  const link = document.createElement('a');
+  link.href = fileUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
 };

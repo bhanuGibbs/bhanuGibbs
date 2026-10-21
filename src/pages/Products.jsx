@@ -9,6 +9,9 @@ const emptyProduct = {
   description: '',
   price: '',
   sku: '',
+  gst_percentage: '',
+  unit: '',
+  hsn_code: '',
 };
 
 const Products = () => {
@@ -58,6 +61,9 @@ const Products = () => {
         description: form.description || null,
         price: Number(form.price) || 0,
         sku: form.sku || null,
+        gst_percentage: form.gst_percentage === '' ? null : Number(form.gst_percentage),
+        unit: form.unit || null,
+        hsn_code: form.hsn_code || null,
       };
 
       if (editingId) {
@@ -84,6 +90,9 @@ const Products = () => {
       description: product.description || '',
       price: product.price?.toString() || '',
       sku: product.sku || '',
+      gst_percentage: product.gst_percentage?.toString() || '',
+      unit: product.unit || '',
+      hsn_code: product.hsn_code || '',
     });
     setEditingId(product.id);
     setError('');
@@ -173,6 +182,41 @@ const Products = () => {
                   value={form.description}
                   onChange={(event) => setField('description', event.target.value)}
                   placeholder="Product description"
+                />
+              </label>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block text-sm font-medium text-slate-700">
+                  Tax / GST %
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                    value={form.gst_percentage}
+                    onChange={(event) => setField('gst_percentage', event.target.value)}
+                    placeholder="18"
+                  />
+                </label>
+                <label className="block text-sm font-medium text-slate-700">
+                  Unit
+                  <input
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                    value={form.unit}
+                    onChange={(event) => setField('unit', event.target.value)}
+                    placeholder="Each, kg, hour…"
+                  />
+                </label>
+              </div>
+
+              <label className="block text-sm font-medium text-slate-700">
+                HSN/SAC code
+                <input
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                  value={form.hsn_code}
+                  onChange={(event) => setField('hsn_code', event.target.value)}
+                  placeholder="HSN/SAC code"
                 />
               </label>
 

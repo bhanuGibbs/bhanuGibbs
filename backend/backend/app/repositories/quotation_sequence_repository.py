@@ -15,10 +15,14 @@ class QuotationSequenceRepository(BaseRepository[QuotationSequence]):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, QuotationSequence)
 
-    async def get_by_company_and_year(self, company_id: str, year: int) -> QuotationSequence | None:
+    async def get_by_company_and_year(
+        self, company_id: str, year: int, lock: bool = False
+    ) -> QuotationSequence | None:
         statement = select(QuotationSequence).where(
             QuotationSequence.company_id == UUID(company_id),
             QuotationSequence.year == year,
         )
+        if lock:
+            statement = statement.with_for_update()
         result = await self.session.execute(statement)
         return result.scalars().first()

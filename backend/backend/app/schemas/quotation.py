@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, PositiveInt, constr
 
@@ -14,19 +15,26 @@ class QuotationCustomerInfo(BaseModel):
     phone_number: str | None = Field(default=None, max_length=50)
     address: str | None = Field(default=None, max_length=512)
     company_name: str | None = Field(default=None, max_length=255)
+    gstin: str | None = Field(default=None, max_length=20)
+    country: str | None = Field(default=None, max_length=100)
+    state: str | None = Field(default=None, max_length=100)
+    city: str | None = Field(default=None, max_length=100)
+    pincode: str | None = Field(default=None, max_length=20)
 
 
 class QuotationSubmitItem(BaseModel):
     """Line item details for free-form quotation submission."""
 
-    product_id: str | None = None
+    product_id: UUID | None = None
     product_name: str | None = None
+    sku: str | None = None
+    hsn_code: str | None = None
     description: str | None = None
     unit: str | None = None
     quantity: PositiveInt = Field(..., ge=1)
     unit_price: Decimal = Field(..., gt=0)
-    discount: Decimal = Field(default=Decimal('0.00'), ge=0)
-    gst: Decimal = Field(default=Decimal('0.00'), ge=0)
+    discount: Decimal = Field(default=Decimal('0.00'), ge=0, le=100)
+    gst: Decimal = Field(default=Decimal('0.00'), ge=0, le=100)
 
 
 class QuotationSubmit(BaseModel):
@@ -41,6 +49,7 @@ class QuotationSubmit(BaseModel):
     terms: str | None = None
     notes: str | None = None
     currency: str | None = None
+    shipping_amount: Decimal = Field(default=Decimal("0.00"), ge=0)
     customer: QuotationCustomerInfo
     items: list[QuotationSubmitItem]
 
@@ -55,8 +64,8 @@ class QuotationItemBase(BaseModel):
     unit: str | None = None
     quantity: PositiveInt = Field(..., ge=1)
     unit_price: Decimal = Field(..., gt=0)
-    discount: Decimal = Field(default=Decimal('0.00'), ge=0)
-    gst: Decimal = Field(default=Decimal('0.00'), ge=0)
+    discount: Decimal = Field(default=Decimal('0.00'), ge=0, le=100)
+    gst: Decimal = Field(default=Decimal('0.00'), ge=0, le=100)
 
 
 class QuotationItemCreate(QuotationItemBase):
@@ -66,7 +75,8 @@ class QuotationItemCreate(QuotationItemBase):
 class QuotationItemRead(QuotationItemBase):
     """Fields returned in quotation item read responses."""
 
-    id: str
+    id: UUID
+    product_id: UUID | None = None
     total_price: Decimal
     amount: Decimal
     tax_amount: Decimal
@@ -90,6 +100,7 @@ class QuotationBase(BaseModel):
     terms: str | None = None
     notes: str | None = None
     currency: str | None = None
+    shipping_amount: Decimal = Field(default=Decimal("0.00"), ge=0)
     items: list[QuotationItemCreate]
 
 
@@ -112,12 +123,14 @@ class QuotationUpdate(BaseModel):
     notes: str | None = None
     terms: str | None = None
     currency: str | None = None
+    shipping_amount: Decimal | None = Field(default=None, ge=0)
     customer: QuotationCustomerInfo | None = None
 
 
 class QuotationRead(QuotationBase):
-    customer_id: str
-    company_id: str
+    id: UUID
+    customer_id: UUID
+    company_id: UUID
     """Properties returned in quotation responses."""
 
     quotation_number: str | None = None
@@ -126,6 +139,7 @@ class QuotationRead(QuotationBase):
     subtotal: Decimal
     discount: Decimal
     tax_amount: Decimal
+    shipping_amount: Decimal
     total_amount: Decimal
     valid_until: datetime | None = None
     created_at: datetime

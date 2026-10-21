@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import AuthLayout from '../components/AuthLayout';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -27,12 +28,12 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
-      <div className="mx-auto w-full max-w-md rounded-[32px] border border-slate-200 bg-white p-8 shadow-soft">
-        <h1 className="text-2xl font-semibold text-slate-900">Sign in to your account</h1>
-        <p className="mt-2 text-sm text-slate-500">Access your quotation workspace with secure login.</p>
-
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+    <AuthLayout
+      eyebrow="Welcome back"
+      title="Sign in to Ledger."
+      description="Enter your account details to continue to your billing workspace."
+    >
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-slate-700">
             Username
             <input
@@ -40,6 +41,7 @@ const Login = () => {
               value={form.username}
               onChange={(event) => setForm({ ...form, username: event.target.value })}
               placeholder="Enter your username"
+              autoComplete="username"
               required
             />
           </label>
@@ -52,6 +54,7 @@ const Login = () => {
               value={form.password}
               onChange={(event) => setForm({ ...form, password: event.target.value })}
               placeholder="Enter your password"
+              autoComplete="current-password"
               required
             />
           </label>
@@ -61,7 +64,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
@@ -75,8 +78,7 @@ const Login = () => {
             Create account
           </Link>
         </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 };
 

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db_session
+from app.models.company import Company
 from app.models.role import Role
 from app.security import create_access_token, create_refresh_token, decode_token
 from app.schemas.company import CompanyCreate, CompanyRead
@@ -16,6 +17,7 @@ from app.schemas.user import (
     Token,
     TokenRefreshRequest,
     UserRead,
+    UserProfileUpdate,
     UserRegister,
 )
 from app.services.auth_session_service import AuthSessionService
@@ -38,10 +40,11 @@ async def register(
         email=payload.email,
         password=payload.password,
         mobile_number=payload.mobile_number,
-        role_name="Viewer",
+        role_name="Sales",
         is_superuser=False,
     )
     role = await session.get(Role, user.role_id)
+    company = await session.get(Company, user.company_id) if user.company_id else None
     user_data = {
         "id": str(user.id),
         "username": user.username,
@@ -53,6 +56,12 @@ async def register(
         "role": role.name if role else None,
         "company_id": str(user.company_id) if user.company_id else None,
         "is_profile_complete": user.is_profile_complete,
+        "company_name": company.name if company else None,
+        "company_address": company.address if company else None,
+        "company_phone_number": company.phone_number if company else None,
+        "company_email": company.email if company else None,
+        "company_website": company.website if company else None,
+        "company_gstin": company.gstin if company else None,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     }
@@ -228,6 +237,11 @@ async def setup_company(
         phone_number=payload.phone_number,
         email=payload.email,
         website=payload.website,
+        gstin=payload.gstin,
+        country=payload.country,
+        state=payload.state,
+        city=payload.city,
+        pincode=payload.pincode,
     )
 
     user.company_id = company.id
@@ -243,6 +257,11 @@ async def setup_company(
         "phone_number": company.phone_number,
         "email": company.email,
         "website": company.website,
+        "gstin": company.gstin,
+        "country": company.country,
+        "state": company.state,
+        "city": company.city,
+        "pincode": company.pincode,
         "created_at": str(company.created_at),
         "updated_at": str(company.updated_at),
     }
@@ -283,6 +302,7 @@ async def read_current_user(
         )
 
     role = await session.get(Role, user.role_id)
+    company = await session.get(Company, user.company_id) if user.company_id else None
     user_data = {
         "id": str(user.id),
         "username": user.username,
@@ -294,7 +314,33 @@ async def read_current_user(
         "role": role.name if role else None,
         "company_id": str(user.company_id) if user.company_id else None,
         "is_profile_complete": user.is_profile_complete,
+        "company_name": company.name if company else None,
+        "company_address": company.address if company else None,
+        "company_phone_number": company.phone_number if company else None,
+        "company_email": company.email if company else None,
+        "company_website": company.website if company else None,
+        "company_gstin": company.gstin if company else None,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     }
     return UserRead.model_validate(user_data)
+
+
+@router.patch("/me", response_model=UserRead)
+async def update_current_user(
+    payload: UserProfileUpdate,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> UserRead:
+    """Update the authenticated user's own contact details only."""
+    changes = payload.model_dump(exclude_unset=True)
+    if any(changes.get(field) is None for field in ("username", "email") if field in changes):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Username and email cannot be cleared.",
+        )
+    try:
+        await UserService(session).update_profile(current_user["id"], changes)
+    except ConflictError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
+    return await read_current_user(current_user, session)

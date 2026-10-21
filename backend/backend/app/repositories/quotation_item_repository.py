@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sqlalchemy import select
@@ -17,6 +19,6 @@ class QuotationItemRepository(BaseRepository[QuotationItem]):
 
     async def list_by_quotation(self, quotation_id: str) -> list[QuotationItem]:
         """Return all line items for a specific quotation."""
-        statement = select(QuotationItem).where(QuotationItem.quotation_id == quotation_id)
+        statement = select(QuotationItem).where(QuotationItem.quotation_id == UUID(quotation_id))
         result = await self.session.execute(statement)
         return result.scalars().all()

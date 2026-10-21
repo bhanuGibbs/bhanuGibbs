@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import Customer
@@ -21,10 +23,16 @@ class CustomerService:
         address: str | None = None,
         company_name: str | None = None,
         company_id: str | None = None,
+        gstin: str | None = None,
+        country: str | None = None,
+        state: str | None = None,
+        city: str | None = None,
+        pincode: str | None = None,
+        created_by_id: str | None = None,
     ) -> Customer:
         """Create a new customer record within a company."""
         if email:
-            existing = await self.repository.get_by_email(email, company_id)
+            existing = await self.repository.get_by_email(email, company_id, created_by_id)
             if existing:
                 raise ConflictError("Customer with this email already exists.")
 
@@ -34,15 +42,21 @@ class CustomerService:
             phone_number=phone_number,
             address=address,
             company_name=company_name,
-            company_id=company_id,
+            company_id=UUID(company_id) if company_id else None,
+            created_by_id=UUID(created_by_id) if created_by_id else None,
+            gstin=gstin,
+            country=country,
+            state=state,
+            city=city,
+            pincode=pincode,
         )
         await self.repository.add(customer)
         await self.repository.commit()
         return customer
 
-    async def list_customers(self, company_id: str) -> list[Customer]:
-        """Return a list of customers for a company."""
-        return await self.repository.list_by_company(company_id)
+    async def list_customers(self, company_id: str, user_id: str) -> list[Customer]:
+        """Return customers for the authenticated user within a company."""
+        return await self.repository.list_by_company(company_id, user_id)
 
     async def get_customer(self, customer_id: str) -> Customer | None:
         """Retrieve a customer by UUID."""
@@ -56,6 +70,11 @@ class CustomerService:
         phone_number: str | None = None,
         address: str | None = None,
         company_name: str | None = None,
+        gstin: str | None = None,
+        country: str | None = None,
+        state: str | None = None,
+        city: str | None = None,
+        pincode: str | None = None,
     ) -> Customer:
         """Update an existing customer."""
         customer = await self.repository.get(customer_id)
@@ -72,6 +91,16 @@ class CustomerService:
             customer.address = address
         if company_name is not None:
             customer.company_name = company_name
+        if gstin is not None:
+            customer.gstin = gstin
+        if country is not None:
+            customer.country = country
+        if state is not None:
+            customer.state = state
+        if city is not None:
+            customer.city = city
+        if pincode is not None:
+            customer.pincode = pincode
 
         await self.repository.commit()
         return customer

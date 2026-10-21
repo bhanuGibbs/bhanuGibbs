@@ -17,6 +17,42 @@ from app.utils.pdf_generator import generate_pdf_from_data, render_template
 router = APIRouter(prefix="/quotations", tags=["Quotations"])
 
 
+async def _resolve_quotation_product(item_data, product_service, company_id, current_user):
+    if item_data.product_id:
+        product = await product_service.get_product(str(item_data.product_id))
+        if (
+            not product
+            or str(product.company_id) != company_id
+            or str(product.created_by_id) != current_user["id"]
+        ):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+        return product
+
+    product_name = item_data.product_name or "Product"
+    product = None
+    if item_data.sku:
+        product = await product_service.repository.get_by_sku(
+            item_data.sku, company_id, current_user["id"]
+        )
+    if not product:
+        product = await product_service.repository.get_by_name_and_company(
+            product_name, company_id, current_user["id"]
+        )
+    if not product:
+        product = await product_service.create_product(
+            name=product_name,
+            price=item_data.unit_price,
+            description=item_data.description,
+            sku=item_data.sku,
+            gst_percentage=item_data.gst,
+            unit=item_data.unit,
+            hsn_code=item_data.hsn_code,
+            company_id=company_id,
+            created_by_id=current_user["id"],
+        )
+    return product
+
+
 @router.get("/form", response_class=HTMLResponse)
 async def quotation_form() -> HTMLResponse:
     """Render the quotation input form."""
@@ -131,12 +167,28 @@ async def submit_quotation(
 
     existing_customer = None
     if payload.customer.email:
-        existing_customer = await customer_service.repository.get_by_email(payload.customer.email, company_id)
+        existing_customer = await customer_service.repository.get_by_email(
+            payload.customer.email, company_id, current_user["id"]
+        )
     if not existing_customer and payload.customer.name:
-        existing_customer = await customer_service.repository.get_by_name_and_company(payload.customer.name, company_id)
+        existing_customer = await customer_service.repository.get_by_name_and_company(
+            payload.customer.name, company_id, current_user["id"]
+        )
 
     if existing_customer:
-        customer = existing_customer
+        customer = await customer_service.update_customer(
+            customer_id=str(existing_customer.id),
+            name=payload.customer.name,
+            email=payload.customer.email,
+            phone_number=payload.customer.phone_number,
+            address=payload.customer.address,
+            company_name=payload.customer.company_name,
+            gstin=payload.customer.gstin,
+            country=payload.customer.country,
+            state=payload.customer.state,
+            city=payload.customer.city,
+            pincode=payload.customer.pincode,
+        )
     else:
         customer = await customer_service.create_customer(
             name=payload.customer.name,
@@ -145,25 +197,28 @@ async def submit_quotation(
             address=payload.customer.address,
             company_name=payload.customer.company_name,
             company_id=company_id,
+            gstin=payload.customer.gstin,
+            country=payload.customer.country,
+            state=payload.customer.state,
+            city=payload.customer.city,
+            pincode=payload.customer.pincode,
+            created_by_id=current_user["id"],
         )
 
     line_items = []
     for item_data in payload.items:
-        product = await product_service.repository.get_by_name_and_company(item_data.product_name, company_id)
-        if not product:
-            product = await product_service.create_product(
-                name=item_data.product_name,
-                price=item_data.unit_price,
-                description=None,
-                sku=None,
-                company_id=company_id,
-            )
+        product = await _resolve_quotation_product(item_data, product_service, company_id, current_user)
 
         line_items.append(
             {
                 "product_id": str(product.id),
+                "item_name": item_data.product_name or product.name,
+                "description": item_data.description,
+                "unit": item_data.unit,
                 "quantity": item_data.quantity,
                 "unit_price": item_data.unit_price,
+                "discount": item_data.discount,
+                "gst": item_data.gst,
             }
         )
 
@@ -177,6 +232,7 @@ async def submit_quotation(
         items=line_items,
         created_by_id=current_user["id"],
         created_by_username=current_user["username"],
+        shipping_amount=payload.shipping_amount,
     )
     return QuotationRead.from_orm(quotation)
 
@@ -207,12 +263,28 @@ async def create_quotation_draft(
 
     existing_customer = None
     if payload.customer.email:
-        existing_customer = await customer_service.repository.get_by_email(payload.customer.email, company_id)
+        existing_customer = await customer_service.repository.get_by_email(
+            payload.customer.email, company_id, current_user["id"]
+        )
     if not existing_customer and payload.customer.name:
-        existing_customer = await customer_service.repository.get_by_name_and_company(payload.customer.name, company_id)
+        existing_customer = await customer_service.repository.get_by_name_and_company(
+            payload.customer.name, company_id, current_user["id"]
+        )
 
     if existing_customer:
-        customer = existing_customer
+        customer = await customer_service.update_customer(
+            customer_id=str(existing_customer.id),
+            name=payload.customer.name,
+            email=payload.customer.email,
+            phone_number=payload.customer.phone_number,
+            address=payload.customer.address,
+            company_name=payload.customer.company_name,
+            gstin=payload.customer.gstin,
+            country=payload.customer.country,
+            state=payload.customer.state,
+            city=payload.customer.city,
+            pincode=payload.customer.pincode,
+        )
     else:
         customer = await customer_service.create_customer(
             name=payload.customer.name,
@@ -221,25 +293,28 @@ async def create_quotation_draft(
             address=payload.customer.address,
             company_name=payload.customer.company_name,
             company_id=company_id,
+            gstin=payload.customer.gstin,
+            country=payload.customer.country,
+            state=payload.customer.state,
+            city=payload.customer.city,
+            pincode=payload.customer.pincode,
+            created_by_id=current_user["id"],
         )
 
     line_items = []
     for item_data in payload.items:
-        product = await product_service.repository.get_by_name_and_company(item_data.product_name, company_id)
-        if not product:
-            product = await product_service.create_product(
-                name=item_data.product_name,
-                price=item_data.unit_price,
-                description=None,
-                sku=None,
-                company_id=company_id,
-            )
+        product = await _resolve_quotation_product(item_data, product_service, company_id, current_user)
 
         line_items.append(
             {
                 "product_id": str(product.id),
                 "quantity": item_data.quantity,
                 "unit_price": item_data.unit_price,
+                "item_name": item_data.product_name or product.name,
+                "description": item_data.description,
+                "unit": item_data.unit,
+                "discount": item_data.discount,
+                "gst": item_data.gst,
             }
         )
 
@@ -256,7 +331,8 @@ async def create_quotation_draft(
         valid_until=payload.valid_until.isoformat() if payload.valid_until else None,
         notes=payload.notes,
         terms=payload.terms,
-        currency=payload.currency,
+
+        shipping_amount=payload.shipping_amount,
     )
     return QuotationRead.from_orm(quotation)
 
@@ -281,7 +357,9 @@ async def finalize_quotation(
         )
 
     service = QuotationService(session)
-    quotation = await service.finalize_quotation(quotation_id, current_user["company_id"])
+    quotation = await service.finalize_quotation(
+        quotation_id, current_user["company_id"], current_user["id"]
+    )
     return QuotationRead.from_orm(quotation)
 
 
@@ -335,7 +413,7 @@ async def list_quotations(
     if not current_user["company_id"]:
         return []
     service = QuotationService(session)
-    quotations = await service.list_quotations(current_user["company_id"])
+    quotations = await service.list_quotations(current_user["company_id"], current_user["id"])
     return [QuotationRead.from_orm(quotation) for quotation in quotations]
 
 
@@ -351,7 +429,7 @@ async def get_quotation(
 
     service = QuotationService(session)
     quotation = await service.get_quotation(quotation_id)
-    if not quotation or str(quotation.company_id) != current_user["company_id"]:
+    if not quotation or str(quotation.company_id) != current_user["company_id"] or str(quotation.created_by_id) != current_user["id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
 
     return QuotationRead.from_orm(quotation)
@@ -389,6 +467,9 @@ async def update_quotation(
         valid_until=payload.valid_until.isoformat() if payload.valid_until else None,
         notes=payload.notes,
         terms=payload.terms,
+        currency=payload.currency,
+        shipping_amount=payload.shipping_amount,
+        user_id=current_user["id"],
     )
     return QuotationRead.from_orm(quotation)
 
@@ -414,10 +495,10 @@ async def delete_quotation(
 
     service = QuotationService(session)
     quotation = await service.get_quotation(quotation_id)
-    if not quotation or str(quotation.company_id) != current_user["company_id"]:
+    if not quotation or str(quotation.company_id) != current_user["company_id"] or str(quotation.created_by_id) != current_user["id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
 
-    await service.delete_quotation(quotation_id)
+    await service.delete_quotation(quotation_id, current_user["id"])
 
 
 @router.get("/{quotation_id}/pdf")
@@ -439,11 +520,8 @@ async def download_quotation_pdf(
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
-    if str(quotation.company_id) != current_user["company_id"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Quotation does not belong to the authenticated user's company.",
-        )
+    if str(quotation.company_id) != current_user["company_id"] or str(quotation.created_by_id) != current_user["id"]:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
 
     pdf_service = PDFService()
     pdf_bytes = pdf_service.render_quotation_pdf(
