@@ -12,8 +12,7 @@ def escape_alembic_option(value: str) -> str:
     """Escape percent signs so Alembic config can safely store database URLs."""
     return value.replace("%", "%%")
 
-from app.core.database import engine, get_session
-from app.models.base import BaseModel
+from app.core.database import get_session
 from app.services.role_service import RoleService
 
 DEFAULT_ROLES = [
@@ -39,17 +38,14 @@ async def seed_roles(session: AsyncSession) -> None:
 
 async def create_initial_data() -> None:
     """Create database tables, apply migrations, and seed initial roles on startup."""
-    alembic_ini = Path(__file__).resolve().parent.parent / "alembic.ini"
+    backend_root = Path(__file__).resolve().parents[2]
+    alembic_ini = backend_root / "alembic.ini"
     config = Config(str(alembic_ini))
-    config.set_main_option("script_location", str(Path(__file__).resolve().parent.parent / "alembic"))
+    config.set_main_option("script_location", str(backend_root / "alembic"))
     database_url = os.getenv("DATABASE_URL", "")
     config.set_main_option("sqlalchemy.url", escape_alembic_option(database_url))
 
-    try:
-        command.upgrade(config, "head")
-    except Exception:
-        async with engine.begin() as conn:
-            await conn.run_sync(BaseModel.metadata.create_all)
+    command.upgrade(config, "head")
 
     async with get_session() as session:
         await seed_roles(session)

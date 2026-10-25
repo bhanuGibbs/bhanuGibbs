@@ -1,31 +1,53 @@
-version: "3.9"
-
 services:
   backend:
     build:
-      context: ./backend
-    container_name: quotation_generator_backend
-    env_file:
-      - ./backend/.env
+      context: ../backend
+      dockerfile: Dockerfile
+    environment:
+      APP_NAME: ${APP_NAME:-KeelBill Ledger API}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${DEBUG:-False}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in backend/docker/.env}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in backend/docker/.env}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3002,http://127.0.0.1:3002,http://localhost:8080,http://127.0.0.1:8080}
+      PORT: "8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
-      - "8000:8000"
-    volumes:
-      - ./backend/app:/app/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+      - "${BACKEND_PORT:-8000}:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
 
   db:
     image: postgres:16
-    container_name: quotation_generator_db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Kbprakash@78935
-      POSTGRES_DB: quotation_db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in backend/docker/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-quotation_db}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
 
 volumes:
   postgres_data:

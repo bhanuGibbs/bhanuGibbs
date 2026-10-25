@@ -17,6 +17,26 @@ Follow [RUN_INSTRUCTIONS.txt](RUN_INSTRUCTIONS.txt) for Windows setup, database 
 
 See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for Vercel, Render, and Neon configuration. Keep database URLs and signing secrets in environment variables; do not commit them.
 
+## Run the frontend with Docker
+
+Build the production image from the repository root:
+
+```powershell
+docker build -t keelbill-ledger-frontend .
+```
+
+Run it on port 8080:
+
+```powershell
+docker run --rm -p 8080:80 -e BACKEND_URL=http://host.docker.internal:8000 keelbill-ledger-frontend
+```
+
+Open `http://localhost:8080`. The Nginx container serves the frontend, supports
+client-side routes, and forwards `/api` requests to `BACKEND_URL` while removing
+the `/api` prefix. The default backend URL is `http://backend:8000`, suitable
+when the backend container is reachable by that name on the same Docker
+network. Set `BACKEND_URL` to the backend's reachable address when deploying.
+
 ## Verify changes
 
 From the repository root, run frontend tests and build:
