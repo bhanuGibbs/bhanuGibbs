@@ -20,7 +20,7 @@ services:
     container_name: quotation_generator_db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: Kbprakash@78935
       POSTGRES_DB: quotation_db
     ports:
       - "5432:5432"
