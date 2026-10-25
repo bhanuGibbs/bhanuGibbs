@@ -34,7 +34,7 @@ def get_settings() -> Settings:
         # Load .env file so environment variables are available (from cwd)
         load_dotenv()
         _SETTINGS = Settings(
-            app_name=os.getenv("APP_NAME", "Quotation Generator API"),
+            app_name=os.getenv("APP_NAME", "KeelBill Ledger API"),
             environment=os.getenv("ENVIRONMENT", "development"),
             debug=os.getenv("DEBUG", "True").lower() in ("1", "true", "yes"),
             database_url=os.getenv("DATABASE_URL"),

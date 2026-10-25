@@ -5,6 +5,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, PositiveInt, constr
+from typing import Literal
 
 
 class QuotationCustomerInfo(BaseModel):
@@ -125,6 +126,12 @@ class QuotationUpdate(BaseModel):
     currency: str | None = None
     shipping_amount: Decimal | None = Field(default=None, ge=0)
     customer: QuotationCustomerInfo | None = None
+
+
+class InvoicePaymentStatusUpdate(BaseModel):
+    """Payment status changes supported for finalized invoices."""
+
+    status: Literal["Paid", "Unpaid"]
 
 
 class QuotationRead(QuotationBase):

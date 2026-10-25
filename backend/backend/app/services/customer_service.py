@@ -103,6 +103,7 @@ class CustomerService:
             customer.pincode = pincode
 
         await self.repository.commit()
+        await self.repository.session.refresh(customer)
         return customer
 
     async def delete_customer(self, customer_id: str) -> None:

@@ -84,6 +84,7 @@ class ProductService:
             product.hsn_code = hsn_code
 
         await self.repository.commit()
+        await self.repository.session.refresh(product)
         return product
 
     async def delete_product(self, product_id: str) -> None:

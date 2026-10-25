@@ -138,7 +138,8 @@ const Home = () => {
             ...data,
             generatedAt: dayjs().format('MMMM D, YYYY'),
             summary: calculateSummary(data.items || [], data.shipping),
-            documentType: documentMode,
+            documentType: documentMode === 'billing' ? 'invoice' : documentMode,
+
             quotation: {
                 ...(data.quotation || {}),
                 authorizedPerson,
@@ -269,7 +270,11 @@ const Home = () => {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <CompanyDetailsForm register={register} errors={errors} watch={watch} setValue={setValue}/>
                     <CustomerDetailsForm register={register} errors={errors}/>
-                    <QuotationDetailsForm register={register} errors={errors}/>
+                    <QuotationDetailsForm
+                        register={register}
+                        errors={errors}
+                        documentMode={documentMode}
+                    />
                     <ItemTable
                         items={items}
                         products={products}

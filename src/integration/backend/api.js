@@ -4,9 +4,12 @@ const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 export const buildBackendQuotationPayload = (documentData) => {
   const referenceNumber = documentData?.quotation?.quotationNumber?.trim();
+  const isInvoice = ['billing', 'invoice'].includes(
+    String(documentData?.documentType || '').trim().toLowerCase(),
+  );
   const payload = {
     reference_number: referenceNumber || null,
-    title: documentData?.documentType === 'billing' ? 'Billing' : 'Quotation',
+    title: isInvoice ? 'Invoice' : 'Quotation',
     description: documentData?.quotation?.terms || null,
     issued_at: documentData?.quotation?.quotationDate || new Date().toISOString(),
     valid_until: documentData?.quotation?.validUntil || null,
@@ -281,6 +284,24 @@ export const getQuotations = async () => {
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || 'Unable to load quotations');
+  }
+
+  return response.json();
+};
+
+export const updateInvoicePaymentStatus = async (quotationId, paymentStatus) => {
+  const response = await fetch(`${API_BASE}/quotations/${quotationId}/payment-status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthorizedHeaders(),
+    },
+    body: JSON.stringify({status: paymentStatus}),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || 'Unable to update invoice payment status');
   }
 
   return response.json();

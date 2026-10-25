@@ -78,7 +78,7 @@ class QuotationService:
             return updated
 
         if not reference_number or not reference_number.strip():
-            prefix = "INV" if title.lower() == "billing" else "QT"
+            prefix = "INV" if title.strip().lower() in ("billing", "invoice") else "QT"
             reference_number = await self.get_next_reference_number(created_by_id, created_by_username, prefix)
 
         existing = await self.repository.get_by_reference(reference_number, company_id)
@@ -129,7 +129,7 @@ class QuotationService:
     ) -> Quotation:
         """Create a new quotation or finalize an existing draft."""
         if not reference_number or not reference_number.strip():
-            prefix = "INV" if title.lower() == "billing" else "QT"
+            prefix = "INV" if title.strip().lower() in ("billing", "invoice") else "QT"
             reference_number = await self.get_next_reference_number(created_by_id, created_by_username, prefix)
 
         existing = await self.repository.get_by_reference(reference_number, company_id)
@@ -201,10 +201,9 @@ class QuotationService:
 
             sequence_date = quotation.issued_at.date()
             sequence_number = await self.daily_sequence_repository.next_number(company_id, sequence_date)
-            prefix = "INV" if quotation.title.lower() == "billing" else company.quotation_prefix or "QT"
+            prefix =  "INV" if quotation.title.strip().lower() in ("billing", "invoice") else company.quotation_prefix or "QT"
             quotation.quotation_number = f"{prefix}-{sequence_date:%d%m%Y}-{sequence_number:03d}"
             quotation.quotation_year = sequence_date.year
-
         await self.repository.commit()
         return await self._refresh_quotation(quotation)
 
@@ -399,6 +398,28 @@ class QuotationService:
                 quotation.subtotal - quotation.discount + quotation.tax_amount + quotation.shipping_amount
             )
 
+        await self.repository.commit()
+        return await self._refresh_quotation(quotation)
+
+    async def update_invoice_payment_status(
+            self,
+            quotation_id: str,
+            company_id: str,
+            user_id: str,
+            status: str,
+    ) -> Quotation:
+        """Update the payment status of an owned, finalized invoice."""
+        quotation = await self.repository.get(quotation_id)
+        if not quotation or str(quotation.company_id) != company_id:
+            raise NotFoundError("Invoice not found.")
+        if str(quotation.created_by_id) != user_id:
+            raise NotFoundError("Invoice not found.")
+        if quotation.title.strip().lower() not in {"invoice", "billing"}:
+            raise BadRequestError("Payment status can only be changed for invoices.")
+        if quotation.status.strip().lower() not in {"final", "paid", "unpaid"}:
+            raise BadRequestError("Only finalized invoices can be marked paid or unpaid.")
+
+        quotation.status = status
         await self.repository.commit()
         return await self._refresh_quotation(quotation)
 

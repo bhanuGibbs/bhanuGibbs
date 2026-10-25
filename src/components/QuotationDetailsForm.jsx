@@ -3,7 +3,10 @@ import { FileText, CalendarDays, CircleDollarSign } from 'lucide-react';
 const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100';
 const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
 
-const QuotationDetailsForm = ({ register, errors }) => {
+const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) => {
+  const isInvoice = documentMode === 'billing' || documentMode === 'invoice';
+  const documentLabel = isInvoice ? 'Invoice' : 'Quotation';
+
   return (
     <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-soft sm:p-7">
       <div className="mb-6 flex items-center gap-3">
@@ -11,16 +14,18 @@ const QuotationDetailsForm = ({ register, errors }) => {
           <FileText size={18} />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Quotation Details</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{documentLabel} Details</h2>
           <p className="text-sm text-slate-500">Set the reference number, validity, and currency.</p>
         </div>
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
         <div>
-          <label className={labelClass}>Quotation Number</label>
+          <label className={labelClass}>{documentLabel} Number</label>
           <input className={inputClass} readOnly value="Auto generated" />
-          <p className="mt-2 text-xs text-slate-500">Assigned when finalized, for example QT-09082026-001</p>
+          <p className="mt-2 text-xs text-slate-500">
+            Assigned when finalized, for example {isInvoice ? 'INV' : 'QT'}-09082026-001
+          </p>
         </div>
 
         <div>

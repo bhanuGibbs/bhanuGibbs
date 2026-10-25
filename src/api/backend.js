@@ -3,7 +3,10 @@ const API_BASE = '/api';
 export const buildBackendFormData = (documentData) => {
   return {
     reference_number: documentData?.quotation?.quotationNumber || 'Q-0001',
-    title: documentData?.documentType === 'billing' ? 'Billing' : 'Quotation',
+
+    title: ['billing', 'invoice'].includes(
+        String(documentData?.documentType || '').trim().toLowerCase()) ? 'Invoice' : 'Quotation',
+
     description: documentData?.quotation?.terms || '',
     issued_at: documentData?.quotation?.quotationDate || new Date().toISOString(),
     customer: {

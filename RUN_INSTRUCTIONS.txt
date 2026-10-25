@@ -17,10 +17,10 @@ Open PowerShell and run:
   py -m venv venv
   .\venv\Scripts\Activate.ps1
   python -m pip install -r requirements.txt
-  $env:DATABASE_URL = "sqlite+aiosqlite:///./quotation.local.db"
-  $env:JWT_SECRET_KEY = "replace-with-a-long-random-secret"
+
+
+  Set-Location C:\Users\kilap\IdeaProjects\bhanuGibbs\backend\backend
   $env:PYTHONPATH = (Get-Location).Path
-  .\venv\Scripts\alembic.exe upgrade head
   .\venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 Keep this PowerShell window open. The development database is created as
@@ -75,3 +75,9 @@ Production build
 From the repository root:
 
   npm run build
+
+Cloud deployment
+----------------
+For step-by-step instructions to deploy the frontend to Vercel, the backend
+to Render, and PostgreSQL to Neon, see DEPLOYMENT_GUIDE.md in the repository
+root.

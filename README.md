@@ -1,116 +1,35 @@
-# Quotation Generator
+# KeelBill Ledger
 
-A modern, responsive quotation generator built with React, Vite, Tailwind CSS, React Hook Form, and react-pdf. This Phase 1 version is a frontend-only application that runs entirely in the browser.
+A full-stack application for managing customers, products, quotations, and invoices. The React/Vite frontend connects to a FastAPI backend with JWT authentication and supports PDF generation.
 
-## Features
+## Stack
 
-- Modern and professional UI
-- Company details form
-- Customer details form
-- Quotation details form
-- Dynamic item table with automatic amount calculation
-- Live summary calculations for subtotal, discount, GST, shipping, and grand total
-- Terms and conditions section
-- Signature upload with preview
-- PDF preview and download
+- Frontend: React 18, Vite, Tailwind CSS, React Router
+- Backend: FastAPI, SQLAlchemy, Alembic
+- Database: PostgreSQL for deployment; SQLite can be configured for local development
+- PDFs: `@react-pdf/renderer`
 
-## Requirements
+## Run locally
 
-Before running the project, make sure you have the following installed:
+Follow [RUN_INSTRUCTIONS.txt](RUN_INSTRUCTIONS.txt) for Windows setup, database configuration, migrations, and frontend/backend startup. The frontend defaults to `http://127.0.0.1:3001`; the API defaults to `http://127.0.0.1:8000`.
 
-- Node.js (recommended: LTS version)
-- npm
-- A modern web browser such as Chrome, Edge, or Firefox
+## Deploy
 
-## Tools and Libraries Used
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for Vercel, Render, and Neon configuration. Keep database URLs and signing secrets in environment variables; do not commit them.
 
-### Frontend
-- React
-- Vite
-- JavaScript
-- Tailwind CSS
+## Verify changes
 
-### Additional Libraries
-- react-hook-form
-- @react-pdf/renderer
-- lucide-react
-- react-hot-toast
-- dayjs
-- react-router-dom
+From the repository root, run frontend tests and build:
 
-## Project Structure
-
-```text
-src/
-  components/
-    Header
-    CompanyDetailsForm
-    CustomerDetailsForm
-    QuotationDetailsForm
-    ItemTable
-    Summary
-    TermsConditions
-    SignatureUpload
-    Footer
-  pages/
-    Home
-  pdf/
-    QuotationPDF
-  utils/
-    calculations.js
-  constants/
-    defaultValues.js
-  App.jsx
-  main.jsx
+```powershell
+node --test src/utils/*.test.js
+npm run build
 ```
 
-## Installation
+Run backend tests from `backend\backend` using the project virtual environment:
 
-1. Open your terminal
-2. Navigate to the project folder
-3. Install dependencies:
-
-```bash
-npm install --legacy-peer-deps
+```powershell
+.\venv\Scripts\python.exe -m pytest -q
 ```
 
-## How to Run
-
-Start the development server:
-
-```bash
-npm run dev
-ui:
-
- $env:Path = "$env:Path;C:\Program Files\nodejs"; Set-Location 'c:\Users\laxma\QuotationGenerator_UI'; & 'C:\Program Files\nodejs\node.exe' 'C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js' run dev -- --host 0.0.0.0 --port 3001
-
-back end :
-
-Set-Location 'c:\Users\laxma\QuotationGenerator_UI\backend\backend'; python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-
-cd backend/backend
-   py -m uvicorn app.main:app --host 127.0.0.1 --port 8000
- 
- $env:Path = "$env:Path;C:\Program Files\nodejs"; Set-Location 'c:\Users\laxma\QuotationGenerator_UI'; & 'C:\Program Files\nodejs\node.exe' 'C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js' run build  
-
-  cmd /c "cd /d c:\Users\laxma\QuotationGenerator_UI\backend\backend && py -m pip install -r requirements.txt && py -m uvicorn app.main:app --host 127.0.0.1 --port 8000" 
-
-```
-
-Then open the local URL shown in the terminal, usually:
-
-```text
-http://localhost:3000/
-```
-
-If port 3000 is busy, Vite may choose another port, such as 3001 or 3002.
-
-## PDF Generation
-
-The app generates a professional PDF using react-pdf. The PDF preview and download are available from the interface after filling in the quotation details.
-
-## Notes
-
-- This version is frontend-only
-- No backend, database, or authentication is included
-- The application is designed to be easily extended for future backend integration
+The latest local regression and smoke-test results are in [QUALITY_CHECK_REPORT.md](QUALITY_CHECK_REPORT.md).

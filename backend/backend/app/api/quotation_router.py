@@ -7,7 +7,13 @@ from fastapi.responses import HTMLResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db_session
-from app.schemas.quotation import QuotationCreate, QuotationRead, QuotationSubmit, QuotationUpdate
+from app.schemas.quotation import (
+    InvoicePaymentStatusUpdate,
+    QuotationCreate,
+    QuotationRead,
+    QuotationSubmit,
+    QuotationUpdate,
+)
 from app.services.customer_service import CustomerService
 from app.services.pdf_service import PDFService
 from app.services.product_service import ProductService
@@ -470,6 +476,34 @@ async def update_quotation(
         currency=payload.currency,
         shipping_amount=payload.shipping_amount,
         user_id=current_user["id"],
+    )
+    return QuotationRead.from_orm(quotation)
+
+
+@router.patch("/{quotation_id}/payment-status", response_model=QuotationRead)
+async def update_invoice_payment_status(
+    quotation_id: str,
+    payload: InvoicePaymentStatusUpdate,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> QuotationRead:
+    """Mark an owned finalized invoice as paid or unpaid."""
+    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
+    if not current_user["company_id"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Company profile is required before updating invoice status.",
+        )
+
+    quotation = await QuotationService(session).update_invoice_payment_status(
+        quotation_id=quotation_id,
+        company_id=current_user["company_id"],
+        user_id=current_user["id"],
+        status=payload.status,
     )
     return QuotationRead.from_orm(quotation)
 
