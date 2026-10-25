@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from pathlib import Path
 
@@ -45,7 +46,7 @@ async def create_initial_data() -> None:
     database_url = os.getenv("DATABASE_URL", "")
     config.set_main_option("sqlalchemy.url", escape_alembic_option(database_url))
 
-    command.upgrade(config, "head")
+    await asyncio.to_thread(command.upgrade, config, "head")
 
     async with get_session() as session:
         await seed_roles(session)

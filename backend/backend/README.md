@@ -43,7 +43,7 @@ docker compose --env-file backend/docker/.env -f backend/docker/docker-compose.y
 To stop the services while preserving PostgreSQL data:
 
 ```bash
-docker compose --env-file backend\docker\.env -f backend\docker\docker-compose.yml down
+docker compose --env-file backend/docker/.env -f backend/docker/docker-compose.yml down
 ```
 
 PostgreSQL data is stored in a named volume. Do not use `down --volumes` unless
