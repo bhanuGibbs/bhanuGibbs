@@ -1,12 +1,15 @@
 import {createElement} from 'react';
-import {pdf} from '@react-pdf/renderer';
-import QuotationPDF from './QuotationPDF';
 import {calculateSummary, normalizeDocumentTotals} from '../utils/calculations';
 
 export const normalizeDocumentPdfData = normalizeDocumentTotals;
 
-export const createDocumentPdfBlob = (data) =>
-    pdf(createElement(QuotationPDF, {data: normalizeDocumentPdfData(data)})).toBlob();
+export const createDocumentPdfBlob = async (data) => {
+    const [{pdf}, {default: QuotationPDF}] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('./QuotationPDF'),
+    ]);
+    return pdf(createElement(QuotationPDF, {data: normalizeDocumentPdfData(data)})).toBlob();
+};
 
 export const downloadPdfUrl = (url, filename) => {
     const link = document.createElement('a');
