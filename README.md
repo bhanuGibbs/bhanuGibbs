@@ -37,6 +37,26 @@ the `/api` prefix. The default backend URL is `http://backend:8000`, suitable
 when the backend container is reachable by that name on the same Docker
 network. Set `BACKEND_URL` to the backend's reachable address when deploying.
 
+## Run the full application with Docker Compose
+
+Use `backend/backend/.env` for both Compose and backend settings. Keep
+`DATABASE_URL` pointed at the host database for local runs, and set
+`DATABASE_URL_DOCKER` to the same credentials with host `db` and port `5432`.
+Configure the database password, JWT secret, and SMTP credentials in this file.
+
+```powershell
+if (-not (Test-Path backend\backend\.env)) { Copy-Item backend\backend\.env.example backend\backend\.env }
+docker compose --env-file backend\backend\.env up --build
+```
+
+Open `http://localhost:8080`. Compose starts PostgreSQL, the FastAPI backend,
+and the Nginx-served UI. The UI proxies `/api` requests to the backend. To stop
+the services and keep database data, run:
+
+```powershell
+docker compose --env-file backend\backend\.env down
+```
+
 ## Verify changes
 
 From the repository root, run frontend tests and build:

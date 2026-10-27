@@ -22,37 +22,40 @@ uvicorn app.main:app --reload
 
 ## Docker Compose
 
-Copy the sample Compose settings to `.env` and replace the placeholder
-passwords/secrets. The database hostname in `DATABASE_URL` must be `db`, and
-special characters in the password must be URL-encoded.
+From the repository root, use `backend/backend/.env` for Compose and backend
+settings. Keep `DATABASE_URL` pointed at the host database for local runs, and
+set `DATABASE_URL_DOCKER` to the same database credentials with host `db` and
+port `5432`. URL-encode special characters in the database password. Configure
+SMTP credentials in this same file.
 
 PowerShell, from the repository root:
 
 ```powershell
-Copy-Item backend\docker\.env.example backend\docker\.env
-docker compose --env-file backend\docker\.env -f backend\docker\docker-compose.yml up --build
+if (-not (Test-Path backend\backend\.env)) { Copy-Item backend\backend\.env.example backend\backend\.env }
+docker compose --env-file backend\backend\.env up --build
 ```
 
 Unix-like shells, from the repository root:
 
 ```bash
-cp backend/docker/.env.example backend/docker/.env
-docker compose --env-file backend/docker/.env -f backend/docker/docker-compose.yml up --build
+[ -f backend/backend/.env ] || cp backend/backend/.env.example backend/backend/.env
+docker compose --env-file backend/backend/.env up --build
 ```
 
 To stop the services while preserving PostgreSQL data:
 
 ```bash
-docker compose --env-file backend/docker/.env -f backend/docker/docker-compose.yml down
+docker compose --env-file backend/backend/.env down
 ```
 
 PostgreSQL data is stored in a named volume. Do not use `down --volumes` unless
 you intend to delete that database.
 
-The backend and database settings are provided at runtime; secrets should not
-be added to the Docker image or committed to Git. The backend waits for the
-database health check, applies Alembic migrations on startup, and exposes
-`http://localhost:8000/health`.
+The UI is served at `http://localhost:8080`, the backend health endpoint is at
+`http://localhost:8000/health`, and Nginx forwards UI `/api` requests to the
+backend container. The UI starts after the backend is healthy; the backend
+waits for PostgreSQL and applies Alembic migrations on startup. Secrets stay
+in the ignored env files and are not copied into the Docker images.
 
 ## Migrations
 

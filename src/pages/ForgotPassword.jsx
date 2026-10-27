@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link , useNavigate} from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const ForgotPassword = () => {
@@ -71,20 +71,6 @@ const ForgotPassword = () => {
             {loading ? 'Sending...' : 'Send reset instructions'}
           </button>
         </form>
-
-        {resetToken ? (
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-            <p className="font-semibold">Password reset token generated.</p>
-            <p className="mt-2 break-all">{resetToken}</p>
-            <button
-              type="button"
-              onClick={() => navigate(`/reset-password?token=${encodeURIComponent(resetToken)}`)}
-              className="mt-3 rounded-2xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
-            >
-              Use reset token now
-            </button>
-          </div>
-        ) : null}
 
         <p className="mt-6 text-center text-sm text-slate-500">
           Remembered your password?{' '}

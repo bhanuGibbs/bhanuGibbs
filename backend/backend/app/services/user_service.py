@@ -73,6 +73,14 @@ class UserService:
         await self.repository.commit()
         return token
 
+    async def invalidate_password_reset_token(self, token: str) -> None:
+        """Invalidate a reset token when its email could not be delivered."""
+        user = await self.repository.get_by_password_reset_token(token)
+        if user:
+            user.password_reset_token = None
+            user.password_reset_expires_at = None
+            await self.repository.commit()
+
     async def reset_password(self, token: str, new_password: str) -> User:
         """Reset the user's password if the reset token is valid."""
         user = await self.repository.get_by_password_reset_token(token)
