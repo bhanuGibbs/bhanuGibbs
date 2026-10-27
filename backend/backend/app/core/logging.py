@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 from app.core.config import get_settings
 
@@ -28,8 +29,11 @@ def configure_logging() -> None:
     console_handler.setLevel(logging.DEBUG if settings.debug else logging.INFO)
     logger.addHandler(console_handler)
 
+    log_path = Path(LOG_FILE)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
     file_handler = RotatingFileHandler(
-        LOG_FILE,
+        log_path,
         maxBytes=LOG_MAX_BYTES,
         backupCount=LOG_BACKUP_COUNT,
         encoding="utf-8",

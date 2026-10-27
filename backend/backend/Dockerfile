@@ -12,6 +12,7 @@ RUN python -m pip install --no-cache-dir --upgrade pip \
 COPY ./app ./app
 COPY ./alembic ./alembic
 COPY ./alembic.ini ./alembic.ini
+RUN mkdir -p /app/logs
 
 RUN groupadd --system app \
     && useradd --system --gid app --home-dir /app app \
