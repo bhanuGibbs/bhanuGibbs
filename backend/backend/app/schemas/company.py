@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import datetime
+from uuid import UUID
+
 from pydantic import BaseModel, EmailStr, Field, HttpUrl
 
 
@@ -25,9 +28,9 @@ class CompanyCreate(CompanyBase):
 class CompanyRead(CompanyBase):
     """Properties returned in company responses."""
 
-    id: str
-    created_at: str
-    updated_at: str
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
     currency: str | None = None
 
     model_config = {

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import datetime
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 
@@ -17,9 +20,9 @@ class RoleCreate(RoleBase):
 class RoleRead(RoleBase):
     """Properties returned in role responses."""
 
-    id: str
-    created_at: str
-    updated_at: str
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
 
     model_config = {
         "from_attributes": True,
