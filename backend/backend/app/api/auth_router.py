@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import secrets
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Form, HTTPException, status
@@ -21,11 +22,13 @@ from app.schemas.user import (
     UserRegister,
 )
 from app.services.auth_session_service import AuthSessionService
+from app.services.email_service import EmailConfigurationError, EmailDeliveryError, EmailService
 from app.services.exceptions import BadRequestError, ConflictError, NotFoundError
 from app.services.company_service import CompanyService
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
@@ -196,16 +199,35 @@ async def forgot_password(
     payload: ForgotPasswordRequest,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, str]:
-    """Create a password reset token for the user."""
+    """Send password-reset instructions without returning the reset token."""
+    email_service = EmailService()
+    try:
+        email_service.ensure_password_reset_configured()
+    except EmailConfigurationError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(error),
+        ) from error
+
     service = UserService(session)
     try:
         reset_token = await service.create_password_reset_token(payload.email)
     except NotFoundError:
-        return {"message": "If the account exists, a reset token has been generated."}
+        return {
+            "message": "If an account exists for that email, password reset instructions will be sent."
+        }
+
+    try:
+        await email_service.send_password_reset_email(payload.email, reset_token)
+    except EmailDeliveryError as error:
+        logger.error("Password reset email delivery failed (%s).", type(error).__name__)
+        try:
+            await service.invalidate_password_reset_token(reset_token)
+        except Exception:
+            logger.exception("Failed to invalidate an undelivered password reset token.")
 
     return {
-        "message": "Password reset token generated.",
-        "reset_token": reset_token,
+        "message": "If an account exists for that email, password reset instructions will be sent."
     }
 
 
