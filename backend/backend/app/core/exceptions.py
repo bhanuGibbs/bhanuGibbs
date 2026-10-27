@@ -3,7 +3,13 @@ from __future__ import annotations
 from fastapi import HTTPException
 from pydantic import ValidationError
 
-from app.services.exceptions import BadRequestError, ConflictError, NotFoundError, ServiceError
+from app.services.exceptions import (
+    BadRequestError,
+    ConflictError,
+    MonthlyQuotationLimitError,
+    NotFoundError,
+    ServiceError,
+)
 
 
 def map_exception_to_http(exc: Exception) -> HTTPException:
@@ -12,6 +18,8 @@ def map_exception_to_http(exc: Exception) -> HTTPException:
         return HTTPException(status_code=404, detail=str(exc))
     if isinstance(exc, ConflictError):
         return HTTPException(status_code=409, detail=str(exc))
+    if isinstance(exc, MonthlyQuotationLimitError):
+        return HTTPException(status_code=429, detail=str(exc))
     if isinstance(exc, BadRequestError) or isinstance(exc, ValidationError):
         return HTTPException(status_code=400, detail=str(exc))
     if isinstance(exc, ServiceError):

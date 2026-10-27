@@ -104,6 +104,21 @@ class UserService:
             return None
         return await self.repository.get(user_uuid)
 
+    async def update_subscription_plan(self, user_id: str, subscription_plan: str) -> User:
+        """Update a user's plan while serializing with quotation finalization."""
+        try:
+            UUID(user_id)
+        except ValueError:
+            raise NotFoundError("User not found.")
+
+        user = await self.repository.get_for_update(user_id)
+        if not user:
+            raise NotFoundError("User not found.")
+        user.subscription_plan = subscription_plan
+        await self.repository.commit()
+        await self.repository.session.refresh(user)
+        return user
+
     async def update_profile(self, user_id: str, changes: dict[str, str | None]) -> User:
         """Update only the authenticated user's basic contact fields."""
         user = await self.get_user_by_id(user_id)

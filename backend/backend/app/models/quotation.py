@@ -28,6 +28,7 @@ class Quotation(BaseModel):
     company_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("companies.id"), nullable=False)
     created_by_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
     issued_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    finalized_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
     discount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
     tax_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)

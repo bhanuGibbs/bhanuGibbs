@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,3 +38,9 @@ class UserRepository(BaseRepository[User]):
         statement = select(User)
         result = await self.session.execute(statement)
         return result.scalars().all()
+
+    async def get_for_update(self, user_id: str) -> User | None:
+        """Lock a user row while updating subscription state."""
+        statement = select(User).where(User.id == UUID(user_id)).with_for_update()
+        result = await self.session.execute(statement)
+        return result.scalars().first()

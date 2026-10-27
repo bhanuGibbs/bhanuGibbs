@@ -63,6 +63,16 @@ const Header = ({
           {label}
         </NavLink>
       ))}
+      {['Admin', 'Super Admin'].includes(user?.role) ? (
+        <NavLink
+          to="/admin/users"
+          onClick={onNavigate}
+          className={navLinkClass}
+        >
+          <Users size={16} strokeWidth={1.8} />
+          Plans & users
+        </NavLink>
+      ) : null}
     </>
   );
 

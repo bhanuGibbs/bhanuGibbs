@@ -7,6 +7,7 @@ from app.models import (
     product,
     quotation,
     quotation_daily_sequence,
+    quotation_finalization_usage,
     quotation_item,
     quotation_sequence,
     role,

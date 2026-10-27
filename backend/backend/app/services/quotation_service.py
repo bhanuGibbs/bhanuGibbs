@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID
 
@@ -18,11 +18,29 @@ from app.repositories.company_repository import CompanyRepository
 from app.repositories.product_repository import ProductRepository
 from app.repositories.quotation_item_repository import QuotationItemRepository
 from app.repositories.quotation_repository import QuotationRepository
-from app.services.exceptions import BadRequestError, ConflictError, NotFoundError
+from app.services.exceptions import (
+    BadRequestError,
+    ConflictError,
+    MonthlyQuotationLimitError,
+    NotFoundError,
+)
+
+MONTHLY_FINALIZATION_LIMITS: dict[str, int | None] = {
+    "free": 10,
+    "basic": 50,
+    "premium": None,
+}
 
 
 def _money(value: Decimal) -> Decimal:
     return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def _database_datetime(value: str) -> datetime:
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        return parsed
+    return parsed.astimezone(timezone.utc).replace(tzinfo=None)
 
 
 class QuotationService:
@@ -95,9 +113,9 @@ class QuotationService:
             company_id=UUID(company_id),
             created_by_id=UUID(created_by_id),
             total_amount=Decimal("0.00"),
-            issued_at=datetime.fromisoformat(issued_at),
+            issued_at=_database_datetime(issued_at),
             status='Draft',
-            valid_until=datetime.fromisoformat(valid_until) if valid_until else None,
+            valid_until=_database_datetime(valid_until) if valid_until else None,
             notes=notes,
             terms=terms,
             currency=currency,
@@ -137,14 +155,14 @@ class QuotationService:
             if str(existing.created_by_id) != created_by_id:
                 raise ConflictError("Quotation reference number is already in use.")
             if existing.status == 'Draft':
-                updated = await self.update_quotation(
+                await self.update_quotation(
                     quotation_id=str(existing.id),
                     company_id=company_id,
                     title=title,
                     description=description,
                     issued_at=issued_at,
                     items=items,
-                    status='Final',
+                    status='Draft',
                     valid_until=valid_until,
                     notes=notes,
                     terms=terms,
@@ -164,9 +182,9 @@ class QuotationService:
             company_id=UUID(company_id),
             created_by_id=UUID(created_by_id),
             total_amount=Decimal("0.00"),
-            issued_at=datetime.fromisoformat(issued_at),
-            status='Final',
-            valid_until=datetime.fromisoformat(valid_until) if valid_until else None,
+            issued_at=_database_datetime(issued_at),
+            status='Draft',
+            valid_until=_database_datetime(valid_until) if valid_until else None,
             notes=notes,
             terms=terms,
             currency=currency,
@@ -176,7 +194,6 @@ class QuotationService:
         await self.repository.flush()
 
         await self._sync_items_and_totals(quotation, items, company_id, customer_id)
-        await self.repository.commit()
         return await self.finalize_quotation(str(quotation.id), company_id, created_by_id)
 
     async def finalize_quotation(self, quotation_id: str, company_id: str, user_id: str) -> Quotation:
@@ -189,10 +206,37 @@ class QuotationService:
         if str(quotation.created_by_id) != user_id:
             raise NotFoundError("Quotation not found.")
 
-        if quotation.status == 'Draft':
-            quotation.status = 'Final'
-        elif quotation.status != 'Final':
-            quotation.status = 'Final'
+        if quotation.finalized_at is None:
+            now = datetime.now(timezone.utc)
+            period_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            if period_start.month == 12:
+                period_end = period_start.replace(year=period_start.year + 1, month=1)
+            else:
+                period_end = period_start.replace(month=period_start.month + 1)
+
+            plan = await self.repository.lock_user_for_finalization(user_id)
+            if plan not in MONTHLY_FINALIZATION_LIMITS:
+                raise RuntimeError(f"Unknown subscription plan: {plan}")
+            monthly_limit = MONTHLY_FINALIZATION_LIMITS[plan]
+            if monthly_limit is not None:
+                finalized_count = await self.repository.count_finalized_by_user_between(
+                    user_id,
+                    period_start.replace(tzinfo=None),
+                    period_end.replace(tzinfo=None),
+                )
+                if finalized_count >= monthly_limit:
+                    reset_at = period_end.strftime("%Y-%m-%d 00:00 UTC")
+                    raise MonthlyQuotationLimitError(
+                        f"Monthly limit of {monthly_limit} finalized quotations/invoices "
+                        f"for the {plan.title()} plan reached. The limit resets at {reset_at}."
+                    )
+
+            quotation.finalized_at = now.replace(tzinfo=None)
+            await self.repository.record_finalization(
+                user_id, str(quotation.id), quotation.finalized_at
+            )
+
+        quotation.status = 'Final'
 
         if not quotation.quotation_number:
             company = await self.company_repository.get(company_id)
@@ -362,11 +406,20 @@ class QuotationService:
         if description is not None:
             quotation.description = description
         if issued_at is not None:
-            quotation.issued_at = datetime.fromisoformat(issued_at)
+            quotation.issued_at = _database_datetime(issued_at)
         if status is not None:
+            if status.strip().lower() == "final" and quotation.finalized_at is None:
+                raise BadRequestError("Use the finalize endpoint to finalize a quotation.")
+            if (
+                quotation.finalized_at is not None
+                and status.strip().lower() != quotation.status.strip().lower()
+            ):
+                raise BadRequestError(
+                    "Finalized quotation status cannot be changed through this endpoint."
+                )
             quotation.status = status
         if valid_until is not None:
-            quotation.valid_until = datetime.fromisoformat(valid_until)
+            quotation.valid_until = _database_datetime(valid_until)
         if notes is not None:
             quotation.notes = notes
         if terms is not None:

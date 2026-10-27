@@ -289,6 +289,39 @@ export const getQuotations = async () => {
   return response.json();
 };
 
+export const getAdminUsers = async () => {
+  const response = await fetch(`${API_BASE}/users/admin`, {
+    headers: {
+      ...getAuthorizedHeaders(),
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || 'Unable to load users');
+  }
+
+  return response.json();
+};
+
+export const updateUserPlan = async (userId, subscriptionPlan) => {
+  const response = await fetch(`${API_BASE}/users/${userId}/plan`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthorizedHeaders(),
+    },
+    body: JSON.stringify({ subscription_plan: subscriptionPlan }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || 'Unable to update user plan');
+  }
+
+  return response.json();
+};
+
 export const updateInvoicePaymentStatus = async (quotationId, paymentStatus) => {
   const response = await fetch(`${API_BASE}/quotations/${quotationId}/payment-status`, {
     method: 'PATCH',

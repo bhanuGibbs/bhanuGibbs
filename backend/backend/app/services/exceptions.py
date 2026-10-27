@@ -15,3 +15,7 @@ class ConflictError(ServiceError):
 
 class BadRequestError(ServiceError):
     """Exception for invalid request data."""
+
+
+class MonthlyQuotationLimitError(ServiceError):
+    """Raised when a user has reached their monthly finalized quotation limit."""

@@ -89,6 +89,18 @@ const Profile = () => {
               <p className="mt-1 text-sm font-semibold text-slate-800">{user?.role || 'Viewer'}</p>
               <p className="mt-1 text-xs text-slate-500">Role changes are not available from profile settings.</p>
             </div>
+            <div className="rounded-xl bg-emerald-50 px-4 py-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Subscription plan</p>
+              <p className="mt-1 text-sm font-semibold capitalize text-slate-800">{user?.subscription_plan || 'free'}</p>
+              <p className="mt-1 text-xs text-slate-600">
+                {user?.subscription_plan === 'premium'
+                  ? 'Unlimited finalized quotations and invoices.'
+                  : user?.subscription_plan === 'basic'
+                    ? 'Up to 50 finalized quotations and invoices per month.'
+                    : 'Up to 10 finalized quotations and invoices per month.'}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">Plan changes are managed by an administrator.</p>
+            </div>
           </div>
           <div className="mt-7 flex justify-end border-t border-slate-100 pt-5">
             <button

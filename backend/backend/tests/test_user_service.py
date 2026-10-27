@@ -1,5 +1,6 @@
 import unittest
 import uuid
+from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 from app.models.user import User
@@ -27,3 +28,20 @@ class UserServiceTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertIsNone(result)
         session.get.assert_not_awaited()
+
+    async def test_update_subscription_plan_locks_and_refreshes_user(self) -> None:
+        session = AsyncMock()
+        user = SimpleNamespace(subscription_plan="free")
+        service = UserService(session)
+        service.repository.get_for_update = AsyncMock(return_value=user)
+        service.repository.commit = AsyncMock()
+
+        result = await service.update_subscription_plan(
+            "b9f953ad-49d7-4661-90de-cf475496405d", "premium"
+        )
+
+        self.assertIs(result, user)
+        self.assertEqual(user.subscription_plan, "premium")
+        service.repository.get_for_update.assert_awaited_once()
+        service.repository.commit.assert_awaited_once()
+        session.refresh.assert_awaited_once_with(user)

@@ -11,6 +11,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import SetupCompany from './pages/SetupCompany';
 import Profile from './pages/Profile';
+import AdminUsers from './pages/AdminUsers';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const RequireAuth = ({ children }) => {
@@ -35,6 +36,14 @@ const RequireAuth = ({ children }) => {
     return <Navigate to="/setup-company" replace />;
   }
 
+  return children;
+};
+
+const RequireAdmin = ({ children }) => {
+  const { user } = useAuth();
+  if (!['Admin', 'Super Admin'].includes(user?.role)) {
+    return <Navigate to="/" replace />;
+  }
   return children;
 };
 
@@ -103,6 +112,16 @@ function App() {
           element={
             <RequireAuth>
               <Profile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <RequireAuth>
+              <RequireAdmin>
+                <AdminUsers />
+              </RequireAdmin>
             </RequireAuth>
           }
         />

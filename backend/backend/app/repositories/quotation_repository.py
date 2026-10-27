@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.quotation import Quotation
+from app.models.quotation_finalization_usage import QuotationFinalizationUsage
+from app.models.user import User
 from app.repositories.base import BaseRepository
 
 
@@ -50,6 +53,41 @@ class QuotationRepository(BaseRepository[Quotation]):
         )
         result = await self.session.execute(statement)
         return result.scalars().first()
+
+    async def lock_user_for_finalization(self, user_id: str) -> str:
+        """Serialize plan reads and quota checks by locking the user row."""
+        statement = select(User.subscription_plan).where(
+            User.id == UUID(user_id)
+        ).with_for_update()
+        result = await self.session.execute(statement)
+        plan = result.scalar_one_or_none()
+        if plan is None:
+            raise RuntimeError("Cannot finalize a quotation for a missing user.")
+        return plan
+
+    async def count_finalized_by_user_between(
+        self, user_id: str, start: datetime, end: datetime
+    ) -> int:
+        """Count quotations finalized by a user in a half-open date range."""
+        statement = select(func.count(QuotationFinalizationUsage.id)).where(
+            QuotationFinalizationUsage.user_id == UUID(user_id),
+            QuotationFinalizationUsage.finalized_at >= start,
+            QuotationFinalizationUsage.finalized_at < end,
+        )
+        result = await self.session.execute(statement)
+        return result.scalar_one()
+
+    async def record_finalization(
+        self, user_id: str, quotation_id: str, finalized_at: datetime
+    ) -> None:
+        self.session.add(
+            QuotationFinalizationUsage(
+                user_id=UUID(user_id),
+                quotation_id=UUID(quotation_id),
+                finalized_at=finalized_at,
+            )
+        )
+        await self.session.flush()
 
     async def list_all(self) -> list[Quotation]:
         """Return all quotations."""

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_serializer
+
+SubscriptionPlan = Literal["free", "basic", "premium"]
 
 
 class UserBase(BaseModel):
@@ -39,6 +42,12 @@ class UserProfileUpdate(BaseModel):
     mobile_number: str | None = Field(default=None, max_length=50)
 
 
+class UserPlanUpdate(BaseModel):
+    """Subscription plan changes reserved for administrators."""
+
+    subscription_plan: SubscriptionPlan
+
+
 class ForgotPasswordRequest(BaseModel):
     """Request schema for forgot password."""
 
@@ -68,6 +77,7 @@ class UserRead(UserBase):
     role: str | None = None
     company_id: UUID | str | None = None
     is_profile_complete: bool = False
+    subscription_plan: SubscriptionPlan = "free"
     company_name: str | None = None
     company_address: str | None = None
     company_phone_number: str | None = None
