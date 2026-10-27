@@ -7,8 +7,8 @@ services:
       APP_NAME: ${APP_NAME:-KeelBill Ledger API}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${DEBUG:-False}
-      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in backend/docker/.env}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in backend/docker/.env}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in backend/backend/.env}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in backend/backend/.env}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3002,http://127.0.0.1:3002,http://localhost:8080,http://127.0.0.1:8080}
       PORT: "8000"
@@ -33,7 +33,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in backend/docker/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in backend/backend/.env}
       POSTGRES_DB: ${POSTGRES_DB:-quotation_db}
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
