@@ -9,11 +9,11 @@ services:
       APP_NAME: ${APP_NAME:-KeelBill Ledger API}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${DEBUG:-False}
-      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in backend/backend/.env}
+      DATABASE_URL: ${DATABASE_URL_DOCKER:?Set DATABASE_URL_DOCKER in backend/backend/.env to use the db service}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in backend/backend/.env}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+      FRONTEND_URL: ${DOCKER_FRONTEND_URL:-http://localhost:8080}
+      CORS_ORIGINS: ${DOCKER_CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
       PORT: "8000"
     depends_on:
       db:
