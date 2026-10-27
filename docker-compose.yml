@@ -9,8 +9,8 @@ services:
       APP_NAME: ${APP_NAME:-KeelBill Ledger API}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       DEBUG: ${DEBUG:-False}
-      DATABASE_URL: ${DATABASE_URL_DOCKER}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DATABASE_URL: ${DATABASE_URL_DOCKER:-postgresql+asyncpg://postgres:Kbprakash%4078935@db:5434/quotation_db}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-gibbs_P}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       FRONTEND_URL: ${DOCKER_FRONTEND_URL:-http://localhost:8080}
       CORS_ORIGINS: ${DOCKER_CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
@@ -59,11 +59,11 @@ services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Kbprakash@78935}
+      POSTGRES_DB: ${POSTGRES_DB:-quotation_db}
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
