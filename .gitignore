@@ -1,0 +1,13 @@
+/backend/backend/quotation.local.db
+/backend/backend/quotation.local.db-shm
+/backend/backend/quotation.local.db-wal
+/backend/backend/quotation.local.db-journal
+/backend/backend/.env
+/backend/backend/.env.example
+
+/out/
+/.pytest_cache/
+/dist/assets/
+/node_modules/.vite/
+**/__pycache__/
+*.py[cod]
