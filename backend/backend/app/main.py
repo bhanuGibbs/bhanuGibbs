@@ -59,10 +59,10 @@ app.include_router(user_router)
 async def startup_event() -> None:
     """Initialize application resources on startup."""
     print("Starting app")
-       configure_logging()
-       print("Before create_initial_data")
-       await create_initial_data()
-       print("Startup completed")
+    configure_logging()
+    print("Before create_initial_data")
+    await create_initial_data()
+    print("Startup completed")
 
 
 @app.get("/health", response_class=JSONResponse)
