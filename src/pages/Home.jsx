@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useLocation} from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 import toast, {Toaster} from 'react-hot-toast';
 import dayjs from 'dayjs';
 import Header from '../components/Header';
@@ -17,6 +18,7 @@ import {createDocumentPdfBlob, downloadPdfUrl} from '../pdf/documentPdf';
 import {defaultValues} from '../constants/defaultValues';
 import {calculateSummary} from '../utils/calculations';
 import {createProduct, getProducts, submitQuotationDraftToBackend, finalizeQuotation} from '../integration/backend/api';
+
 
 const Home = () => {
     const [showPdfPreview, setShowPdfPreview] = useState(false);
@@ -73,7 +75,7 @@ const Home = () => {
 
     const addItem = () => {
         const newItem = {
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             itemName: '',
             catalogProductId: '',
             sku: '',
