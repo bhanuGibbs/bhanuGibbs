@@ -76,6 +76,16 @@ const Documents = ({ documentType }) => {
       .sort((left, right) => new Date(right.issued_at) - new Date(left.issued_at));
   }, [isBilling, paymentFilter, quotations, search]);
 
+  const paymentTotals = useMemo(() => {
+    const invoices = quotations.filter(isInvoiceDocument);
+    return invoices.reduce((totals, invoice) => {
+      const status = getInvoicePaymentStatus(invoice);
+      if (status === 'Paid') totals.paid += Number(invoice.total_amount) || 0;
+      if (status === 'Unpaid') totals.unpaid += Number(invoice.total_amount) || 0;
+      return totals;
+    }, { paid: 0, unpaid: 0 });
+  }, [quotations]);
+
   const handlePaymentStatusChange = async (document) => {
     const currentStatus = getInvoicePaymentStatus(document);
     const nextStatus = currentStatus === 'Paid' ? 'Unpaid' : 'Paid';
@@ -144,6 +154,21 @@ const Documents = ({ documentType }) => {
             Create {isBilling ? 'invoice' : 'quotation'}
           </Link>
         </div>
+
+        {isBilling ? (
+          <section className="mb-6 grid gap-4 sm:grid-cols-2" aria-label="Invoice payment totals">
+            <article className="rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm">
+              <p className="text-sm font-medium text-emerald-800">Paid invoices</p>
+              <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid)}</p>
+              <p className="mt-1 text-xs text-slate-500">Total amount recorded as paid</p>
+            </article>
+            <article className="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
+              <p className="text-sm font-medium text-amber-800">Unpaid invoices</p>
+              <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.unpaid)}</p>
+              <p className="mt-1 text-xs text-slate-500">Total amount still awaiting payment</p>
+            </article>
+          </section>
+        ) : null}
 
         <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">

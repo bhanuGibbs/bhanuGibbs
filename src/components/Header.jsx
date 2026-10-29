@@ -4,6 +4,7 @@ import {
   Bell,
   ChevronDown,
   FileText,
+  Info as InfoIcon,
   LayoutDashboard,
   Menu,
   Package,
@@ -22,6 +23,7 @@ const navigation = [
   { to: '/quotations', label: 'Quotations', icon: FileText },
   { to: '/customers', label: 'Customers', icon: Users },
   { to: '/products', label: 'Products', icon: Package },
+  { to: '/info', label: 'Info', icon: InfoIcon },
 ];
 
 const Header = ({

@@ -12,6 +12,7 @@ import ResetPassword from './pages/ResetPassword';
 import SetupCompany from './pages/SetupCompany';
 import Profile from './pages/Profile';
 import AdminUsers from './pages/AdminUsers';
+import Info from './pages/Info';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const RequireAuth = ({ children }) => {
@@ -112,6 +113,14 @@ function App() {
           element={
             <RequireAuth>
               <Profile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/info"
+          element={
+            <RequireAuth>
+              <Info />
             </RequireAuth>
           }
         />

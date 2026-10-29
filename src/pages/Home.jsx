@@ -177,6 +177,7 @@ const Home = () => {
     const handleDownload = async (data) => {
         if (!validateDocument(data)) return;
         const documentData = buildDocumentData(data);
+        const documentLabel = documentMode === 'billing' ? 'Invoice' : 'Quotation';
 
         try {
             const draft = await submitQuotationDraftToBackend(documentData);
@@ -194,10 +195,10 @@ const Home = () => {
             setPdfUrl(url);
             setPdfData(updatedDocumentData);
             setShowPdfPreview(true);
-            toast.success('Quotation saved and downloaded.');
+            toast.success(`${documentLabel} saved and downloaded.`);
         } catch (error) {
             console.error(error);
-            toast.error(error.message || 'Unable to save and download the quotation.');
+            toast.error(error.message || `Unable to save and download the ${documentLabel.toLowerCase()}.`);
         }
     };
 
@@ -293,6 +294,31 @@ const Home = () => {
                     <TermsConditions register={register}/>
                     <SignatureUpload register={register} watch={watch} setValue={setValue}/>
                     <Footer/>
+                    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
+                        <p className="text-sm font-semibold text-slate-900">Choose document type</p>
+                        <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
+                            {['quotation', 'billing'].map((mode) => (
+                                <button
+                                    key={mode}
+                                    type="button"
+                                    onClick={() => setDocumentMode(mode)}
+                                    aria-pressed={documentMode === mode}
+                                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                                        documentMode === mode ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'
+                                    }`}
+                                >
+                                    {mode === 'billing' ? 'Invoice' : 'Quotation'}
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {isSubmitting ? 'Saving & preparing…' : `Download ${documentMode === 'billing' ? 'Invoice' : 'Quotation'}`}
+                        </button>
+                    </div>
                 </form>
 
                 {showPdfPreview && pdfData ? (
