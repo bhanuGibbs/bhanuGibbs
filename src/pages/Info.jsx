@@ -107,18 +107,6 @@ const Info = () => {
           </Link>
         </section>
 
-        <section className="mt-8 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-4">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700"><Package size={20} /></span>
-            <div>
-              <h2 className="font-semibold text-slate-900">Make documents your own</h2>
-              <p className="mt-1 text-sm leading-6 text-slate-600">Update your company information in your profile to prefill it when you create a document.</p>
-            </div>
-          </div>
-          <Link to="/profile" className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800">
-            Open profile <ArrowRight size={15} />
-          </Link>
-        </section>
       </main>
     </div>
   );

@@ -6,7 +6,7 @@ import AuthLayout from '../components/AuthLayout';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, sessionExpired } = useAuth();
   const [form, setForm] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -33,6 +33,11 @@ const Login = () => {
       title="Sign in to Ledger."
       description="Enter your account details to continue to your billing workspace."
     >
+        {sessionExpired ? (
+          <p role="status" className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Your session expired. Please sign in again to continue.
+          </p>
+        ) : null}
         <form className="space-y-5" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-slate-700">
             Username

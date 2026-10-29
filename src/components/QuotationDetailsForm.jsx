@@ -1,6 +1,6 @@
 import { FileText, CalendarDays, CircleDollarSign } from 'lucide-react';
 
-const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100';
+const inputClass = 'block min-w-0 w-full max-w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100';
 const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
 
 const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) => {
@@ -19,8 +19,8 @@ const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) 
         </div>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <div>
+      <div className="grid min-w-0 gap-5 md:grid-cols-2">
+        <div className="min-w-0">
           <label className={labelClass}>{documentLabel} Number</label>
           <input className={inputClass} readOnly value="Auto generated" />
           <p className="mt-2 text-xs text-slate-500">
@@ -28,9 +28,9 @@ const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) 
           </p>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label className={labelClass}>Currency</label>
-          <div className="relative">
+          <div className="relative min-w-0">
             <CircleDollarSign className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
             <select className={`${inputClass} pl-10`} {...register('quotation.currency')}>
               <option value="INR">Indian Rupee (INR)</option>
@@ -41,18 +41,18 @@ const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) 
           {errors.quotation?.currency ? <p className="mt-1 text-sm text-rose-500">{errors.quotation.currency.message}</p> : null}
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label className={labelClass}>Quotation Date</label>
-          <div className="relative">
+          <div className="relative min-w-0">
             <CalendarDays className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
             <input type="date" className={`${inputClass} pl-10`} {...register('quotation.quotationDate')} />
           </div>
           {errors.quotation?.quotationDate ? <p className="mt-1 text-sm text-rose-500">{errors.quotation.quotationDate.message}</p> : null}
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label className={labelClass}>Valid Until</label>
-          <div className="relative">
+          <div className="relative min-w-0">
             <CalendarDays className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
             <input type="date" className={`${inputClass} pl-10`} {...register('quotation.validUntil')} />
           </div>

@@ -1,4 +1,25 @@
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const API_BASE = import.meta.env?.VITE_API_BASE || '/api';
+let refreshInFlight = null;
+
+const readErrorMessage = async (response, fallback) => {
+  const responseText = await response.text();
+  if (!responseText) return fallback;
+
+  try {
+    const payload = JSON.parse(responseText);
+    const detail = payload.detail ?? payload.message ?? payload.error;
+    const message = Array.isArray(detail)
+      ? detail.map((item) => item.msg || item.message || String(item)).join(' ')
+      : typeof detail === 'string' ? detail : '';
+
+    if (message === 'Invalid credentials.') {
+      return 'Invalid username or password. Please try again.';
+    }
+    return message || fallback;
+  } catch {
+    return responseText;
+  }
+};
 
 const decodeJwtPayload = (token) => {
   try {
@@ -28,7 +49,7 @@ const readStoredToken = () => {
   const token = window.localStorage.getItem('quotation_backend_token');
   if (!token) return null;
   if (isTokenExpired(token)) {
-    logoutUser();
+    window.localStorage.removeItem('quotation_backend_token');
     return null;
   }
 
@@ -84,8 +105,7 @@ export const registerUser = async ({ username, email, password, mobile_number })
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Registration failed');
+    throw new Error(await readErrorMessage(response, 'Registration failed'));
   }
 
   return response.json();
@@ -105,8 +125,7 @@ export const loginUser = async ({ username, password }) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Login failed');
+    throw new Error(await readErrorMessage(response, 'Login failed'));
   }
 
   const tokenData = await response.json();
@@ -134,7 +153,7 @@ export const logoutBackend = async () => {
 };
 
 export const getCurrentUser = async () => {
-  const response = await fetch(`${API_BASE}/auth/me`, {
+  const response = await authenticatedFetch(`${API_BASE}/auth/me`, {
     headers: {
       'Content-Type': 'application/json',
       ...getAuthorizedHeaders(),
@@ -142,15 +161,14 @@ export const getCurrentUser = async () => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to fetch current user');
+    throw new Error(await readErrorMessage(response, 'Unable to fetch current user'));
   }
 
   return response.json();
 };
 
 export const updateCurrentUser = async (profile) => {
-  const response = await fetch(`${API_BASE}/auth/me`, {
+  const response = await authenticatedFetch(`${API_BASE}/auth/me`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -160,15 +178,14 @@ export const updateCurrentUser = async (profile) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to update your profile');
+    throw new Error(await readErrorMessage(response, 'Unable to update your profile'));
   }
 
   return response.json();
 };
 
 export const setupCompany = async (company) => {
-  const response = await fetch(`${API_BASE}/auth/setup-company`, {
+  const response = await authenticatedFetch(`${API_BASE}/auth/setup-company`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -178,8 +195,7 @@ export const setupCompany = async (company) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to save company details');
+    throw new Error(await readErrorMessage(response, 'Unable to save company details'));
   }
 
   return response.json();
@@ -209,6 +225,42 @@ export const refreshAuthToken = async () => {
   return tokenData;
 };
 
+export const authenticatedFetch = async (input, init = {}) => {
+  const requestWithCurrentToken = () => {
+    const headers = new Headers(init.headers || {});
+    const token = getStoredToken();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    else headers.delete('Authorization');
+    return fetch(input, { ...init, headers });
+  };
+
+  let response = await requestWithCurrentToken();
+  if (response.status !== 401) return response;
+
+  let refreshed;
+  try {
+    if (!refreshInFlight) {
+      refreshInFlight = refreshAuthToken().finally(() => {
+        refreshInFlight = null;
+      });
+    }
+    refreshed = await refreshInFlight;
+  } catch {
+    throw new Error('We could not refresh your session. Check your connection and try again.');
+  }
+
+  if (refreshed) {
+    response = await requestWithCurrentToken();
+    if (response.status !== 401) return response;
+  }
+
+  logoutUser();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('ledger:session-expired'));
+  }
+  throw new Error('Your session has expired. Please sign in again.');
+};
+
 export const getAuthorizedHeaders = () => {
   const token = readStoredToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -224,8 +276,7 @@ export const resetPassword = async ({ token, new_password }) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Password reset failed');
+    throw new Error(await readErrorMessage(response, 'Password reset failed'));
   }
 
   return await response.json();

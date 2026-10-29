@@ -103,23 +103,67 @@ const Customers = () => {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Header onLogout={logout} user={user} />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-900">Customers</h1>
-              <p className="mt-2 text-sm text-slate-500">Create, edit, and manage company customers in one place.</p>
+        <div className="grid gap-6 xl:grid-cols-[700px_minmax(0,1fr)]">
+          <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Customer list</h2>
+                <p className="mt-2 text-sm text-slate-500">Manage customers for your company.</p>
+              </div>
+              <div className="text-sm text-slate-500">
+                {loading ? 'Loading…' : `${customers.length} customer${customers.length === 1 ? '' : 's'}`}
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600"
-            >
-              Clear form
-            </button>
-          </div>
-        </div>
 
-        <div className="grid gap-6 xl:grid-cols-[400px_minmax(0,1fr)]">
+            <div className="mt-6 overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
+                <thead className="bg-slate-50 text-slate-600">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Name</th>
+                  <th className="px-4 py-3 font-semibold">Email</th>
+                  <th className="px-4 py-3 font-semibold">Phone</th>
+                  <th className="px-4 py-3 font-semibold">Company</th>
+                  <th className="px-4 py-3 font-semibold">Actions</th>
+                </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                {customers.map((customer) => (
+                    <tr key={customer.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3">{customer.name}</td>
+                      <td className="px-4 py-3">{customer.email || '—'}</td>
+                      <td className="px-4 py-3">{customer.phone_number || '—'}</td>
+                      <td className="px-4 py-3">{customer.company_name || '—'}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                              type="button"
+                              onClick={() => handleEdit(customer)}
+                              className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600"
+                          >
+                            Edit
+                          </button>
+                          <button
+                              type="button"
+                              onClick={() => handleDelete(customer.id)}
+                              className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                ))}
+                {!loading && customers.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-4 py-8 text-center text-sm text-slate-500">
+                        No customers found. Add one to get started.
+                      </td>
+                    </tr>
+                ) : null}
+                </tbody>
+              </table>
+            </div>
+          </section>
           <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
             <h2 className="text-lg font-semibold text-slate-900">{editingId ? 'Update Customer' : 'New Customer'}</h2>
             <p className="mt-2 text-sm text-slate-500">Enter the information for this customer.</p>
@@ -187,7 +231,7 @@ const Customers = () => {
                   disabled={submitting}
                   className="inline-flex items-center justify-center rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {editingId ? 'Save changes' : 'Create customer'}
+                  {editingId ? 'Save changes' : 'Save'}
                 </button>
                 <button
                   type="button"
@@ -200,66 +244,6 @@ const Customers = () => {
             </form>
           </section>
 
-          <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Customer list</h2>
-                <p className="mt-2 text-sm text-slate-500">Manage customers for your company.</p>
-              </div>
-              <div className="text-sm text-slate-500">
-                {loading ? 'Loading…' : `${customers.length} customer${customers.length === 1 ? '' : 's'}`}
-              </div>
-            </div>
-
-            <div className="mt-6 overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                <thead className="bg-slate-50 text-slate-600">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Name</th>
-                    <th className="px-4 py-3 font-semibold">Email</th>
-                    <th className="px-4 py-3 font-semibold">Phone</th>
-                    <th className="px-4 py-3 font-semibold">Company</th>
-                    <th className="px-4 py-3 font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {customers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3">{customer.name}</td>
-                      <td className="px-4 py-3">{customer.email || '—'}</td>
-                      <td className="px-4 py-3">{customer.phone_number || '—'}</td>
-                      <td className="px-4 py-3">{customer.company_name || '—'}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEdit(customer)}
-                            className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(customer.id)}
-                            className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {!loading && customers.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="px-4 py-8 text-center text-sm text-slate-500">
-                        No customers found. Add one to get started.
-                      </td>
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
-          </section>
         </div>
       </main>
     </div>

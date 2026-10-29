@@ -119,13 +119,6 @@ const Dashboard = () => {
                 : 'Your business at a glance. Pick up where you left off.'}
             </p>
           </div>
-          <Link
-            to="/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800"
-          >
-            <FilePlus2 size={17} />
-            Create document
-          </Link>
         </div>
 
         {error ? (
@@ -170,9 +163,6 @@ const Dashboard = () => {
                 <h2 className="text-base font-semibold text-slate-900">Recent documents</h2>
                 <p className="mt-1 text-xs text-slate-500">Your latest invoices and quotations.</p>
               </div>
-              <Link to="/quotations" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-900">
-                View all <ArrowRight size={14} />
-              </Link>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[620px] text-left text-sm">
@@ -264,9 +254,6 @@ const Dashboard = () => {
               <p className="mt-2 text-xs leading-5 text-slate-300">
                 Add customer and company details once, then reuse them across your billing documents.
               </p>
-              <Link to="/billing" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-emerald-300 hover:text-emerald-200">
-                Review invoices <ArrowDownRight size={14} />
-              </Link>
             </section>
           </aside>
         </div>

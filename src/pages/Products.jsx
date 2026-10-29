@@ -117,23 +117,65 @@ const Products = () => {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <Header onLogout={logout} user={user} />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-900">Products</h1>
-              <p className="mt-2 text-sm text-slate-500">Create, update, and delete products available for quotations.</p>
+        <div className="grid gap-6 xl:grid-cols-[700px_minmax(0,1fr)]">
+          <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Product catalog</h2>
+                <p className="mt-2 text-sm text-slate-500">Products available for quotations.</p>
+              </div>
+              <div className="text-sm text-slate-500">
+                {loading ? 'Loading…' : `${products.length} product${products.length === 1 ? '' : 's'}`}
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600"
-            >
-              Clear form
-            </button>
-          </div>
-        </div>
 
-        <div className="grid gap-6 xl:grid-cols-[400px_minmax(0,1fr)]">
+            <div className="mt-6 overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
+                <thead className="bg-slate-50 text-slate-600">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Name</th>
+                  <th className="px-4 py-3 font-semibold">Price</th>
+                  <th className="px-4 py-3 font-semibold">SKU</th>
+                  <th className="px-4 py-3 font-semibold">Actions</th>
+                </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                {products.map((product) => (
+                    <tr key={product.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3">{product.name}</td>
+                      <td className="px-4 py-3">₹{Number(product.price).toFixed(2)}</td>
+                      <td className="px-4 py-3">{product.sku || '—'}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                              type="button"
+                              onClick={() => handleEdit(product)}
+                              className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600"
+                          >
+                            Edit
+                          </button>
+                          <button
+                              type="button"
+                              onClick={() => handleDelete(product.id)}
+                              className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                ))}
+                {!loading && products.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="px-4 py-8 text-center text-sm text-slate-500">
+                        No products found. Add one to get started.
+                      </td>
+                    </tr>
+                ) : null}
+                </tbody>
+              </table>
+            </div>
+          </section>
           <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
             <h2 className="text-lg font-semibold text-slate-900">{editingId ? 'Update Product' : 'New Product'}</h2>
             <p className="mt-2 text-sm text-slate-500">Manage the product catalog for your company.</p>
@@ -228,7 +270,7 @@ const Products = () => {
                   disabled={submitting}
                   className="inline-flex items-center justify-center rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {editingId ? 'Save changes' : 'Create product'}
+                  {editingId ? 'Save changes' : 'Save'}
                 </button>
                 <button
                   type="button"
@@ -239,65 +281,6 @@ const Products = () => {
                 </button>
               </div>
             </form>
-          </section>
-
-          <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Product catalog</h2>
-                <p className="mt-2 text-sm text-slate-500">Products available for quotations.</p>
-              </div>
-              <div className="text-sm text-slate-500">
-                {loading ? 'Loading…' : `${products.length} product${products.length === 1 ? '' : 's'}`}
-              </div>
-            </div>
-
-            <div className="mt-6 overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                <thead className="bg-slate-50 text-slate-600">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Name</th>
-                    <th className="px-4 py-3 font-semibold">Price</th>
-                    <th className="px-4 py-3 font-semibold">SKU</th>
-                    <th className="px-4 py-3 font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {products.map((product) => (
-                    <tr key={product.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3">{product.name}</td>
-                      <td className="px-4 py-3">₹{Number(product.price).toFixed(2)}</td>
-                      <td className="px-4 py-3">{product.sku || '—'}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEdit(product)}
-                            className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(product.id)}
-                            className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {!loading && products.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="px-4 py-8 text-center text-sm text-slate-500">
-                        No products found. Add one to get started.
-                      </td>
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
           </section>
         </div>
       </main>

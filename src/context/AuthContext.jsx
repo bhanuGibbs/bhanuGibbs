@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import {
   getStoredToken,
+  getStoredRefreshToken,
   getStoredUser,
   getCurrentUser,
   loginUser,
@@ -16,11 +17,24 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setUser(null);
+      setIsAuthenticated(false);
+      setSessionExpired(true);
+    };
+
+    window.addEventListener('ledger:session-expired', handleSessionExpired);
+    return () => window.removeEventListener('ledger:session-expired', handleSessionExpired);
+  }, []);
 
   useEffect(() => {
     const loadUser = async () => {
       const token = getStoredToken();
-      if (!token) {
+      const refreshToken = getStoredRefreshToken();
+      if (!token && !refreshToken) {
         setLoading(false);
         return;
       }
@@ -30,19 +44,6 @@ export const AuthProvider = ({ children }) => {
         setUser(currentUser);
         setIsAuthenticated(true);
       } catch {
-        const refreshed = await refreshAuthToken();
-        if (refreshed) {
-          try {
-            const currentUser = await getCurrentUser();
-            setUser(currentUser);
-            setIsAuthenticated(true);
-            setLoading(false);
-            return;
-          } catch {
-            // Ignore and fall through to logout.
-          }
-        }
-
         logoutUser();
         setUser(null);
         setIsAuthenticated(false);
@@ -59,6 +60,7 @@ export const AuthProvider = ({ children }) => {
     const currentUser = await getCurrentUser();
     setUser(currentUser);
     setIsAuthenticated(true);
+    setSessionExpired(false);
     return tokenData;
   };
 
@@ -84,6 +86,7 @@ export const AuthProvider = ({ children }) => {
     logoutUser();
     setUser(null);
     setIsAuthenticated(false);
+    setSessionExpired(false);
   };
 
   const refreshToken = async () => {
@@ -101,6 +104,7 @@ export const AuthProvider = ({ children }) => {
         user,
         isAuthenticated,
         loading,
+        sessionExpired,
         login,
         register,
         logout,

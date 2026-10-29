@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    // The PDF renderer is lazy-loaded; its minified chunk is 1.3 MB (about 436 KB gzipped).
+    chunkSizeWarningLimit: 1400,
+  },
   server: {
     host: '0.0.0.0',
     port: 3002,

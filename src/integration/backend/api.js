@@ -1,4 +1,4 @@
-import { getAuthorizedHeaders } from './auth';
+import { authenticatedFetch, getAuthorizedHeaders } from './auth';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -55,7 +55,7 @@ export const checkBackendHealth = async () => {
 
 export const submitQuotationToBackend = async (documentData) => {
   const payload = buildBackendQuotationPayload(documentData);
-  const response = await fetch(`${API_BASE}/quotations/submit`, {
+  const response = await authenticatedFetch(`${API_BASE}/quotations/submit`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export const submitQuotationToBackend = async (documentData) => {
 
 export const submitQuotationDraftToBackend = async (documentData) => {
   const payload = buildBackendQuotationPayload(documentData);
-  const response = await fetch(`${API_BASE}/quotations/draft`, {
+  const response = await authenticatedFetch(`${API_BASE}/quotations/draft`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ export const submitQuotationDraftToBackend = async (documentData) => {
 };
 
 export const finalizeQuotation = async (quotationId) => {
-  const response = await fetch(`${API_BASE}/quotations/${quotationId}/finalize`, {
+  const response = await authenticatedFetch(`${API_BASE}/quotations/${quotationId}/finalize`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ export const createCustomerIfMissing = async (customer) => {
     company_name: customer.companyName || null,
   };
 
-  const response = await fetch(`${API_BASE}/customers/`, {
+  const response = await authenticatedFetch(`${API_BASE}/customers/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export const createCustomerIfMissing = async (customer) => {
 };
 
 export const getCustomers = async () => {
-  const response = await fetch(`${API_BASE}/customers/`, {
+  const response = await authenticatedFetch(`${API_BASE}/customers/`, {
     headers: {
       ...getAuthorizedHeaders(),
     },
@@ -156,7 +156,7 @@ export const getCustomers = async () => {
 };
 
 export const createCustomer = async (payload) => {
-  const response = await fetch(`${API_BASE}/customers/`, {
+  const response = await authenticatedFetch(`${API_BASE}/customers/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ export const createCustomer = async (payload) => {
 };
 
 export const updateCustomer = async (customerId, payload) => {
-  const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+  const response = await authenticatedFetch(`${API_BASE}/customers/${customerId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -192,7 +192,7 @@ export const updateCustomer = async (customerId, payload) => {
 };
 
 export const deleteCustomer = async (customerId) => {
-  const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+  const response = await authenticatedFetch(`${API_BASE}/customers/${customerId}`, {
     method: 'DELETE',
     headers: {
       ...getAuthorizedHeaders(),
@@ -208,7 +208,7 @@ export const deleteCustomer = async (customerId) => {
 };
 
 export const getProducts = async () => {
-  const response = await fetch(`${API_BASE}/products/`, {
+  const response = await authenticatedFetch(`${API_BASE}/products/`, {
     headers: {
       ...getAuthorizedHeaders(),
     },
@@ -223,7 +223,7 @@ export const getProducts = async () => {
 };
 
 export const createProduct = async (payload) => {
-  const response = await fetch(`${API_BASE}/products/`, {
+  const response = await authenticatedFetch(`${API_BASE}/products/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -241,7 +241,7 @@ export const createProduct = async (payload) => {
 };
 
 export const updateProduct = async (productId, payload) => {
-  const response = await fetch(`${API_BASE}/products/${productId}`, {
+  const response = await authenticatedFetch(`${API_BASE}/products/${productId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ export const updateProduct = async (productId, payload) => {
 };
 
 export const deleteProduct = async (productId) => {
-  const response = await fetch(`${API_BASE}/products/${productId}`, {
+  const response = await authenticatedFetch(`${API_BASE}/products/${productId}`, {
     method: 'DELETE',
     headers: {
       ...getAuthorizedHeaders(),
@@ -275,7 +275,7 @@ export const deleteProduct = async (productId) => {
 };
 
 export const getQuotations = async () => {
-  const response = await fetch(`${API_BASE}/quotations/`, {
+  const response = await authenticatedFetch(`${API_BASE}/quotations/`, {
     headers: {
       ...getAuthorizedHeaders(),
     },
@@ -290,7 +290,7 @@ export const getQuotations = async () => {
 };
 
 export const getAdminUsers = async () => {
-  const response = await fetch(`${API_BASE}/users/admin`, {
+  const response = await authenticatedFetch(`${API_BASE}/users/admin`, {
     headers: {
       ...getAuthorizedHeaders(),
     },
@@ -305,7 +305,7 @@ export const getAdminUsers = async () => {
 };
 
 export const updateUserPlan = async (userId, subscriptionPlan) => {
-  const response = await fetch(`${API_BASE}/users/${userId}/plan`, {
+  const response = await authenticatedFetch(`${API_BASE}/users/${userId}/plan`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -323,7 +323,7 @@ export const updateUserPlan = async (userId, subscriptionPlan) => {
 };
 
 export const updateInvoicePaymentStatus = async (quotationId, paymentStatus) => {
-  const response = await fetch(`${API_BASE}/quotations/${quotationId}/payment-status`, {
+  const response = await authenticatedFetch(`${API_BASE}/quotations/${quotationId}/payment-status`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -341,7 +341,7 @@ export const updateInvoicePaymentStatus = async (quotationId, paymentStatus) => 
 };
 
 export const deleteQuotation = async (quotationId) => {
-  const response = await fetch(`${API_BASE}/quotations/${quotationId}`, {
+  const response = await authenticatedFetch(`${API_BASE}/quotations/${quotationId}`, {
     method: 'DELETE',
     headers: {
       ...getAuthorizedHeaders(),
@@ -357,7 +357,7 @@ export const deleteQuotation = async (quotationId) => {
 };
 
 export const downloadQuotationPdf = async (quotationId, filename) => {
-  const response = await fetch(`${API_BASE}/quotations/${quotationId}/pdf`, {
+  const response = await authenticatedFetch(`${API_BASE}/quotations/${quotationId}/pdf`, {
     headers: {
       ...getAuthorizedHeaders(),
     },

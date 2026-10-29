@@ -31,6 +31,11 @@ const formatDate = (value) => {
     : new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
 };
 
+const getDateKey = (value) => {
+  const dateKey = String(value || '').slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateKey) ? dateKey : '';
+};
+
 const Documents = ({ documentType }) => {
   const isBilling = ['billing', 'invoice'].includes(documentType);
   const { logout, user } = useAuth();
@@ -41,6 +46,8 @@ const Documents = ({ documentType }) => {
   const [downloadingId, setDownloadingId] = useState('');
   const [updatingStatusId, setUpdatingStatusId] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const loadDocuments = useCallback(async () => {
     setLoading(true);
@@ -58,10 +65,23 @@ const Documents = ({ documentType }) => {
     loadDocuments();
   }, [loadDocuments]);
 
+  const invalidDateRange = Boolean(dateFrom && dateTo && dateFrom > dateTo);
+
+  const dateFilteredDocuments = useMemo(() => {
+    if (!isBilling) return quotations.filter((document) => isInvoiceDocument(document) === isBilling);
+    if (invalidDateRange) return [];
+
+    return quotations
+      .filter(isInvoiceDocument)
+      .filter((invoice) => {
+        const issueDate = getDateKey(invoice.issued_at);
+        return Boolean(issueDate) && (!dateFrom || issueDate >= dateFrom) && (!dateTo || issueDate <= dateTo);
+      });
+  }, [dateFrom, dateTo, invalidDateRange, isBilling, quotations]);
+
   const documents = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return quotations
-      .filter((document) => isInvoiceDocument(document) === isBilling)
+    return dateFilteredDocuments
       .filter(
         (document) =>
           !query ||
@@ -74,17 +94,16 @@ const Documents = ({ documentType }) => {
         getInvoicePaymentStatus(document).toLowerCase() === paymentFilter,
       )
       .sort((left, right) => new Date(right.issued_at) - new Date(left.issued_at));
-  }, [isBilling, paymentFilter, quotations, search]);
+  }, [dateFilteredDocuments, isBilling, paymentFilter, search]);
 
   const paymentTotals = useMemo(() => {
-    const invoices = quotations.filter(isInvoiceDocument);
-    return invoices.reduce((totals, invoice) => {
+    return dateFilteredDocuments.reduce((totals, invoice) => {
       const status = getInvoicePaymentStatus(invoice);
       if (status === 'Paid') totals.paid += Number(invoice.total_amount) || 0;
       if (status === 'Unpaid') totals.unpaid += Number(invoice.total_amount) || 0;
       return totals;
     }, { paid: 0, unpaid: 0 });
-  }, [quotations]);
+  }, [dateFilteredDocuments]);
 
   const handlePaymentStatusChange = async (document) => {
     const currentStatus = getInvoicePaymentStatus(document);
@@ -156,7 +175,55 @@ const Documents = ({ documentType }) => {
         </div>
 
         {isBilling ? (
-          <section className="mb-6 grid gap-4 sm:grid-cols-2" aria-label="Invoice payment totals">
+          <>
+          <section className="mb-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" aria-label="Filter invoices by issue date">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900">Invoice date range</h2>
+                <p className="mt-1 text-xs text-slate-500">Showing all dates by default. Choose a range to update the invoice list and totals.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setDateFrom(''); setDateTo(''); }}
+                disabled={!dateFrom && !dateTo}
+                className="rounded-lg px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-transparent"
+              >
+                All dates
+              </button>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="block text-xs font-medium text-slate-600">
+                From
+                <input
+                  type="date"
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onChange={(event) => setDateFrom(event.target.value)}
+                  className="mt-1.5 block min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                />
+              </label>
+              <label className="block text-xs font-medium text-slate-600">
+                To
+                <input
+                  type="date"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onChange={(event) => setDateTo(event.target.value)}
+                  className="mt-1.5 block min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                />
+              </label>
+            </div>
+            {invalidDateRange ? (
+              <p role="alert" className="mt-3 text-sm text-rose-700">The start date must be on or before the end date.</p>
+            ) : null}
+          </section>
+
+          <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Invoice payment totals">
+            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-sm font-medium text-slate-700">Total invoiced</p>
+              <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid + paymentTotals.unpaid)}</p>
+              <p className="mt-1 text-xs text-slate-500">Paid and unpaid invoices in this date range</p>
+            </article>
             <article className="rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm">
               <p className="text-sm font-medium text-emerald-800">Paid invoices</p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid)}</p>
@@ -168,6 +235,7 @@ const Documents = ({ documentType }) => {
               <p className="mt-1 text-xs text-slate-500">Total amount still awaiting payment</p>
             </article>
           </section>
+          </>
         ) : null}
 
         <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
