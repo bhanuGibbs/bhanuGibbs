@@ -7,8 +7,10 @@ from fastapi.responses import HTMLResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db_session
+from app.repositories.audit_event_repository import AuditEventRepository
 from app.schemas.quotation import (
     InvoicePaymentStatusUpdate,
+    AuditEventRead,
     QuotationCreate,
     QuotationRead,
     QuotationSubmit,
@@ -55,6 +57,7 @@ async def _resolve_quotation_product(item_data, product_service, company_id, cur
             hsn_code=item_data.hsn_code,
             company_id=company_id,
             created_by_id=current_user["id"],
+            commit=False,
         )
     return product
 
@@ -194,6 +197,7 @@ async def submit_quotation(
             state=payload.customer.state,
             city=payload.customer.city,
             pincode=payload.customer.pincode,
+            commit=False,
         )
     else:
         customer = await customer_service.create_customer(
@@ -209,6 +213,7 @@ async def submit_quotation(
             city=payload.customer.city,
             pincode=payload.customer.pincode,
             created_by_id=current_user["id"],
+            commit=False,
         )
 
     line_items = []
@@ -239,7 +244,9 @@ async def submit_quotation(
         created_by_id=current_user["id"],
         created_by_username=current_user["username"],
         shipping_amount=payload.shipping_amount,
+        commit=False,
     )
+    await session.commit()
     return QuotationRead.from_orm(quotation)
 
 
@@ -290,6 +297,7 @@ async def create_quotation_draft(
             state=payload.customer.state,
             city=payload.customer.city,
             pincode=payload.customer.pincode,
+            commit=False,
         )
     else:
         customer = await customer_service.create_customer(
@@ -305,6 +313,7 @@ async def create_quotation_draft(
             city=payload.customer.city,
             pincode=payload.customer.pincode,
             created_by_id=current_user["id"],
+            commit=False,
         )
 
     line_items = []
@@ -339,7 +348,9 @@ async def create_quotation_draft(
         terms=payload.terms,
 
         shipping_amount=payload.shipping_amount,
+        commit=False,
     )
+    await session.commit()
     return QuotationRead.from_orm(quotation)
 
 
@@ -439,6 +450,24 @@ async def get_quotation(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
 
     return QuotationRead.from_orm(quotation)
+
+
+@router.get("/{quotation_id}/audit", response_model=list[AuditEventRead])
+async def get_quotation_audit(
+    quotation_id: str,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> list[AuditEventRead]:
+    """Return immutable change history for a document owned by the caller."""
+    quotation = await QuotationService(session).get_quotation(quotation_id)
+    if (
+        not quotation
+        or str(quotation.company_id) != current_user["company_id"]
+        or str(quotation.created_by_id) != current_user["id"]
+    ):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
+    events = await AuditEventRepository(session).list_for_resource(quotation_id)
+    return [AuditEventRead.model_validate(event) for event in events]
 
 
 @router.put("/{quotation_id}", response_model=QuotationRead)
@@ -558,13 +587,19 @@ async def download_quotation_pdf(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
 
     pdf_service = PDFService()
-    pdf_bytes = pdf_service.render_quotation_pdf(
-        quotation=quotation,
-        customer=customer,
-        company=company,
-        items=items,
-        products=products,
-    )
+    try:
+        pdf_bytes = pdf_service.render_quotation_pdf(
+            quotation=quotation,
+            customer=customer,
+            company=company,
+            items=items,
+            products=products,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to generate the quotation PDF. Please try again.",
+        ) from exc
 
     return Response(
         content=pdf_bytes,

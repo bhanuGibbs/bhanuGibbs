@@ -25,6 +25,7 @@ class CompanyService:
         state: str | None = None,
         city: str | None = None,
         pincode: str | None = None,
+        commit: bool = True,
     ) -> Company:
         """Create a new company in the system."""
         existing = await self.repository.get_by_name(name)
@@ -46,7 +47,8 @@ class CompanyService:
             pincode=pincode,
         )
         await self.repository.add(company)
-        await self.repository.commit()
+        if commit:
+            await self.repository.commit()
         return company
 
     async def list_companies(self) -> list[Company]:

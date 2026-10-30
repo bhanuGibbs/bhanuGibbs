@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from app.models import (
     auth_session,
+    audit_event,
     company,
     customer,
     product,

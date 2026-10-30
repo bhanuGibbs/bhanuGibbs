@@ -73,7 +73,10 @@ async def list_users_for_admin(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
         )
-    users = await UserService(session).list_users()
+    if current_user["role"] == "Admin" and not current_user["company_id"]:
+        return []
+    company_id = current_user["company_id"] if current_user["role"] == "Admin" else None
+    users = await UserService(session).list_users(company_id)
     return [await _to_user_read(user, session) for user in users]
 
 
@@ -90,8 +93,11 @@ async def update_user_plan(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
         )
+    if current_user["role"] == "Admin" and not current_user["company_id"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Company profile is required.")
+    company_id = current_user["company_id"] if current_user["role"] == "Admin" else None
     user = await UserService(session).update_subscription_plan(
-        user_id, payload.subscription_plan
+        user_id, payload.subscription_plan, company_id=company_id
     )
     return await _to_user_read(user, session)
 

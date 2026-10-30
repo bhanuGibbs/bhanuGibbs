@@ -28,7 +28,7 @@ class UserProfileUpdateTests(unittest.IsolatedAsyncioTestCase):
         payload = UserProfileUpdate(
             username="new-name",
             email="new@example.com",
-            mobile_number="555-0100",
+            mobile_number="5550100000",
             role="Super Admin",
             is_superuser=True,
         )
@@ -37,7 +37,7 @@ class UserProfileUpdateTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(user.username, "new-name")
         self.assertEqual(user.email, "new@example.com")
-        self.assertEqual(user.mobile_number, "555-0100")
+        self.assertEqual(user.mobile_number, "5550100000")
         self.assertEqual(user.role_id, role_id)
         self.assertFalse(user.is_superuser)
         service.repository.commit.assert_awaited_once()

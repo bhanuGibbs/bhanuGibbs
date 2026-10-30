@@ -1,10 +1,10 @@
 import unittest
 from datetime import datetime
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
-from app.services.exceptions import BadRequestError, MonthlyQuotationLimitError
+from app.services.exceptions import BadRequestError, ConflictError, MonthlyQuotationLimitError
 from app.services.quotation_service import (
     MONTHLY_FINALIZATION_LIMITS,
     QuotationService,
@@ -34,6 +34,7 @@ class MonthlyQuotationLimitTests(unittest.IsolatedAsyncioTestCase):
             quotation_year=None,
         )
         self.service = QuotationService(AsyncMock())
+        self.service.repository.session.add = Mock()
         self.service.repository.get = AsyncMock(return_value=self.quotation)
         self.service.repository.lock_user_for_finalization = AsyncMock(return_value="free")
         self.service.repository.count_finalized_by_user_between = AsyncMock(return_value=9)
@@ -148,9 +149,7 @@ class MonthlyQuotationLimitTests(unittest.IsolatedAsyncioTestCase):
         self.quotation.status = "Final"
         self.quotation.finalized_at = datetime(2026, 10, 1)
 
-        with self.assertRaisesRegex(
-            BadRequestError, "Finalized quotation status cannot be changed"
-        ):
+        with self.assertRaisesRegex(ConflictError, "Finalized documents cannot be edited"):
             await self.service.update_quotation(
                 str(self.quotation.id),
                 self.company_id,
@@ -159,4 +158,29 @@ class MonthlyQuotationLimitTests(unittest.IsolatedAsyncioTestCase):
             )
 
         self.assertEqual(self.quotation.status, "Final")
+        self.service.repository.commit.assert_not_awaited()
+
+    async def test_finalization_does_not_reset_invoice_payment_status(self) -> None:
+        self.quotation.title = "Invoice"
+        self.quotation.status = "Paid"
+        self.quotation.finalized_at = datetime(2026, 10, 1)
+        self.quotation.quotation_number = "INV-01102026-001"
+
+        result = await self.service.finalize_quotation(
+            str(self.quotation.id), self.company_id, self.user_id
+        )
+
+        self.assertIs(result, self.quotation)
+        self.assertEqual(result.status, "Paid")
+        self.service.repository.commit.assert_not_awaited()
+
+    async def test_finalized_quotation_cannot_be_deleted(self) -> None:
+        self.quotation.finalized_at = datetime(2026, 10, 1)
+        self.service.repository.get = AsyncMock(return_value=self.quotation)
+        self.service.repository.delete = AsyncMock()
+
+        with self.assertRaisesRegex(ConflictError, "Finalized documents cannot be deleted"):
+            await self.service.delete_quotation(str(self.quotation.id), self.user_id)
+
+        self.service.repository.delete.assert_not_awaited()
         self.service.repository.commit.assert_not_awaited()

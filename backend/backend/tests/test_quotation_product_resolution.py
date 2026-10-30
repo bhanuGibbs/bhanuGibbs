@@ -72,4 +72,5 @@ class QuotationProductResolutionTests(unittest.IsolatedAsyncioTestCase):
             hsn_code="HSN-456",
             company_id=company_id,
             created_by_id=user_id,
+            commit=False,
         )

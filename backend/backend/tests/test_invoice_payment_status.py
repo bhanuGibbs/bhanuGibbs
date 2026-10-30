@@ -1,6 +1,6 @@
 import unittest
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 from app.services.exceptions import BadRequestError, NotFoundError
@@ -19,6 +19,7 @@ class InvoicePaymentStatusTests(unittest.IsolatedAsyncioTestCase):
             created_by_id=self.user_id,
         )
         self.service = QuotationService(AsyncMock())
+        self.service.repository.session.add = Mock()
         self.service.repository.get = AsyncMock(return_value=self.invoice)
         self.service.repository.commit = AsyncMock()
         self.service.repository.session.refresh = AsyncMock()

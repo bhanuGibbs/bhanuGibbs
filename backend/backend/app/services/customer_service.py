@@ -29,6 +29,7 @@ class CustomerService:
         city: str | None = None,
         pincode: str | None = None,
         created_by_id: str | None = None,
+        commit: bool = True,
     ) -> Customer:
         """Create a new customer record within a company."""
         if email:
@@ -51,7 +52,8 @@ class CustomerService:
             pincode=pincode,
         )
         await self.repository.add(customer)
-        await self.repository.commit()
+        if commit:
+            await self.repository.commit()
         return customer
 
     async def list_customers(self, company_id: str, user_id: str) -> list[Customer]:
@@ -75,6 +77,7 @@ class CustomerService:
         state: str | None = None,
         city: str | None = None,
         pincode: str | None = None,
+        commit: bool = True,
     ) -> Customer:
         """Update an existing customer."""
         customer = await self.repository.get(customer_id)
@@ -102,7 +105,10 @@ class CustomerService:
         if pincode is not None:
             customer.pincode = pincode
 
-        await self.repository.commit()
+        if commit:
+            await self.repository.commit()
+        else:
+            await self.repository.flush()
         await self.repository.session.refresh(customer)
         return customer
 

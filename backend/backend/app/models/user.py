@@ -32,7 +32,7 @@ class User(BaseModel):
     subscription_plan: Mapped[str] = mapped_column(
         String(20), default="free", server_default="free", nullable=False
     )
-    password_reset_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    password_reset_token: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     password_reset_expires_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
 
     role: Mapped[Role] = relationship("Role", backref="users")

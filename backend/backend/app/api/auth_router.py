@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import secrets
 import logging
+import hmac
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Form, HTTPException, status
@@ -81,7 +82,7 @@ async def login(
     """Authenticate a user and return JWT tokens."""
     service = UserService(session)
     user = await service.authenticate_user(username=username, password=password)
-    if not user:
+    if not user or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials.",
@@ -133,8 +134,11 @@ async def refresh_token(payload: TokenRefreshRequest, session: AsyncSession = De
         )
 
     auth_session_service = AuthSessionService(session)
-    stored_session = await auth_session_service.get_session_by_token_id(token_id)
-    if not stored_session or stored_session.refresh_token != payload.refresh_token:
+    stored_session = await auth_session_service.get_session_by_token_id(token_id, for_update=True)
+    provided_token_hash = auth_session_service.hash_token(payload.refresh_token)
+    if not stored_session or not hmac.compare_digest(
+        stored_session.refresh_token_hash, provided_token_hash
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token is not valid.",
@@ -146,7 +150,16 @@ async def refresh_token(payload: TokenRefreshRequest, session: AsyncSession = De
             detail="Refresh token has expired.",
         )
 
-    await auth_session_service.revoke_session(token_id)
+    user = await UserService(session).get_user_by_id(token_payload["sub"])
+    if not user or not user.is_active:
+        await auth_session_service.revoke_session(token_id, commit=False)
+        await session.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token is not valid.",
+        )
+
+    await auth_session_service.revoke_session(token_id, commit=False)
 
     new_token_id = secrets.token_urlsafe(32)
     new_payload = {
@@ -159,7 +172,10 @@ async def refresh_token(payload: TokenRefreshRequest, session: AsyncSession = De
         "refresh_token_id": new_token_id,
     }
     new_refresh_token = create_refresh_token(new_payload)
-    await auth_session_service.create_session(str(token_payload["sub"]), new_refresh_token, new_token_id)
+    await auth_session_service.create_session(
+        str(token_payload["sub"]), new_refresh_token, new_token_id, commit=False
+    )
+    await session.commit()
 
     return Token(
         access_token=create_access_token(new_payload),
@@ -265,6 +281,7 @@ async def setup_company(
         state=payload.state,
         city=payload.city,
         pincode=payload.pincode,
+        commit=False,
     )
 
     user.company_id = company.id

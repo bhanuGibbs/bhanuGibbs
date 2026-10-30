@@ -15,13 +15,15 @@ class AuthSessionRepository(BaseRepository[AuthSession]):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, AuthSession)
 
-    async def get_by_token_id(self, token_id: str) -> AuthSession | None:
+    async def get_by_token_id(self, token_id: str, for_update: bool = False) -> AuthSession | None:
         statement = select(AuthSession).where(AuthSession.token_id == token_id)
+        if for_update:
+            statement = statement.with_for_update()
         result = await self.session.execute(statement)
         return result.scalars().first()
 
-    async def get_by_refresh_token(self, refresh_token: str) -> AuthSession | None:
-        statement = select(AuthSession).where(AuthSession.refresh_token == refresh_token)
+    async def get_by_refresh_token_hash(self, refresh_token_hash: str) -> AuthSession | None:
+        statement = select(AuthSession).where(AuthSession.refresh_token_hash == refresh_token_hash)
         result = await self.session.execute(statement)
         return result.scalars().first()
 

@@ -4,6 +4,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
+from app.schemas.contact_fields import PhoneNumber, Pincode
 
 
 class CustomerBase(BaseModel):
@@ -11,14 +12,14 @@ class CustomerBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     email: EmailStr | None = None
-    phone_number: str | None = Field(default=None, max_length=50)
+    phone_number: PhoneNumber = None
     address: str | None = Field(default=None, max_length=512)
     company_name: str | None = Field(default=None, max_length=255)
     gstin: str | None = Field(default=None, max_length=20)
     country: str | None = Field(default=None, max_length=100)
     state: str | None = Field(default=None, max_length=100)
     city: str | None = Field(default=None, max_length=100)
-    pincode: str | None = Field(default=None, max_length=20)
+    pincode: Pincode = None
 
 
 class CustomerCreate(CustomerBase):
@@ -30,20 +31,22 @@ class CustomerUpdate(BaseModel):
 
     name: str | None = Field(default=None, min_length=1, max_length=255)
     email: EmailStr | None = None
-    phone_number: str | None = Field(default=None, max_length=50)
+    phone_number: PhoneNumber = None
     address: str | None = Field(default=None, max_length=512)
     company_name: str | None = Field(default=None, max_length=255)
     gstin: str | None = Field(default=None, max_length=20)
     country: str | None = Field(default=None, max_length=100)
     state: str | None = Field(default=None, max_length=100)
     city: str | None = Field(default=None, max_length=100)
-    pincode: str | None = Field(default=None, max_length=20)
+    pincode: Pincode = None
 
 
 class CustomerRead(CustomerBase):
     """Properties returned in customer responses."""
 
     id: UUID
+    phone_number: str | None = None
+    pincode: str | None = None
     created_at: datetime
     updated_at: datetime
 

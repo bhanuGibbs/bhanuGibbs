@@ -27,6 +27,9 @@ class Quotation(BaseModel):
     customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"), nullable=False)
     company_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("companies.id"), nullable=False)
     created_by_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
+    updated_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", name="fk_quotations_updated_by_id_users"), nullable=True
+    )
     issued_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     finalized_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=0)
@@ -55,5 +58,6 @@ class Quotation(BaseModel):
 
     customer = relationship("Customer", backref="quotations")
     company = relationship("Company", backref="quotations")
-    created_by = relationship("User", backref="quotations")
+    created_by = relationship("User", backref="quotations", foreign_keys=[created_by_id])
+    updated_by = relationship("User", foreign_keys=[updated_by_id])
     items = relationship("QuotationItem", back_populates="quotation", cascade="all, delete-orphan", lazy="selectin")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import secrets
+import hashlib
 from uuid import UUID
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,14 +69,15 @@ class UserService:
             raise NotFoundError("User not found.")
 
         token = secrets.token_urlsafe(32)
-        user.password_reset_token = token
+        user.password_reset_token = hashlib.sha256(token.encode("utf-8")).hexdigest()
         user.password_reset_expires_at = datetime.utcnow() + timedelta(hours=1)
         await self.repository.commit()
         return token
 
     async def invalidate_password_reset_token(self, token: str) -> None:
         """Invalidate a reset token when its email could not be delivered."""
-        user = await self.repository.get_by_password_reset_token(token)
+        token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        user = await self.repository.get_by_password_reset_token(token_hash)
         if user:
             user.password_reset_token = None
             user.password_reset_expires_at = None
@@ -83,7 +85,8 @@ class UserService:
 
     async def reset_password(self, token: str, new_password: str) -> User:
         """Reset the user's password if the reset token is valid."""
-        user = await self.repository.get_by_password_reset_token(token)
+        token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        user = await self.repository.get_by_password_reset_token(token_hash)
         if not user or not user.password_reset_expires_at:
             raise BadRequestError("Invalid or expired password reset token.")
 
@@ -93,6 +96,11 @@ class UserService:
         user.hashed_password = get_password_hash(new_password)
         user.password_reset_token = None
         user.password_reset_expires_at = None
+        from app.services.auth_session_service import AuthSessionService
+
+        await AuthSessionService(self.repository.session).revoke_all_sessions_for_user(
+            str(user.id), commit=False
+        )
         await self.repository.commit()
         return user
 
@@ -100,8 +108,10 @@ class UserService:
         """Return a user by email."""
         return await self.repository.get_by_email(email)
 
-    async def list_users(self) -> list[User]:
+    async def list_users(self, company_id: str | None = None) -> list[User]:
         """Return a list of all users."""
+        if company_id:
+            return await self.repository.list_by_company(company_id)
         return await self.repository.list_users()
 
     async def get_user_by_id(self, user_id: str) -> User | None:
@@ -112,7 +122,12 @@ class UserService:
             return None
         return await self.repository.get(user_uuid)
 
-    async def update_subscription_plan(self, user_id: str, subscription_plan: str) -> User:
+    async def update_subscription_plan(
+        self,
+        user_id: str,
+        subscription_plan: str,
+        company_id: str | None = None,
+    ) -> User:
         """Update a user's plan while serializing with quotation finalization."""
         try:
             UUID(user_id)
@@ -121,6 +136,8 @@ class UserService:
 
         user = await self.repository.get_for_update(user_id)
         if not user:
+            raise NotFoundError("User not found.")
+        if company_id and str(user.company_id) != company_id:
             raise NotFoundError("User not found.")
         user.subscription_plan = subscription_plan
         await self.repository.commit()

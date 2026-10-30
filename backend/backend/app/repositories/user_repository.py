@@ -39,6 +39,12 @@ class UserRepository(BaseRepository[User]):
         result = await self.session.execute(statement)
         return result.scalars().all()
 
+    async def list_by_company(self, company_id: str) -> list[User]:
+        """Return users belonging to one company."""
+        statement = select(User).where(User.company_id == UUID(company_id))
+        result = await self.session.execute(statement)
+        return result.scalars().all()
+
     async def get_for_update(self, user_id: str) -> User | None:
         """Lock a user row while updating subscription state."""
         statement = select(User).where(User.id == UUID(user_id)).with_for_update()

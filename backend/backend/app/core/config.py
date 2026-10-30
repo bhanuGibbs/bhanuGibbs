@@ -39,14 +39,21 @@ def get_settings() -> Settings:
     if _SETTINGS is None:
         # Load .env file so environment variables are available (from cwd)
         load_dotenv()
+        environment = os.getenv("ENVIRONMENT", "development")
+        jwt_secret_key = os.getenv("JWT_SECRET_KEY", "changeme")
+        if environment.lower() in {"production", "prod"} and (
+            jwt_secret_key == "changeme" or len(jwt_secret_key.encode("utf-8")) < 32
+        ):
+            raise RuntimeError("Production requires a JWT_SECRET_KEY of at least 32 bytes")
+
         _SETTINGS = Settings(
             app_name=os.getenv("APP_NAME", "KeelBill Ledger API"),
-            environment=os.getenv("ENVIRONMENT", "development"),
-            debug=os.getenv("DEBUG", "True").lower() in ("1", "true", "yes"),
+            environment=environment,
+            debug=os.getenv("DEBUG", "False").lower() in ("1", "true", "yes"),
             database_url=os.getenv("DATABASE_URL"),
-            jwt_secret_key=os.getenv("JWT_SECRET_KEY", "changeme"),
+            jwt_secret_key=jwt_secret_key,
             jwt_algorithm=os.getenv("JWT_ALGORITHM", "HS256"),
-            jwt_access_token_expires_minutes=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_MINUTES", "10080")),
+            jwt_access_token_expires_minutes=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_MINUTES", "15")),
             jwt_refresh_token_expires_days=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES_DAYS", "30")),
             bcrypt_rounds=int(os.getenv("BCRYPT_ROUNDS", "12")),
             frontend_url=os.getenv("FRONTEND_URL", "http://localhost:3002").rstrip("/"),

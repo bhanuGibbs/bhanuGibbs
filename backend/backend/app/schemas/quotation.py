@@ -5,6 +5,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, PositiveInt, constr
+from app.schemas.contact_fields import PhoneNumber, Pincode
 from typing import Literal
 
 
@@ -13,14 +14,14 @@ class QuotationCustomerInfo(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     email: EmailStr | None = None
-    phone_number: str | None = Field(default=None, max_length=50)
+    phone_number: PhoneNumber = None
     address: str | None = Field(default=None, max_length=512)
     company_name: str | None = Field(default=None, max_length=255)
     gstin: str | None = Field(default=None, max_length=20)
     country: str | None = Field(default=None, max_length=100)
     state: str | None = Field(default=None, max_length=100)
     city: str | None = Field(default=None, max_length=100)
-    pincode: str | None = Field(default=None, max_length=20)
+    pincode: Pincode = None
 
 
 class QuotationSubmitItem(BaseModel):
@@ -53,6 +54,7 @@ class QuotationSubmit(BaseModel):
     shipping_amount: Decimal = Field(default=Decimal("0.00"), ge=0)
     customer: QuotationCustomerInfo
     items: list[QuotationSubmitItem]
+
 
 
 class QuotationItemBase(BaseModel):
@@ -105,6 +107,7 @@ class QuotationBase(BaseModel):
     items: list[QuotationItemCreate]
 
 
+
 class QuotationCreate(QuotationBase):
     """Properties required to create a quotation."""
 
@@ -132,6 +135,19 @@ class InvoicePaymentStatusUpdate(BaseModel):
     """Payment status changes supported for finalized invoices."""
 
     status: Literal["Paid", "Unpaid"]
+
+
+class AuditEventRead(BaseModel):
+    id: UUID
+    actor_user_id: UUID | None = None
+    resource_type: str
+    resource_id: UUID
+    action: str
+    before_data: dict[str, object] | None = None
+    after_data: dict[str, object] | None = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
 
 
 class QuotationRead(QuotationBase):

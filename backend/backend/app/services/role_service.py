@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from app.models.role import Role
 from app.repositories.role_repository import RoleRepository
@@ -24,5 +25,11 @@ class RoleService:
         """Create a new role in the database."""
         role = Role(name=name, description=description)
         await self.repository.add(role)
-        await self.repository.commit()
+        try:
+            await self.repository.commit()
+        except IntegrityError as error:
+            await self.repository.rollback()
+            from app.services.exceptions import ConflictError
+
+            raise ConflictError("Role with this name already exists.") from error
         return role

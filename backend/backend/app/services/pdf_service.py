@@ -54,7 +54,11 @@ class PDFService:
             },
             "items": [
                 {
-                    "product_name": products[str(item.product_id)].name,
+                    "product_name": item.item_name or (
+                        products[str(item.product_id)].name
+                        if str(item.product_id) in products
+                        else "Item"
+                    ),
                     "quantity": item.quantity,
                     "unit_price": str(item.unit_price),
                     "total_price": str(item.total_price),

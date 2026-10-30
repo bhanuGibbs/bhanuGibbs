@@ -27,6 +27,7 @@ class ProductService:
         hsn_code: str | None = None,
         company_id: str | None = None,
         created_by_id: str | None = None,
+        commit: bool = True,
     ) -> Product:
         """Create a new product within a company."""
         if sku:
@@ -41,7 +42,8 @@ class ProductService:
             created_by_id=UUID(created_by_id) if created_by_id else None,
         )
         await self.repository.add(product)
-        await self.repository.commit()
+        if commit:
+            await self.repository.commit()
         return product
 
     async def list_products(self, company_id: str, user_id: str) -> list[Product]:

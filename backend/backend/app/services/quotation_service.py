@@ -12,6 +12,7 @@ from app.models.quotation_item import QuotationItem
 from app.models.product import Product
 from app.models.customer import Customer
 from app.models.company import Company
+from app.models.audit_event import AuditEvent
 from app.repositories.quotation_daily_sequence_repository import QuotationDailySequenceRepository
 from app.repositories.customer_repository import CustomerRepository
 from app.repositories.company_repository import CompanyRepository
@@ -70,6 +71,7 @@ class QuotationService:
             terms: str | None = None,
             currency: str | None = None,
             shipping_amount: Decimal = Decimal("0.00"),
+            commit: bool = True,
     ) -> Quotation:
         """Create or update a draft quotation for preview."""
         draft = await self.repository.get_latest_draft_by_user(created_by_id, company_id)
@@ -92,6 +94,7 @@ class QuotationService:
                 customer_id=customer_id,
                 shipping_amount=shipping_amount,
                 user_id=created_by_id,
+                commit=False,
             )
             return updated
 
@@ -125,7 +128,9 @@ class QuotationService:
         await self.repository.flush()
 
         await self._sync_items_and_totals(quotation, items, company_id, customer_id)
-        await self.repository.commit()
+        await self._record_audit(quotation, created_by_id, "created", None)
+        if commit:
+            await self.repository.commit()
         return await self._refresh_quotation(quotation)
 
     async def create_quotation(
@@ -144,6 +149,7 @@ class QuotationService:
             terms: str | None = None,
             currency: str | None = None,
             shipping_amount: Decimal = Decimal("0.00"),
+            commit: bool = True,
     ) -> Quotation:
         """Create a new quotation or finalize an existing draft."""
         if not reference_number or not reference_number.strip():
@@ -170,8 +176,11 @@ class QuotationService:
                     customer_id=customer_id,
                     shipping_amount=shipping_amount,
                     user_id=created_by_id,
+                    commit=False,
                 )
-                return await self.finalize_quotation(str(existing.id), company_id, created_by_id)
+                return await self.finalize_quotation(
+                    str(existing.id), company_id, created_by_id, commit=commit
+                )
             raise ConflictError("Quotation with this reference number already exists.")
 
         quotation = Quotation(
@@ -194,9 +203,18 @@ class QuotationService:
         await self.repository.flush()
 
         await self._sync_items_and_totals(quotation, items, company_id, customer_id)
-        return await self.finalize_quotation(str(quotation.id), company_id, created_by_id)
+        await self._record_audit(quotation, created_by_id, "created", None)
+        return await self.finalize_quotation(
+            str(quotation.id), company_id, created_by_id, commit=commit
+        )
 
-    async def finalize_quotation(self, quotation_id: str, company_id: str, user_id: str) -> Quotation:
+    async def finalize_quotation(
+        self,
+        quotation_id: str,
+        company_id: str,
+        user_id: str,
+        commit: bool = True,
+    ) -> Quotation:
         quotation = await self.repository.get(quotation_id)
         if not quotation:
             raise NotFoundError("Quotation not found.")
@@ -205,6 +223,11 @@ class QuotationService:
             raise BadRequestError("Quotation does not belong to the current company.")
         if str(quotation.created_by_id) != user_id:
             raise NotFoundError("Quotation not found.")
+
+        if quotation.finalized_at is not None:
+            return quotation
+
+        before_data = await self._quotation_snapshot(quotation)
 
         if quotation.finalized_at is None:
             now = datetime.now(timezone.utc)
@@ -237,6 +260,7 @@ class QuotationService:
             )
 
         quotation.status = 'Final'
+        quotation.updated_by_id = UUID(user_id)
 
         if not quotation.quotation_number:
             company = await self.company_repository.get(company_id)
@@ -248,8 +272,65 @@ class QuotationService:
             prefix =  "INV" if quotation.title.strip().lower() in ("billing", "invoice") else company.quotation_prefix or "QT"
             quotation.quotation_number = f"{prefix}-{sequence_date:%d%m%Y}-{sequence_number:03d}"
             quotation.quotation_year = sequence_date.year
-        await self.repository.commit()
+        await self._record_audit(quotation, user_id, "finalized", before_data)
+        if commit:
+            await self.repository.commit()
         return await self._refresh_quotation(quotation)
+
+    async def _quotation_snapshot(self, quotation: Quotation) -> dict[str, object]:
+        fields = (
+            "reference_number", "quotation_number", "title", "description", "customer_id",
+            "issued_at", "valid_until", "status", "subtotal", "discount", "tax_amount",
+            "shipping_amount", "total_amount", "currency", "terms", "notes",
+            "customer_name", "customer_email", "customer_phone_number", "customer_address",
+        )
+        snapshot: dict[str, object] = {}
+        for name in fields:
+            value = getattr(quotation, name, None)
+            if isinstance(value, (datetime,)):
+                value = value.isoformat()
+            elif isinstance(value, Decimal):
+                value = str(value)
+            elif isinstance(value, UUID):
+                value = str(value)
+            snapshot[name] = value
+
+        items = getattr(quotation, "items", [])
+        if not isinstance(items, (list, tuple)):
+            items = []
+        snapshot["items"] = [
+            {
+                "product_id": str(item.product_id),
+                "name": item.item_name,
+                "quantity": item.quantity,
+                "unit_price": str(item.unit_price),
+                "discount": str(item.discount),
+                "tax_percentage": str(item.tax_percentage),
+                "tax_amount": str(item.tax_amount),
+                "amount": str(item.amount),
+            }
+            for item in items
+        ] if isinstance(items, (list, tuple)) else []
+        return snapshot
+
+    async def _record_audit(
+        self,
+        quotation: Quotation,
+        actor_user_id: str,
+        action: str,
+        before_data: dict[str, object] | None,
+    ) -> None:
+        after_data = await self._quotation_snapshot(quotation)
+        self.repository.session.add(
+            AuditEvent(
+                actor_user_id=UUID(actor_user_id),
+                resource_type="quotation",
+                resource_id=UUID(str(quotation.id)),
+                action=action,
+                before_data=before_data,
+                after_data=after_data,
+            )
+        )
 
     async def _sync_items_and_totals(
             self,
@@ -261,6 +342,8 @@ class QuotationService:
         existing_items = await self.item_repository.list_by_quotation(str(quotation.id))
         for item in existing_items:
             await self.item_repository.delete(item)
+        if hasattr(quotation, "items") and isinstance(quotation.items, list):
+            quotation.items.clear()
 
         if not items:
             raise BadRequestError("Quotation must contain at least one item.")
@@ -308,6 +391,8 @@ class QuotationService:
                 amount=amount,
             )
             await self.item_repository.add(item)
+            if hasattr(quotation, "items") and isinstance(quotation.items, list):
+                quotation.items.append(item)
 
         quotation.subtotal = _money(subtotal)
         quotation.discount = _money(total_discount)
@@ -390,6 +475,7 @@ class QuotationService:
             customer_id: str | None = None,
             shipping_amount: Decimal | None = None,
             user_id: str | None = None,
+            commit: bool = True,
     ) -> Quotation:
         """Update an existing quotation."""
         quotation = await self.repository.get(quotation_id)
@@ -400,6 +486,10 @@ class QuotationService:
             raise BadRequestError("Quotation does not belong to the current company.")
         if user_id and str(quotation.created_by_id) != user_id:
             raise NotFoundError("Quotation not found.")
+        if quotation.finalized_at is not None:
+            raise ConflictError("Finalized documents cannot be edited.")
+
+        before_data = await self._quotation_snapshot(quotation)
 
         if title is not None:
             quotation.title = title
@@ -408,15 +498,8 @@ class QuotationService:
         if issued_at is not None:
             quotation.issued_at = _database_datetime(issued_at)
         if status is not None:
-            if status.strip().lower() == "final" and quotation.finalized_at is None:
+            if status.strip().lower() != "draft":
                 raise BadRequestError("Use the finalize endpoint to finalize a quotation.")
-            if (
-                quotation.finalized_at is not None
-                and status.strip().lower() != quotation.status.strip().lower()
-            ):
-                raise BadRequestError(
-                    "Finalized quotation status cannot be changed through this endpoint."
-                )
             quotation.status = status
         if valid_until is not None:
             quotation.valid_until = _database_datetime(valid_until)
@@ -451,7 +534,11 @@ class QuotationService:
                 quotation.subtotal - quotation.discount + quotation.tax_amount + quotation.shipping_amount
             )
 
-        await self.repository.commit()
+        if user_id:
+            quotation.updated_by_id = UUID(user_id)
+            await self._record_audit(quotation, user_id, "updated", before_data)
+        if commit:
+            await self.repository.commit()
         return await self._refresh_quotation(quotation)
 
     async def update_invoice_payment_status(
@@ -472,7 +559,10 @@ class QuotationService:
         if quotation.status.strip().lower() not in {"final", "paid", "unpaid"}:
             raise BadRequestError("Only finalized invoices can be marked paid or unpaid.")
 
+        before_data = await self._quotation_snapshot(quotation)
         quotation.status = status
+        quotation.updated_by_id = UUID(user_id)
+        await self._record_audit(quotation, user_id, "payment_status_changed", before_data)
         await self.repository.commit()
         return await self._refresh_quotation(quotation)
 
@@ -483,7 +573,11 @@ class QuotationService:
             raise NotFoundError("Quotation not found.")
         if str(quotation.created_by_id) != user_id:
             raise NotFoundError("Quotation not found.")
+        if quotation.finalized_at is not None:
+            raise ConflictError("Finalized documents cannot be deleted.")
 
+        before_data = await self._quotation_snapshot(quotation)
+        await self._record_audit(quotation, user_id, "deleted", before_data)
         await self.repository.delete(quotation)
         await self.repository.commit()
 

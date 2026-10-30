@@ -5,6 +5,7 @@ from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_serializer
+from app.schemas.contact_fields import PhoneNumber
 
 SubscriptionPlan = Literal["free", "basic", "premium"]
 
@@ -14,7 +15,7 @@ class UserBase(BaseModel):
 
     username: str = Field(..., min_length=3, max_length=100)
     email: EmailStr
-    mobile_number: str | None = Field(default=None, max_length=50)
+    mobile_number: PhoneNumber = None
 
 
 class UserCreate(UserBase):
@@ -31,7 +32,7 @@ class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=100)
     email: EmailStr
     password: str = Field(..., min_length=8)
-    mobile_number: str | None = Field(default=None, max_length=50)
+    mobile_number: PhoneNumber = None
 
 
 class UserProfileUpdate(BaseModel):
@@ -39,7 +40,7 @@ class UserProfileUpdate(BaseModel):
 
     username: str | None = Field(default=None, min_length=3, max_length=100)
     email: EmailStr | None = None
-    mobile_number: str | None = Field(default=None, max_length=50)
+    mobile_number: PhoneNumber = None
 
 
 class UserPlanUpdate(BaseModel):
@@ -71,6 +72,7 @@ class UserRead(UserBase):
     """Fields returned in user responses."""
 
     id: UUID | str
+    mobile_number: str | None = None
     is_active: bool
     is_superuser: bool
     role_id: UUID | str
