@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link , useNavigate} from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { fetchApi, readApiError } from '../utils/apiErrors';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
+      const response = await fetchApi('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,8 +27,7 @@ const ForgotPassword = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Request failed');
+        throw await readApiError(response, 'Unable to send reset instructions. Please try again.');
       }
 
       const payload = await response.json();

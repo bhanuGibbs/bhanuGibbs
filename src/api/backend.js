@@ -1,3 +1,5 @@
+import { fetchApi, readApiError } from '../utils/apiErrors';
+
 const API_BASE = '/api';
 
 export const buildBackendFormData = (documentData) => {
@@ -25,16 +27,16 @@ export const buildBackendFormData = (documentData) => {
 };
 
 export const checkBackendHealth = async () => {
-  const response = await fetch(`${API_BASE}/health`);
+  const response = await fetchApi(`${API_BASE}/health`);
   if (!response.ok) {
-    throw new Error('Backend is unavailable');
+    throw await readApiError(response, 'The server is unavailable. Please try again shortly.');
   }
   return response.json();
 };
 
 export const generateBackendPdf = async (documentData) => {
   const payload = buildBackendFormData(documentData);
-  const response = await fetch(`${API_BASE}/quotations/submit`, {
+  const response = await fetchApi(`${API_BASE}/quotations/submit`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -43,8 +45,7 @@ export const generateBackendPdf = async (documentData) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to submit quotation to backend');
+    throw await readApiError(response, 'Unable to submit the document. Please try again.');
   }
 
   return response.json();

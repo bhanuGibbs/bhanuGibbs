@@ -3,11 +3,20 @@ from __future__ import annotations
 from decimal import Decimal
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.product import Product
 from app.repositories.product_repository import ProductRepository
 from app.services.exceptions import ConflictError, NotFoundError
+
+
+def _is_sku_unique_violation(error: IntegrityError) -> bool:
+    original = error.orig
+    constraint_name = getattr(getattr(original, "diag", None), "constraint_name", None)
+    if constraint_name:
+        return constraint_name in {"products_sku_key", "uq_products_sku"}
+    return "products.sku" in str(original).lower() or "products_sku_key" in str(original).lower()
 
 
 class ProductService:
@@ -41,9 +50,15 @@ class ProductService:
             company_id=UUID(company_id) if company_id else None,
             created_by_id=UUID(created_by_id) if created_by_id else None,
         )
-        await self.repository.add(product)
-        if commit:
-            await self.repository.commit()
+        try:
+            await self.repository.add(product)
+            if commit:
+                await self.repository.commit()
+        except IntegrityError as error:
+            await self.repository.rollback()
+            if not _is_sku_unique_violation(error):
+                raise
+            raise ConflictError("Product with this SKU already exists.") from error
         return product
 
     async def list_products(self, company_id: str, user_id: str) -> list[Product]:
@@ -70,6 +85,11 @@ class ProductService:
         if not product:
             raise NotFoundError("Product not found.")
 
+        if sku is not None and sku != product.sku:
+            existing = await self.repository.get_by_sku(sku)
+            if existing and existing.id != product.id:
+                raise ConflictError("Product with this SKU already exists.")
+
         if name is not None:
             product.name = name
         if description is not None:
@@ -85,7 +105,13 @@ class ProductService:
         if hsn_code is not None:
             product.hsn_code = hsn_code
 
-        await self.repository.commit()
+        try:
+            await self.repository.commit()
+        except IntegrityError as error:
+            await self.repository.rollback()
+            if not _is_sku_unique_violation(error):
+                raise
+            raise ConflictError("Product with this SKU already exists.") from error
         await self.repository.session.refresh(product)
         return product
 

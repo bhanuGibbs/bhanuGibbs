@@ -1,5 +1,6 @@
 import {Page, Text, View, Document, StyleSheet, Image} from '@react-pdf/renderer';
 import {calculateLineAmounts} from '../utils/calculations';
+import {formatAppDate} from '../utils/dateFormat';
 
 const styles = StyleSheet.create({
     page: {
@@ -310,10 +311,10 @@ const QuotationPDF = ({data}) => {
                             fontSize: 8,
                             color: '#64748b',
                             marginBottom: 3
-                        }}>Date: {data.quotation?.quotationDate || ''}</Text>
+                        }}>Date: {formatAppDate(data.quotation?.quotationDate, '')}</Text>
                         {data.quotation?.validUntil ? (
                             <Text style={{fontSize: 8, color: '#64748b'}}>Valid
-                                until: {data.quotation.validUntil}</Text>
+                                until: {formatAppDate(data.quotation.validUntil, '')}</Text>
                         ) : null}
                     </View>
                 </View>

@@ -8,6 +8,32 @@ from app.services.quotation_service import QuotationService
 
 
 class QuotationServiceCalculationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_audit_snapshot_loads_items_without_sync_relationship_access(self) -> None:
+        class QuotationWithLazyItems:
+            id = uuid4()
+
+            @property
+            def items(self):
+                raise AssertionError("The ORM relationship must not be accessed synchronously")
+
+        item = SimpleNamespace(
+            product_id=uuid4(),
+            item_name="Saved item",
+            quantity=2,
+            unit_price=Decimal("3.50"),
+            discount=Decimal("0"),
+            tax_percentage=Decimal("0"),
+            tax_amount=Decimal("0"),
+            amount=Decimal("7.00"),
+        )
+        service = QuotationService(AsyncMock())
+        service.item_repository.list_by_quotation = AsyncMock(return_value=[item])
+
+        snapshot = await service._quotation_snapshot(QuotationWithLazyItems())
+
+        self.assertEqual(snapshot["items"][0]["name"], "Saved item")
+        service.item_repository.list_by_quotation.assert_awaited_once()
+
     async def test_sync_items_rounds_line_amounts_and_document_totals_consistently(self) -> None:
         user_id = uuid4()
         company_id = uuid4()

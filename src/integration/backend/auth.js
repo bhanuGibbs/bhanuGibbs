@@ -1,24 +1,10 @@
+import { fetchApi, readApiError } from '../../utils/apiErrors.js';
+
 const API_BASE = import.meta.env?.VITE_API_BASE || '/api';
 let refreshInFlight = null;
 
 const readErrorMessage = async (response, fallback) => {
-  const responseText = await response.text();
-  if (!responseText) return fallback;
-
-  try {
-    const payload = JSON.parse(responseText);
-    const detail = payload.detail ?? payload.message ?? payload.error;
-    const message = Array.isArray(detail)
-      ? detail.map((item) => item.msg || item.message || String(item)).join(' ')
-      : typeof detail === 'string' ? detail : '';
-
-    if (message === 'Invalid credentials.') {
-      return 'Invalid username or password. Please try again.';
-    }
-    return message || fallback;
-  } catch {
-    return responseText;
-  }
+  return (await readApiError(response, fallback)).message;
 };
 
 const decodeJwtPayload = (token) => {
@@ -91,7 +77,7 @@ export const getStoredUser = () => {
 };
 
 export const registerUser = async ({ username, email, password, mobile_number }) => {
-  const response = await fetch(`${API_BASE}/auth/register`, {
+  const response = await fetchApi(`${API_BASE}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -116,7 +102,7 @@ export const loginUser = async ({ username, password }) => {
   formData.append('username', username);
   formData.append('password', password);
 
-  const response = await fetch(`${API_BASE}/auth/login`, {
+  const response = await fetchApi(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -143,7 +129,7 @@ export const logoutBackend = async () => {
   const refreshToken = getStoredRefreshToken();
   if (!refreshToken) return;
 
-  await fetch(`${API_BASE}/auth/logout`, {
+  await fetchApi(`${API_BASE}/auth/logout`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -207,7 +193,7 @@ export const refreshAuthToken = async () => {
   const refreshToken = window.localStorage.getItem('quotation_backend_refresh_token');
   if (!refreshToken) return null;
 
-  const response = await fetch(`${API_BASE}/auth/refresh`, {
+  const response = await fetchApi(`${API_BASE}/auth/refresh`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -231,7 +217,7 @@ export const authenticatedFetch = async (input, init = {}) => {
     const token = getStoredToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
     else headers.delete('Authorization');
-    return fetch(input, { ...init, headers });
+    return fetchApi(input, { ...init, headers });
   };
 
   let response = await requestWithCurrentToken();
@@ -267,7 +253,7 @@ export const getAuthorizedHeaders = () => {
 };
 
 export const resetPassword = async ({ token, new_password }) => {
-  const response = await fetch(`${API_BASE}/auth/reset-password`, {
+  const response = await fetchApi(`${API_BASE}/auth/reset-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

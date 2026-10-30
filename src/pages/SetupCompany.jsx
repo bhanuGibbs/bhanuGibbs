@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { setupCompany } from '../integration/backend/auth';
 import AuthLayout from '../components/AuthLayout';
+import { digitsOnly } from '../utils/numericInput';
 
 const SetupCompany = () => {
   const navigate = useNavigate();
@@ -89,9 +90,14 @@ const SetupCompany = () => {
           <label className="block text-sm font-medium text-slate-700">
             Phone number
             <input
+              type="tel"
+              inputMode="numeric"
+              maxLength={10}
+              pattern="[0-9]{10}"
+              title="Please provide valid data: enter a 10-digit mobile number."
               className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.phone_number}
-              onChange={(event) => setForm({ ...form, phone_number: event.target.value })}
+              onChange={(event) => setForm({ ...form, phone_number: digitsOnly(event.target.value, 10) })}
               placeholder="Enter phone number"
             />
           </label>
@@ -127,9 +133,13 @@ const SetupCompany = () => {
               <label key={field} className="block text-sm font-medium text-slate-700">
                 {label}
                 <input
+                  inputMode={field === 'pincode' ? 'numeric' : undefined}
+                  maxLength={field === 'pincode' ? 6 : undefined}
+                  pattern={field === 'pincode' ? '[0-9]{6}' : undefined}
+                  title={field === 'pincode' ? 'Please provide valid data: enter a 6-digit PIN code.' : undefined}
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form[field]}
-                  onChange={(event) => setForm({ ...form, [field]: event.target.value })}
+                  onChange={(event) => setForm({ ...form, [field]: field === 'pincode' ? digitsOnly(event.target.value, 6) : event.target.value })}
                   placeholder={label}
                 />
               </label>

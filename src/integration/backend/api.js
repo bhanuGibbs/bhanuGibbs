@@ -1,6 +1,7 @@
-import { authenticatedFetch, getAuthorizedHeaders } from './auth';
+import { authenticatedFetch, getAuthorizedHeaders } from './auth.js';
+import { fetchApi, readApiError } from '../../utils/apiErrors.js';
 
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const API_BASE = import.meta.env?.VITE_API_BASE || '/api';
 
 export const buildBackendQuotationPayload = (documentData) => {
   const referenceNumber = documentData?.quotation?.quotationNumber?.trim();
@@ -46,9 +47,9 @@ export const buildBackendQuotationPayload = (documentData) => {
 };
 
 export const checkBackendHealth = async () => {
-  const response = await fetch(`${API_BASE}/health`);
+  const response = await fetchApi(`${API_BASE}/health`);
   if (!response.ok) {
-    throw new Error('Backend is unavailable');
+    throw await readApiError(response, 'The server is unavailable. Please try again shortly.');
   }
   return response.json();
 };
@@ -65,8 +66,7 @@ export const submitQuotationToBackend = async (documentData) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to submit quotation to backend');
+    throw await readApiError(response, 'Unable to submit quotation. Please try again.');
   }
 
   return response.json();
@@ -84,8 +84,7 @@ export const submitQuotationDraftToBackend = async (documentData) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to save quotation draft to backend');
+    throw await readApiError(response, 'Unable to save the quotation draft. Please try again.');
   }
 
   return response.json();
@@ -101,8 +100,7 @@ export const finalizeQuotation = async (quotationId) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to finalize quotation');
+    throw await readApiError(response, 'Unable to finalize the document. Please try again.');
   }
 
   return response.json();
@@ -136,8 +134,7 @@ export const createCustomerIfMissing = async (customer) => {
   }
 
   // For other failures, throw an error so callers can decide what to do
-  const text = await response.text();
-  throw new Error(text || 'Unable to create customer');
+  throw await readApiError(response, 'Unable to create customer. Please try again.');
 };
 
 export const getCustomers = async () => {
@@ -148,8 +145,7 @@ export const getCustomers = async () => {
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || 'Unable to load customers');
+    throw await readApiError(response, 'Unable to load customers. Please try again.');
   }
 
   return response.json();
@@ -166,8 +162,7 @@ export const createCustomer = async (payload) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to create customer');
+    throw await readApiError(response, 'Unable to create customer. Please try again.');
   }
 
   return response.json();
@@ -184,8 +179,7 @@ export const updateCustomer = async (customerId, payload) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to update customer');
+    throw await readApiError(response, 'Unable to update customer. Please try again.');
   }
 
   return response.json();
@@ -200,8 +194,7 @@ export const deleteCustomer = async (customerId) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to delete customer');
+    throw await readApiError(response, 'Unable to delete customer. Please try again.');
   }
 
   return true;
@@ -215,8 +208,7 @@ export const getProducts = async () => {
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || 'Unable to load products');
+    throw await readApiError(response, 'Unable to load products. Please try again.');
   }
 
   return response.json();
@@ -233,8 +225,7 @@ export const createProduct = async (payload) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to create product');
+    throw await readApiError(response, 'Unable to create product. Please try again.');
   }
 
   return response.json();
@@ -251,8 +242,7 @@ export const updateProduct = async (productId, payload) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to update product');
+    throw await readApiError(response, 'Unable to update product. Please try again.');
   }
 
   return response.json();
@@ -267,8 +257,7 @@ export const deleteProduct = async (productId) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to delete product');
+    throw await readApiError(response, 'Unable to delete product. Please try again.');
   }
 
   return true;
@@ -282,8 +271,7 @@ export const getQuotations = async () => {
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || 'Unable to load quotations');
+    throw await readApiError(response, 'Unable to load documents. Please try again.');
   }
 
   return response.json();
@@ -297,8 +285,7 @@ export const getAdminUsers = async () => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to load users');
+    throw await readApiError(response, 'Unable to load users. Please try again.');
   }
 
   return response.json();
@@ -315,8 +302,7 @@ export const updateUserPlan = async (userId, subscriptionPlan) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to update user plan');
+    throw await readApiError(response, 'Unable to update the user plan. Please try again.');
   }
 
   return response.json();
@@ -333,8 +319,7 @@ export const updateInvoicePaymentStatus = async (quotationId, paymentStatus) => 
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to update invoice payment status');
+    throw await readApiError(response, 'Unable to update payment status. Please try again.');
   }
 
   return response.json();
@@ -349,8 +334,7 @@ export const deleteQuotation = async (quotationId) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to delete quotation');
+    throw await readApiError(response, 'Unable to delete the document. Please try again.');
   }
 
   return true;
@@ -364,8 +348,7 @@ export const downloadQuotationPdf = async (quotationId, filename) => {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Unable to download document');
+    throw await readApiError(response, 'Unable to download the document. Please try again.');
   }
 
   const fileUrl = URL.createObjectURL(await response.blob());

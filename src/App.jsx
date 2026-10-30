@@ -13,7 +13,8 @@ import SetupCompany from './pages/SetupCompany';
 import Profile from './pages/Profile';
 import AdminUsers from './pages/AdminUsers';
 import Info from './pages/Info';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
 
 const RequireAuth = ({ children }) => {
   const { user, isAuthenticated, loading } = useAuth();

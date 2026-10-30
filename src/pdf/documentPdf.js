@@ -1,5 +1,7 @@
 import {createElement} from 'react';
 import {calculateSummary, normalizeDocumentTotals} from '../utils/calculations';
+import {formatAppDate} from '../utils/dateFormat';
+import {sanitizePdfData} from '../utils/pdfText';
 
 export const normalizeDocumentPdfData = normalizeDocumentTotals;
 
@@ -8,7 +10,7 @@ export const createDocumentPdfBlob = async (data) => {
         import('@react-pdf/renderer'),
         import('./QuotationPDF'),
     ]);
-    return pdf(createElement(QuotationPDF, {data: normalizeDocumentPdfData(data)})).toBlob();
+    return pdf(createElement(QuotationPDF, {data: sanitizePdfData(normalizeDocumentPdfData(data))})).toBlob();
 };
 
 export const downloadPdfUrl = (url, filename) => {
@@ -26,19 +28,6 @@ export const downloadPdfBlob = async (blob, filename) => {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
-const formatPdfDate = (value) => {
-    if (!value) return '';
-    const date = new Date(`${String(value).slice(0, 10)}T00:00:00Z`);
-    return Number.isNaN(date.getTime())
-        ? String(value)
-        : new Intl.DateTimeFormat('en-IN', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-            timeZone: 'UTC',
-        }).format(date);
-};
-
 export const buildSavedDocumentPdfData = (document, user) => {
     const items = (document.items || []).map((item) => ({
         id: item.id,
@@ -51,7 +40,7 @@ export const buildSavedDocumentPdfData = (document, user) => {
     const shipping = Number(document.shipping_amount || 0);
 
     return {
-        generatedAt: formatPdfDate(document.issued_at || document.created_at),
+        generatedAt: formatAppDate(document.issued_at || document.created_at, ''),
         documentType: ['invoice', 'billing'].includes(
             String(document.title || '').trim().toLowerCase()
         )
@@ -74,8 +63,8 @@ export const buildSavedDocumentPdfData = (document, user) => {
         },
         quotation: {
             quotationNumber: document.quotation_number || document.reference_number || '',
-            quotationDate: formatPdfDate(document.issued_at),
-            validUntil: formatPdfDate(document.valid_until),
+            quotationDate: formatAppDate(document.issued_at, ''),
+            validUntil: formatAppDate(document.valid_until, ''),
             currency: document.currency || 'INR',
             terms: document.terms || '',
             authorizedPerson: user?.username || user?.name || '',

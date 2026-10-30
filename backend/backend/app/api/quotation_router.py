@@ -243,6 +243,10 @@ async def submit_quotation(
         items=line_items,
         created_by_id=current_user["id"],
         created_by_username=current_user["username"],
+        valid_until=payload.valid_until.isoformat() if payload.valid_until else None,
+        notes=payload.notes,
+        terms=payload.terms,
+        currency=payload.currency,
         shipping_amount=payload.shipping_amount,
         commit=False,
     )

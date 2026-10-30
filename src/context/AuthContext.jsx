@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { AuthContextValue } from './AuthContextValue';
 import {
   getStoredToken,
   getStoredRefreshToken,
@@ -10,8 +11,6 @@ import {
   registerUser,
   refreshAuthToken,
 } from '../integration/backend/auth';
-
-const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -99,7 +98,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider
+    <AuthContextValue.Provider
       value={{
         user,
         isAuthenticated,
@@ -113,8 +112,6 @@ export const AuthProvider = ({ children }) => {
       }}
     >
       {children}
-    </AuthContext.Provider>
+    </AuthContextValue.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

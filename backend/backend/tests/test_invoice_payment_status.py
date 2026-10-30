@@ -21,6 +21,7 @@ class InvoicePaymentStatusTests(unittest.IsolatedAsyncioTestCase):
         self.service = QuotationService(AsyncMock())
         self.service.repository.session.add = Mock()
         self.service.repository.get = AsyncMock(return_value=self.invoice)
+        self.service.item_repository.list_by_quotation = AsyncMock(return_value=[])
         self.service.repository.commit = AsyncMock()
         self.service.repository.session.refresh = AsyncMock()
 

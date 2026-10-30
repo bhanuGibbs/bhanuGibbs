@@ -36,6 +36,7 @@ class MonthlyQuotationLimitTests(unittest.IsolatedAsyncioTestCase):
         self.service = QuotationService(AsyncMock())
         self.service.repository.session.add = Mock()
         self.service.repository.get = AsyncMock(return_value=self.quotation)
+        self.service.item_repository.list_by_quotation = AsyncMock(return_value=[])
         self.service.repository.lock_user_for_finalization = AsyncMock(return_value="free")
         self.service.repository.count_finalized_by_user_between = AsyncMock(return_value=9)
         self.service.repository.record_finalization = AsyncMock()

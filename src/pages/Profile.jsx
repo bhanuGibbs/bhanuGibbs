@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Header from '../components/Header';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { updateCurrentUser } from '../integration/backend/auth';
+import { digitsOnly } from '../utils/numericInput';
 
 const Profile = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -77,10 +78,14 @@ const Profile = () => {
             <label className="block text-sm font-medium text-slate-700">
               Mobile number
               <input
-                maxLength={50}
+                type="tel"
+                inputMode="numeric"
+                maxLength={10}
+                pattern="[0-9]{10}"
+                title="Please provide valid data: enter a 10-digit mobile number."
                 name="mobile_number"
                 value={form.mobile_number}
-                onChange={handleChange}
+                onChange={(event) => setForm((current) => ({ ...current, mobile_number: digitsOnly(event.target.value, 10) }))}
                 className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
               />
             </label>

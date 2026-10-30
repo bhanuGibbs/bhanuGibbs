@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Header from '../components/Header';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { createCustomer, deleteCustomer, getCustomers, updateCustomer } from '../integration/backend/api';
+import { digitsOnly } from '../utils/numericInput';
 
 const emptyCustomer = {
   name: '',
@@ -195,10 +196,14 @@ const Customers = () => {
                 Phone number
                 <input
                   type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
+                  pattern="[0-9]{10}"
+                  title="Please provide valid data: enter a 10-digit mobile number."
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
                   value={form.phone_number}
-                  onChange={(event) => setField('phone_number', event.target.value)}
-                  placeholder="+91 98765 43210"
+                  onChange={(event) => setField('phone_number', digitsOnly(event.target.value, 10))}
+                  placeholder="9876543210"
                 />
               </label>
 

@@ -10,6 +10,7 @@ from app.models.product import Product
 from app.schemas.customer import CustomerRead
 from app.schemas.product import ProductRead
 from app.services.customer_service import CustomerService
+from app.services.exceptions import ConflictError
 from app.services.product_service import ProductService
 
 
@@ -51,6 +52,18 @@ class CatalogUpdateRefreshTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.name, "After update")
         self.assertEqual(response.price, Decimal("15.75"))
         self.assertIsNotNone(response.updated_at)
+
+    async def test_product_update_rejects_sku_used_by_another_product(self) -> None:
+        first = Product(name="First", price=Decimal("1.00"), sku="FIRST")
+        second = Product(name="Second", price=Decimal("2.00"), sku="SECOND")
+        self.session.add_all([first, second])
+        await self.session.commit()
+
+        with self.assertRaises(ConflictError):
+            await ProductService(self.session).update_product(str(first.id), sku="SECOND")
+
+        await self.session.refresh(first)
+        self.assertEqual(first.sku, "FIRST")
 
 
 if __name__ == "__main__":

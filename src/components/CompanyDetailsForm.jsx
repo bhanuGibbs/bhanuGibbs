@@ -1,4 +1,5 @@
 import { Building2, Mail, Phone, Globe, MapPin, BadgeCheck } from 'lucide-react';
+import { digitsOnly, PHONE_NUMBER_REGEX, PINCODE_REGEX } from '../utils/numericInput';
 
 const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100';
 const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
@@ -78,8 +79,8 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
 
         <div>
           <label className={labelClass}>Pincode</label>
-          <input className={inputClass} {...register('company.pincode', { pattern: { value: /^[0-9]{4,8}$/, message: 'Enter a valid pincode' } })} />
-          {errors.company?.pincode ? <p className="mt-1 text-sm text-rose-500">{errors.company.pincode.message}</p> : null}
+          <input className={inputClass} inputMode="numeric" maxLength={6} {...register('company.pincode', { pattern: { value: PINCODE_REGEX, message: 'Pincode must be exactly 6 digits' }, onChange: (event) => { event.target.value = digitsOnly(event.target.value, 6); } })} />
+          {errors.company?.pincode ? <p className="mt-1 text-sm text-rose-500">Please provide valid data: enter a 6-digit PIN code.</p> : null}
         </div>
 
         <div>
@@ -92,9 +93,9 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
           <label className={labelClass}>Phone Number</label>
           <div className="relative">
             <Phone className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
-            <input className={`${inputClass} pl-10`} {...register('company.phone', { pattern: { value: /^[0-9+\-()\s]{7,15}$/, message: 'Enter a valid phone number' } })} />
+            <input className={`${inputClass} pl-10`} type="tel" inputMode="numeric" maxLength={10} {...register('company.phone', { pattern: { value: PHONE_NUMBER_REGEX, message: 'Please provide valid data: enter a 10-digit mobile number.' }, onChange: (event) => { event.target.value = digitsOnly(event.target.value, 10); } })} />
           </div>
-          {errors.company?.phone ? <p className="mt-1 text-sm text-rose-500">{errors.company.phone.message}</p> : null}
+          {errors.company?.phone ? <p className="mt-1 text-sm text-rose-500">Please provide valid data: enter a 10-digit mobile number.</p> : null}
         </div>
 
         <div>

@@ -1,11 +1,11 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useLocation} from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import toast, {Toaster} from 'react-hot-toast';
 import dayjs from 'dayjs';
 import Header from '../components/Header';
-import {useAuth} from '../context/AuthContext';
+import {useAuth} from '../context/useAuth';
 import CompanyDetailsForm from '../components/CompanyDetailsForm';
 import CustomerDetailsForm from '../components/CustomerDetailsForm';
 import QuotationDetailsForm from '../components/QuotationDetailsForm';
@@ -17,7 +17,7 @@ import Footer from '../components/Footer';
 import {createDocumentPdfBlob, downloadPdfUrl} from '../pdf/documentPdf';
 import {defaultValues} from '../constants/defaultValues';
 import {calculateSummary} from '../utils/calculations';
-import {createProduct, getProducts, submitQuotationDraftToBackend, finalizeQuotation} from '../integration/backend/api';
+import {createProduct, getProducts, submitQuotationToBackend} from '../integration/backend/api';
 
 
 const Home = () => {
@@ -29,6 +29,7 @@ const Home = () => {
     const [productsLoading, setProductsLoading] = useState(false);
     const [productsError, setProductsError] = useState('');
     const [savingProductId, setSavingProductId] = useState('');
+    const downloadInProgress = useRef(false);
     const location = useLocation();
     const {logout, user} = useAuth();
 
@@ -176,12 +177,14 @@ const Home = () => {
 
     const handleDownload = async (data) => {
         if (!validateDocument(data)) return;
+        if (downloadInProgress.current) return;
+        downloadInProgress.current = true;
         const documentData = buildDocumentData(data);
         const documentLabel = documentMode === 'billing' ? 'Invoice' : 'Quotation';
+        let phase = `saving the ${documentLabel.toLowerCase()}`;
 
         try {
-            const draft = await submitQuotationDraftToBackend(documentData);
-            const finalQuotation = await finalizeQuotation(draft.id);
+            const finalQuotation = await submitQuotationToBackend(documentData);
             const updatedDocumentData = {
                 ...documentData,
                 quotation: {
@@ -189,6 +192,7 @@ const Home = () => {
                     quotationNumber: finalQuotation.quotation_number || finalQuotation.reference_number,
                 },
             };
+            phase = `generating the ${documentLabel.toLowerCase()} PDF`;
             const blob = await createDocumentPdfBlob(updatedDocumentData);
             const url = URL.createObjectURL(blob);
             downloadPdfUrl(url, `${updatedDocumentData.quotation.quotationNumber}.pdf`);
@@ -198,7 +202,9 @@ const Home = () => {
             toast.success(`${documentLabel} saved and downloaded.`);
         } catch (error) {
             console.error(error);
-            toast.error(error.message || `Unable to save and download the ${documentLabel.toLowerCase()}.`);
+            toast.error(`Could not complete ${phase}: ${error.message || 'Please try again.'}`);
+        } finally {
+            downloadInProgress.current = false;
         }
     };
 

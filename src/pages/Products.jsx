@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Header from '../components/Header';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { createProduct, deleteProduct, getProducts, updateProduct } from '../integration/backend/api';
 
 const emptyProduct = {
@@ -53,13 +53,18 @@ const Products = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    const price = Number(form.price);
+    if (!Number.isFinite(price) || price <= 0) {
+      setError('Please provide a valid product price greater than zero.');
+      return;
+    }
     setSubmitting(true);
 
     try {
       const payload = {
         name: form.name,
         description: form.description || null,
-        price: Number(form.price) || 0,
+        price,
         sku: form.sku || null,
         gst_percentage: form.gst_percentage === '' ? null : Number(form.gst_percentage),
         unit: form.unit || null,
@@ -196,7 +201,7 @@ const Products = () => {
                 Price
                 <input
                   type="number"
-                  min="0"
+                  min="0.01"
                   step="0.01"
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
                   value={form.price}

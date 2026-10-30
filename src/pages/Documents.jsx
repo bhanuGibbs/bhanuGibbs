@@ -10,10 +10,12 @@ import {
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Header from '../components/Header';
-import { useAuth } from '../context/AuthContext';
-import { deleteQuotation, getQuotations, updateInvoicePaymentStatus } from '../integration/backend/api';
+import DateInput from '../components/DateInput';
+import { useAuth } from '../context/useAuth';
+import { deleteQuotation, downloadQuotationPdf, getQuotations, updateInvoicePaymentStatus } from '../integration/backend/api';
 import { buildSavedDocumentPdfData, createDocumentPdfBlob, downloadPdfBlob } from '../pdf/documentPdf';
 import { getInvoicePaymentStatus, isInvoiceDocument } from '../utils/documentTypes';
+import { formatAppDate } from '../utils/dateFormat';
 
 const formatMoney = (value, currency = 'INR') =>
   new Intl.NumberFormat('en-IN', {
@@ -22,14 +24,6 @@ const formatMoney = (value, currency = 'INR') =>
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Number(value) || 0);
-
-const formatDate = (value) => {
-  if (!value) return '—';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? '—'
-    : new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
-};
 
 const getDateKey = (value) => {
   const dateKey = String(value || '').slice(0, 10);
@@ -136,13 +130,19 @@ const Documents = ({ documentType }) => {
 
   const handleDownload = async (document) => {
     setDownloadingId(document.id);
+    const number = document.quotation_number || document.reference_number || document.id;
+    const filename = `${number}.pdf`;
     try {
-      const number = document.quotation_number || document.reference_number || document.id;
       const blob = await createDocumentPdfBlob(buildSavedDocumentPdfData(document, user));
-      await downloadPdfBlob(blob, `${number}.pdf`);
+      await downloadPdfBlob(blob, filename);
       toast.success(`${isBilling ? 'Invoice' : 'Quotation'} downloaded`);
     } catch (requestError) {
-      toast.error(requestError.message || 'Could not download PDF.');
+      try {
+        await downloadQuotationPdf(document.id, filename);
+        toast.success(`${isBilling ? 'Invoice' : 'Quotation'} downloaded`);
+      } catch (fallbackError) {
+        toast.error(fallbackError.message || requestError.message || 'Could not download PDF. Please try again.');
+      }
     } finally {
       setDownloadingId('');
     }
@@ -192,26 +192,8 @@ const Documents = ({ documentType }) => {
               </button>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="block text-xs font-medium text-slate-600">
-                From
-                <input
-                  type="date"
-                  value={dateFrom}
-                  max={dateTo || undefined}
-                  onChange={(event) => setDateFrom(event.target.value)}
-                  className="mt-1.5 block min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                />
-              </label>
-              <label className="block text-xs font-medium text-slate-600">
-                To
-                <input
-                  type="date"
-                  value={dateTo}
-                  min={dateFrom || undefined}
-                  onChange={(event) => setDateTo(event.target.value)}
-                  className="mt-1.5 block min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-base text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                />
-              </label>
+              <DateInput label="From" value={dateFrom} max={dateTo || undefined} onChange={(event) => setDateFrom(event.target.value)} />
+              <DateInput label="To" value={dateTo} min={dateFrom || undefined} onChange={(event) => setDateTo(event.target.value)} />
             </div>
             {invalidDateRange ? (
               <p role="alert" className="mt-3 text-sm text-rose-700">The start date must be on or before the end date.</p>
@@ -322,7 +304,7 @@ const Documents = ({ documentType }) => {
                         <span className="mt-0.5 block text-xs text-slate-500">{document.title || 'Quotation'}</span>
                       </td>
                       <td className="px-4 py-4 text-slate-700">{document.customer_name || '—'}</td>
-                      <td className="px-4 py-4 text-slate-500">{formatDate(document.issued_at)}</td>
+                      <td className="px-4 py-4 text-slate-500">{formatAppDate(document.issued_at)}</td>
                       <td className="px-4 py-4">
                         <div className="flex flex-col items-start gap-2">
                           <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusColor}`}>

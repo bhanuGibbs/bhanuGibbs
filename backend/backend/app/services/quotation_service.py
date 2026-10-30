@@ -295,9 +295,7 @@ class QuotationService:
                 value = str(value)
             snapshot[name] = value
 
-        items = getattr(quotation, "items", [])
-        if not isinstance(items, (list, tuple)):
-            items = []
+        items = await self.item_repository.list_by_quotation(str(quotation.id))
         snapshot["items"] = [
             {
                 "product_id": str(item.product_id),
@@ -310,7 +308,7 @@ class QuotationService:
                 "amount": str(item.amount),
             }
             for item in items
-        ] if isinstance(items, (list, tuple)) else []
+        ]
         return snapshot
 
     async def _record_audit(
@@ -342,8 +340,6 @@ class QuotationService:
         existing_items = await self.item_repository.list_by_quotation(str(quotation.id))
         for item in existing_items:
             await self.item_repository.delete(item)
-        if hasattr(quotation, "items") and isinstance(quotation.items, list):
-            quotation.items.clear()
 
         if not items:
             raise BadRequestError("Quotation must contain at least one item.")
@@ -391,8 +387,6 @@ class QuotationService:
                 amount=amount,
             )
             await self.item_repository.add(item)
-            if hasattr(quotation, "items") and isinstance(quotation.items, list):
-                quotation.items.append(item)
 
         quotation.subtotal = _money(subtotal)
         quotation.discount = _money(total_discount)

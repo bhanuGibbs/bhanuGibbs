@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import toast from 'react-hot-toast';
 import AuthLayout from '../components/AuthLayout';
+import { digitsOnly } from '../utils/numericInput';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -67,9 +68,14 @@ const Register = () => {
           <label className="block text-sm font-medium text-slate-700">
             Mobile number
             <input
+              type="tel"
+              inputMode="numeric"
+              maxLength={10}
+              pattern="[0-9]{10}"
+              title="Please provide valid data: enter a 10-digit mobile number."
               className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
               value={form.mobile_number}
-              onChange={(event) => setForm({ ...form, mobile_number: event.target.value })}
+              onChange={(event) => setForm({ ...form, mobile_number: digitsOnly(event.target.value, 10) })}
               placeholder="Optional mobile number"
               autoComplete="tel"
             />

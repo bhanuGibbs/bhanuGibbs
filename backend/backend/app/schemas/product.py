@@ -12,7 +12,7 @@ class ProductBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=1024)
-    price: Decimal = Field(..., gt=0)
+    price: Decimal = Field(..., ge=Decimal("0.01"))
     sku: str | None = Field(default=None, max_length=100)
     gst_percentage: Decimal | None = Field(default=None, ge=0, le=100)
     unit: str | None = Field(default=None, max_length=50)
@@ -28,7 +28,7 @@ class ProductUpdate(BaseModel):
 
     name: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=1024)
-    price: Decimal | None = Field(default=None, gt=0)
+    price: Decimal | None = Field(default=None, ge=Decimal("0.01"))
     sku: str | None = Field(default=None, max_length=100)
     gst_percentage: Decimal | None = Field(default=None, ge=0, le=100)
     unit: str | None = Field(default=None, max_length=50)

@@ -16,9 +16,10 @@ import {
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Header from '../components/Header';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { getCustomers, getProducts, getQuotations } from '../integration/backend/api';
 import { isInvoiceDocument } from '../utils/documentTypes';
+import { formatAppDate } from '../utils/dateFormat';
 
 const formatMoney = (value, currency = 'INR') =>
   new Intl.NumberFormat('en-IN', {
@@ -27,14 +28,6 @@ const formatMoney = (value, currency = 'INR') =>
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Number(value) || 0);
-
-const formatDate = (value) => {
-  if (!value) return '—';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? '—'
-    : new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
-};
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -197,7 +190,7 @@ const Dashboard = () => {
                           </div>
                         </td>
                         <td className="px-4 py-4 text-slate-600">{document.customer_name || '—'}</td>
-                        <td className="px-4 py-4 text-slate-500">{formatDate(document.issued_at)}</td>
+                        <td className="px-4 py-4 text-slate-500">{formatAppDate(document.issued_at)}</td>
                         <td className="px-4 py-4">
                           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700">
                             {document.status || 'Draft'}
