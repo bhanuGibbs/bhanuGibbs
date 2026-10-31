@@ -1,0 +1,11 @@
+.git
+.github
+.venv
+backend
+dist
+node_modules
+out
+coverage
+*.log
+.env
+.env.*
