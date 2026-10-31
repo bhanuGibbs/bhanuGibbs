@@ -22,11 +22,16 @@ DEFAULT_ROLES = [
 
 
 async def seed_roles(session: AsyncSession) -> None:
-    """Ensure default roles exist in the database."""
+    """Ensure default roles exist in the database, updating descriptions if they have changed."""
     role_service = RoleService(session)
     for role_data in DEFAULT_ROLES:
         existing_role = await role_service.get_role_by_name(role_data["name"])
-        if not existing_role:
+        if existing_role:
+            # Update the description if it has changed
+            if existing_role.description != role_data["description"]:
+                existing_role.description = role_data["description"]
+                await role_service.save()
+        else:
             await role_service.create_role(
                 name=role_data["name"],
                 description=role_data["description"],

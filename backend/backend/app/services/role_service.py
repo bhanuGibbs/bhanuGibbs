@@ -21,6 +21,10 @@ class RoleService:
         """Return a list of all available roles."""
         return await self.repository.list_all()
 
+    async def save(self) -> None:
+        """Persist pending changes to the database."""
+        await self.repository.commit()
+
     async def create_role(self, name: str, description: str | None = None) -> Role:
         """Create a new role in the database."""
         role = Role(name=name, description=description)
