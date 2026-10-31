@@ -53,7 +53,7 @@ Gstin = Annotated[
 HsnCode = Annotated[
     Annotated[
         str,
-        StringConstraints(pattern=r"^\d{2,8}$", min_length=2, max_length=8),
+        StringConstraints(pattern=r"^[A-Za-z0-9]{2,8}$", min_length=2, max_length=8),
     ] | None,
     BeforeValidator(_empty_to_none),
 ]
