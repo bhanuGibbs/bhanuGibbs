@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from pathlib import Path
 
 from alembic import command
@@ -10,6 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.database import get_session
 from app.services.role_service import RoleService
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_ROLES = [
     {"name": "Super Admin", "description": "Full system access: manage all users, roles, and subscription plans across all companies."},
@@ -42,13 +45,16 @@ async def create_initial_data() -> None:
 
     try:
         await asyncio.to_thread(command.upgrade, config, "head")
+        logger.info("Alembic migrations applied successfully.")
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning("Alembic upgrade skipped: %s", e)
+        logger.error("Alembic migration failed: %s. The application may not function correctly with an outdated database schema.", e)
+        # Re-raise to prevent the application from starting with an incomplete schema
+        raise
 
     try:
         async with get_session() as session:
             await seed_roles(session)
+        logger.info("Default roles seeded successfully.")
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning("Role seeding skipped: %s", e)
+        logger.error("Role seeding failed: %s. Default roles may be missing.", e)
+        raise
