@@ -3,7 +3,8 @@
 /backend/backend/quotation.local.db-wal
 /backend/backend/quotation.local.db-journal
 /backend/backend/.env
-/backend/backend/.env.example
+/.venv/
+/backend/backend/.venv/
 
 /out/
 /.pytest_cache/
