@@ -4,21 +4,21 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, HttpUrl
-from app.schemas.contact_fields import PhoneNumber, Pincode
+from app.schemas.contact_fields import NameField, PhoneNumber, Pincode, Gstin
 
 
 class CompanyBase(BaseModel):
     """Shared company schema fields."""
 
-    name: str = Field(..., min_length=1, max_length=255)
+    name: NameField = Field(...)
     address: str | None = Field(default=None, max_length=512)
     phone_number: PhoneNumber = None
     email: EmailStr | None = None
     website: HttpUrl | None = None
-    gstin: str | None = Field(default=None, max_length=20)
-    country: str | None = Field(default=None, max_length=100)
-    state: str | None = Field(default=None, max_length=100)
-    city: str | None = Field(default=None, max_length=100)
+    gstin: Gstin = None
+    country: NameField = None
+    state: NameField = None
+    city: NameField = None
     pincode: Pincode = None
 
 

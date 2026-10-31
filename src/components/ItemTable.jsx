@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { calculateItemAmount } from '../utils/calculations';
+import { decimalOnly, percentOnly, HSN_CODE_REGEX, preventPaste } from '../utils/numericInput';
 
-const inputClass = 'block min-w-0 w-full max-w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100';
+const inputClass = 'block min-w-0 w-full max-w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
 
 const ItemTable = ({
   items,
@@ -19,16 +20,16 @@ const ItemTable = ({
   const [openProductId, setOpenProductId] = useState('');
 
   return (
-  <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-soft sm:p-7">
+  <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 className="text-lg font-semibold text-slate-900">Items</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-slate-900">Items</h2>
         <p className="text-sm text-slate-500">Tap the product field to browse saved products, or type to filter. Totals update automatically.</p>
       </div>
       <button
         type="button"
         onClick={onAddItem}
-        className="inline-flex items-center gap-2 rounded-2xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-700"
+        className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
       >
         <Plus size={16} />
         Add Item
@@ -121,14 +122,14 @@ const ItemTable = ({
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2">
                     <input className={inputClass} placeholder="SKU / product code" aria-label={`SKU for item ${index + 1}`} {...register(`items.${index}.sku`)} />
-                    <input className={inputClass} placeholder="HSN/SAC" aria-label={`HSN/SAC for item ${index + 1}`} {...register(`items.${index}.hsnCode`)} />
+                    <input className={inputClass} placeholder="HSN/SAC" aria-label={`HSN/SAC for item ${index + 1}`} maxLength={8} inputMode="numeric" onPaste={preventPaste} {...register(`items.${index}.hsnCode`, { pattern: { value: HSN_CODE_REGEX, message: '4-8 digits' } })} />
                   </div>
                   {!item.catalogProductId && item.itemName?.trim() ? (
                     <button
                       type="button"
                       onClick={() => onSaveProduct(index, item)}
                       disabled={savingProductId === item.id || Number(item.rate) <= 0}
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand-700 hover:text-brand-900 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-900 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Save size={13} />
                       {savingProductId === item.id ? 'Saving product…' : 'Save to product catalog'}
@@ -139,19 +140,19 @@ const ItemTable = ({
                   <input className={inputClass} {...register(`items.${index}.description`)} />
                 </td>
                 <td data-label="Quantity" className="px-2 py-3 align-top">
-                  <input type="number" min="1" className={inputClass} {...register(`items.${index}.quantity`, { valueAsNumber: true, min: 1 })} />
+                  <input type="number" min="1" inputMode="numeric" className={inputClass} {...register(`items.${index}.quantity`, { valueAsNumber: true, min: 1 })} />
                 </td>
                 <td data-label="Unit" className="px-2 py-3 align-top">
                   <input className={inputClass} {...register(`items.${index}.unit`)} />
                 </td>
                 <td data-label="Rate" className="px-2 py-3 align-top">
-                  <input type="number" min="0" step="0.01" className={inputClass} {...register(`items.${index}.rate`, { valueAsNumber: true, min: 0 })} />
+                  <input type="number" min="0" step="0.01" inputMode="decimal" className={inputClass} {...register(`items.${index}.rate`, { valueAsNumber: true, min: 0 })} />
                 </td>
                 <td data-label="Discount %" className="px-2 py-3 align-top">
-                  <input type="number" min="0" max="100" step="0.01" className={inputClass} {...register(`items.${index}.discount`, { valueAsNumber: true, min: 0, max: 100 })} />
+                  <input type="number" min="0" max="100" step="0.01" inputMode="decimal" className={inputClass} {...register(`items.${index}.discount`, { valueAsNumber: true, min: 0, max: 100 })} />
                 </td>
                 <td data-label="GST %" className="px-2 py-3 align-top">
-                  <input type="number" min="0" max="100" step="0.01" className={inputClass} {...register(`items.${index}.gst`, { valueAsNumber: true, min: 0, max: 100 })} />
+                  <input type="number" min="0" max="100" step="0.01" inputMode="decimal" className={inputClass} {...register(`items.${index}.gst`, { valueAsNumber: true, min: 0, max: 100 })} />
                 </td>
                 <td data-label="Amount" className="px-2 py-3 align-top">
                   <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700">

@@ -19,8 +19,8 @@ const styles = StyleSheet.create({
         textAlign:'center',
         fontSize:34,
         fontWeight:'bold',
-        color:'#C8CDD2',
-        opacity:0.20,
+        color:'#e2e8f0',
+        opacity:0.15,
         transform:'rotate(-30deg)',
     },
     headerRow: {
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
         paddingBottom: 14,
         marginBottom: 18,
         borderBottomWidth: 2,
-        borderBottomColor: '#0f766e',
+        borderBottomColor: '#047857',
     },
     brand: {
         flexGrow: 1,
@@ -55,9 +55,9 @@ const styles = StyleSheet.create({
     },
     card: {
         borderWidth: 1,
-        borderColor: '#dbe4ea',
-        borderRadius: 7,
-        padding: 11,
+        borderColor: '#e2e8f0',
+        borderRadius: 8,
+        padding: 12,
         backgroundColor: '#f8fafc',
         flex: 1,
         minWidth: 0,
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 10,
         fontWeight: 'bold',
-        color: '#0f766e',
+        color: '#047857',
         marginBottom: 8,
         textTransform: 'uppercase',
         letterSpacing: 0.5,
@@ -95,8 +95,8 @@ const styles = StyleSheet.create({
     },
     table: {
         borderWidth: 1,
-        borderColor: '#dbe4ea',
-        borderRadius: 6,
+        borderColor: '#e2e8f0',
+        borderRadius: 8,
         marginBottom: 15,
     },
     tableHeader: {
@@ -304,7 +304,7 @@ const QuotationPDF = ({data}) => {
                         <Text style={{
                             fontSize: 13,
                             fontWeight: 'bold',
-                            color: '#0f766e',
+                            color: '#047857',
                             marginBottom: 6
                         }}>{documentNumber}</Text>
                         <Text style={{
@@ -388,7 +388,7 @@ const QuotationPDF = ({data}) => {
                         <Text style={{fontWeight: 'bold'}}>Grand Total</Text>
                         <Text style={{
                             fontWeight: 'bold',
-                            color: '#0f766e'
+                            color: '#047857'
                         }}>{formatGrandTotal(summary.grandTotal, currencyCode)}</Text>
                     </View>
                 </View>

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/useAuth';
 import { setupCompany } from '../integration/backend/auth';
 import AuthLayout from '../components/AuthLayout';
-import { digitsOnly } from '../utils/numericInput';
+import { digitsOnly, nameOnly, NAME_REGEX, GSTIN_REGEX, URL_REGEX, preventPaste } from '../utils/numericInput';
+import { indianStates, getCitiesForState } from '../utils/indianStates';
 
 const SetupCompany = () => {
   const navigate = useNavigate();
@@ -16,13 +17,15 @@ const SetupCompany = () => {
     email: user?.email || '',
     website: '',
     gstin: '',
-    country: '',
+    country: 'India',
     state: '',
     city: '',
     pincode: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedState, setSelectedState] = useState('');
+  const cities = useMemo(() => getCitiesForState(selectedState), [selectedState]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -70,8 +73,10 @@ const SetupCompany = () => {
             <input
               className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.name}
-              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              onChange={(event) => setForm({ ...form, name: nameOnly(event.target.value) })}
               placeholder="Enter company name"
+              pattern={NAME_REGEX.source}
+              title="Please enter only alphabetic characters"
               required
             />
           </label>
@@ -98,6 +103,7 @@ const SetupCompany = () => {
               className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.phone_number}
               onChange={(event) => setForm({ ...form, phone_number: digitsOnly(event.target.value, 10) })}
+              onPaste={preventPaste}
               placeholder="Enter phone number"
             />
           </label>
@@ -116,34 +122,71 @@ const SetupCompany = () => {
           <label className="block text-sm font-medium text-slate-700">
             Website
             <input
+              type="url"
               className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.website}
               onChange={(event) => setForm({ ...form, website: event.target.value })}
               placeholder="Enter website URL"
+              pattern={URL_REGEX.source}
+              title="Please enter a valid website URL (e.g., example.com or https://example.com)"
             />
           </label>
 
           <div className="grid grid-cols-2 gap-4">
-            {[
-              ['city', 'City'],
-              ['state', 'State'],
-              ['country', 'Country'],
-              ['pincode', 'Postal code'],
-            ].map(([field, label]) => (
-              <label key={field} className="block text-sm font-medium text-slate-700">
-                {label}
-                <input
-                  inputMode={field === 'pincode' ? 'numeric' : undefined}
-                  maxLength={field === 'pincode' ? 6 : undefined}
-                  pattern={field === 'pincode' ? '[0-9]{6}' : undefined}
-                  title={field === 'pincode' ? 'Please provide valid data: enter a 6-digit PIN code.' : undefined}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
-                  value={form[field]}
-                  onChange={(event) => setForm({ ...form, [field]: field === 'pincode' ? digitsOnly(event.target.value, 6) : event.target.value })}
-                  placeholder={label}
-                />
-              </label>
-            ))}
+            <label className="block text-sm font-medium text-slate-700">
+              Country
+              <select
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                value={form.country || 'India'}
+                onChange={(event) => setForm({ ...form, country: event.target.value })}
+              >
+                <option value="India">India</option>
+              </select>
+            </label>
+
+            <label className="block text-sm font-medium text-slate-700">
+              State
+              <select
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                value={selectedState || ''}
+                onChange={(event) => { setSelectedState(event.target.value); setForm({ ...form, state: event.target.value || '', city: '' }); }}
+              >
+                <option value="">Select state</option>
+                {indianStates.map((state) => (
+                  <option key={state} value={state}>{state}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-sm font-medium text-slate-700">
+              City
+              <select
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                value={form.city || ''}
+                onChange={(event) => setForm({ ...form, city: event.target.value || '' })}
+                disabled={!selectedState}
+              >
+                <option value="">Select city</option>
+                {cities.map((city) => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-sm font-medium text-slate-700">
+              Postal code
+              <input
+                inputMode="numeric"
+                maxLength={6}
+                pattern="[0-9]{6}"
+                title="Please provide valid data: enter a 6-digit PIN code."
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                value={form.pincode}
+                onChange={(event) => setForm({ ...form, pincode: digitsOnly(event.target.value, 6) })}
+                onPaste={preventPaste}
+                placeholder="Postal code"
+              />
+            </label>
           </div>
 
           <label className="block text-sm font-medium text-slate-700">
@@ -153,6 +196,9 @@ const SetupCompany = () => {
               value={form.gstin}
               onChange={(event) => setForm({ ...form, gstin: event.target.value.toUpperCase() })}
               placeholder="Your business tax registration number"
+              maxLength={15}
+              pattern={GSTIN_REGEX.source}
+              title="Enter a valid 15-character GSTIN"
             />
           </label>
 
@@ -161,7 +207,7 @@ const SetupCompany = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? 'Saving...' : 'Save company details'}
           </button>

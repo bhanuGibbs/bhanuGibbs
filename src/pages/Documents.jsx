@@ -149,15 +149,23 @@ const Documents = ({ documentType }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa] text-slate-900">
+    <div className="documents-page min-h-screen bg-[#f7f8fa] text-slate-900">
+      <style>{`
+        .documents-page ::selection { background: #d1fae5; color: #065f46; }
+        .documents-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .documents-page ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .documents-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .documents-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .documents-page ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
       <Header onLogout={logout} user={user} />
-      <main className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <main className="documents-page mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
               {isBilling ? 'Accounts receivable' : 'Sales workspace'}
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
               {isBilling ? 'Invoices' : 'Quotations'}
             </h1>
             <p className="mt-2 text-sm text-slate-500">
@@ -167,7 +175,7 @@ const Documents = ({ documentType }) => {
           <Link
             to="/new"
             state={{ documentMode: isBilling ? 'billing' : 'quotation' }}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800"
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
           >
             {isBilling ? <Receipt size={16} /> : <FileText size={16} />}
             Create {isBilling ? 'invoice' : 'quotation'}
@@ -176,11 +184,10 @@ const Documents = ({ documentType }) => {
 
         {isBilling ? (
           <>
-          <section className="mb-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" aria-label="Filter invoices by issue date">
+          <section className="mb-4 rounded-2xl border border-slate-200/60 bg-white p-5" aria-label="Filter invoices by issue date">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Invoice date range</h2>
-                <p className="mt-1 text-xs text-slate-500">Showing all dates by default. Choose a range to update the invoice list and totals.</p>
+                <h2 className="text-sm font-semibold tracking-tight text-slate-900">Invoice date range</h2>
               </div>
               <button
                 type="button"
@@ -201,18 +208,18 @@ const Documents = ({ documentType }) => {
           </section>
 
           <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Invoice payment totals">
-            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <article className="rounded-2xl border border-slate-200/60 bg-white p-5">
               <p className="text-sm font-medium text-slate-700">Total invoiced</p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid + paymentTotals.unpaid)}</p>
               <p className="mt-1 text-xs text-slate-500">Paid and unpaid invoices in this date range</p>
             </article>
-            <article className="rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-emerald-800">Paid invoices</p>
+            <article className="rounded-2xl border border-emerald-200/60 bg-white p-5">
+              <p className="text-sm font-medium text-emerald-700">Paid invoices</p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid)}</p>
               <p className="mt-1 text-xs text-slate-500">Total amount recorded as paid</p>
             </article>
-            <article className="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-amber-800">Unpaid invoices</p>
+            <article className="rounded-2xl border border-amber-200/60 bg-white p-5">
+              <p className="text-sm font-medium text-amber-700">Unpaid invoices</p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.unpaid)}</p>
               <p className="mt-1 text-xs text-slate-500">Total amount still awaiting payment</p>
             </article>
@@ -220,7 +227,7 @@ const Documents = ({ documentType }) => {
           </>
         ) : null}
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white">
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
             <div>
               <h2 className="text-sm font-semibold text-slate-900">All {isBilling ? 'invoices' : 'quotations'}</h2>
@@ -240,7 +247,7 @@ const Documents = ({ documentType }) => {
                     onClick={() => setPaymentFilter(value)}
                     className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
                       paymentFilter === value
-                        ? 'bg-white text-slate-900 shadow-sm'
+                        ? 'bg-white text-slate-900'
                         : 'text-slate-500 hover:text-slate-800'
                     }`}
                   >

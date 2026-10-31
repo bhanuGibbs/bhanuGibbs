@@ -277,8 +277,11 @@ export const getQuotations = async () => {
   return response.json();
 };
 
-export const getAdminUsers = async () => {
-  const response = await authenticatedFetch(`${API_BASE}/users/admin`, {
+export const getAdminUsers = async (companyId) => {
+  const url = companyId
+    ? `${API_BASE}/users/admin?company_id=${companyId}`
+    : `${API_BASE}/users/admin`;
+  const response = await authenticatedFetch(url, {
     headers: {
       ...getAuthorizedHeaders(),
     },
@@ -286,6 +289,20 @@ export const getAdminUsers = async () => {
 
   if (!response.ok) {
     throw await readApiError(response, 'Unable to load users. Please try again.');
+  }
+
+  return response.json();
+};
+
+export const getAllCompanies = async () => {
+  const response = await authenticatedFetch(`${API_BASE}/companies/all`, {
+    headers: {
+      ...getAuthorizedHeaders(),
+    },
+  });
+
+  if (!response.ok) {
+    throw await readApiError(response, 'Unable to load companies. Please try again.');
   }
 
   return response.json();
@@ -306,6 +323,38 @@ export const updateUserPlan = async (userId, subscriptionPlan) => {
   }
 
   return response.json();
+};
+
+export const updateUserRole = async (userId, roleName) => {
+  const response = await authenticatedFetch(`${API_BASE}/users/${userId}/role`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthorizedHeaders(),
+    },
+    body: JSON.stringify({ role_name: roleName }),
+  });
+
+  if (!response.ok) {
+    throw await readApiError(response, 'Unable to update the user role. Please try again.');
+  }
+
+  return response.json();
+};
+
+export const deleteUser = async (userId) => {
+  const response = await authenticatedFetch(`${API_BASE}/users/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      ...getAuthorizedHeaders(),
+    },
+  });
+
+  if (!response.ok) {
+    throw await readApiError(response, 'Unable to delete the user. Please try again.');
+  }
+
+  return true;
 };
 
 export const updateInvoicePaymentStatus = async (quotationId, paymentStatus) => {

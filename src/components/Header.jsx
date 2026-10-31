@@ -65,7 +65,7 @@ const Header = ({
           {label}
         </NavLink>
       ))}
-      {['Admin', 'Super Admin'].includes(user?.role) ? (
+      {(user?.role === 'Admin' || user?.role === 'Super Admin') ? (
         <NavLink
           to="/admin/users"
           onClick={onNavigate}

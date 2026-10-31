@@ -5,22 +5,22 @@ from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, PositiveInt, constr
-from app.schemas.contact_fields import PhoneNumber, Pincode
+from app.schemas.contact_fields import NameField, PhoneNumber, Pincode, Gstin, HsnCode
 from typing import Literal
 
 
 class QuotationCustomerInfo(BaseModel):
     """Customer details for free-form quotation submission."""
 
-    name: str = Field(..., min_length=1, max_length=255)
+    name: NameField = Field(...)
     email: EmailStr | None = None
     phone_number: PhoneNumber = None
     address: str | None = Field(default=None, max_length=512)
-    company_name: str | None = Field(default=None, max_length=255)
-    gstin: str | None = Field(default=None, max_length=20)
-    country: str | None = Field(default=None, max_length=100)
-    state: str | None = Field(default=None, max_length=100)
-    city: str | None = Field(default=None, max_length=100)
+    company_name: NameField = None
+    gstin: Gstin = None
+    country: NameField = None
+    state: NameField = None
+    city: NameField = None
     pincode: Pincode = None
 
 
@@ -30,7 +30,7 @@ class QuotationSubmitItem(BaseModel):
     product_id: UUID | None = None
     product_name: str | None = None
     sku: str | None = None
-    hsn_code: str | None = None
+    hsn_code: HsnCode = None
     description: str | None = None
     unit: str | None = None
     quantity: PositiveInt = Field(..., ge=1)

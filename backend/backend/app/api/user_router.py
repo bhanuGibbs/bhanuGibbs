@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from uuid import UUID as PyUUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db_session
 from app.models.company import Company
 from app.models.role import Role
-from app.schemas.user import UserPlanUpdate, UserRead, UserRegister
+from app.schemas.user import UserPlanUpdate, UserRoleUpdate, UserRead, UserRegister
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -44,9 +45,9 @@ async def create_user(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> UserRead:
-    """Allow only a Super Admin to create a standard Sales account."""
+    """Allow only Admin and Super Admin to create a standard Sales account."""
     service = UserService(session)
-    if current_user["role"] != "Super Admin":
+    if current_user["role"] not in {"Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -64,19 +65,24 @@ async def create_user(
 
 @router.get("/admin", response_model=list[UserRead])
 async def list_users_for_admin(
+    company_id: PyUUID | None = Query(None, description="Filter users by company (Super Admin only)"),
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> list[UserRead]:
-    """List users for administrators managing subscription plans."""
+    """List users for Admin (same company) and Super Admin (all users, optionally filtered by company)."""
     if current_user["role"] not in {"Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
         )
-    if current_user["role"] == "Admin" and not current_user["company_id"]:
-        return []
-    company_id = current_user["company_id"] if current_user["role"] == "Admin" else None
-    users = await UserService(session).list_users(company_id)
+    # Admin sees only same company; Super Admin sees all (with optional company filter)
+    if current_user["role"] == "Super Admin":
+        # Super Admin can filter by company_id query parameter
+        filter_company_id = str(company_id) if company_id else None
+    else:
+        # Admin is restricted to their own company
+        filter_company_id = current_user["company_id"]
+    users = await UserService(session).list_users(company_id=filter_company_id)
     return [await _to_user_read(user, session) for user in users]
 
 
@@ -87,17 +93,14 @@ async def update_user_plan(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> UserRead:
-    """Change a user's paid subscription plan as an administrator."""
-    if current_user["role"] not in {"Admin", "Super Admin"}:
+    """Change a user's paid subscription plan. Only Super Admin can update plans."""
+    if current_user["role"] != "Super Admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
         )
-    if current_user["role"] == "Admin" and not current_user["company_id"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Company profile is required.")
-    company_id = current_user["company_id"] if current_user["role"] == "Admin" else None
     user = await UserService(session).update_subscription_plan(
-        user_id, payload.subscription_plan, company_id=company_id
+        user_id, payload.subscription_plan
     )
     return await _to_user_read(user, session)
 
@@ -113,3 +116,41 @@ async def list_users(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return [await _to_user_read(user, session)]
+
+
+@router.patch("/{user_id}/role", response_model=UserRead)
+async def update_user_role(
+    user_id: str,
+    payload: UserRoleUpdate,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> UserRead:
+    """Change a user's role. Super Admin can change any; Admin can change within same company."""
+    if current_user["role"] not in {"Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
+    # Admin is restricted to same company; Super Admin has no restriction
+    company_id = None if current_user["role"] == "Super Admin" else current_user["company_id"]
+    user = await UserService(session).update_user_role(
+        user_id, payload.role_name, company_id=company_id
+    )
+    return await _to_user_read(user, session)
+
+
+@router.delete("/{user_id}")
+async def delete_user(
+    user_id: str,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    """Delete a user. Super Admin can delete any; Admin can delete within same company."""
+    if current_user["role"] not in {"Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
+    # Admin is restricted to same company; Super Admin has no restriction
+    company_id = None if current_user["role"] == "Super Admin" else current_user["company_id"]
+    await UserService(session).delete_user(user_id, company_id=company_id)

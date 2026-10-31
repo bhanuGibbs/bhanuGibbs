@@ -263,7 +263,15 @@ const Home = () => {
     );
 
     return (
-        <div className="min-h-screen bg-transparent text-slate-900">
+        <div className="create-doc-page min-h-screen bg-[#f7f8fa] text-slate-900">
+            <style>{`
+                .create-doc-page ::selection { background: #d1fae5; color: #065f46; }
+                .create-doc-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+                .create-doc-page ::-webkit-scrollbar { width: 8px; height: 8px; }
+                .create-doc-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+                .create-doc-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+                .create-doc-page ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+            `}</style>
             <Toaster position="top-right"/>
             <Header
                 onDownloadPdf={downloadPdf}
@@ -275,10 +283,10 @@ const Home = () => {
                 user={user}
             />
 
-            <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pb-8 sm:px-6 lg:px-8">
+            <main className="create-doc-page mx-auto flex max-w-7xl flex-col gap-6 px-4 pb-12 pt-6 sm:px-6 lg:px-8 lg:pt-8">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <CompanyDetailsForm register={register} errors={errors} watch={watch} setValue={setValue}/>
-                    <CustomerDetailsForm register={register} errors={errors}/>
+                    <CustomerDetailsForm register={register} errors={errors} watch={watch} setValue={setValue}/>
                     <QuotationDetailsForm
                         register={register}
                         errors={errors}
@@ -328,15 +336,14 @@ const Home = () => {
                 </form>
 
                 {showPdfPreview && pdfData ? (
-                    <section className="rounded-[28px] border border-slate-200/80 bg-white p-4 shadow-soft sm:p-6">
+                    <section className="rounded-2xl border border-slate-200/60 bg-white p-4 sm:p-6">
                         <div className="mb-4">
-                            <h2 className="text-lg font-semibold text-slate-900">Downloaded document preview</h2>
-                            <p className="text-sm text-slate-500">This preview is the same PDF file that was
-                                downloaded.</p>
+                            <h2 className="text-lg font-semibold tracking-tight text-slate-900">Downloaded document preview</h2>
+                            <p className="text-sm text-slate-500">This preview is the same PDF file that was downloaded.</p>
                         </div>
                         {pdfUrl ? (
                             <iframe src={pdfUrl} title="Quotation PDF Preview"
-                                    className="h-[900px] w-full rounded-3xl border border-slate-200"/>
+                                    className="h-[900px] w-full rounded-xl border border-slate-200"/>
                         ) : null}
                     </section>
                 ) : null}

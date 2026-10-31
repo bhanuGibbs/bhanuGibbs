@@ -17,7 +17,7 @@ async def create_company(
     session: AsyncSession = Depends(get_db_session),
 ) -> CompanyRead:
     """Create a new company."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager"}:
+    if current_user["role"] not in {"Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -50,3 +50,19 @@ async def list_companies(
         return []
     company = await service.get_company(current_user["company_id"])
     return [CompanyRead.from_orm(company)] if company else []
+
+
+@router.get("/all", response_model=list[CompanyRead])
+async def list_all_companies(
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> list[CompanyRead]:
+    """List all companies. Only Super Admin can access."""
+    if current_user["role"] != "Super Admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
+    service = CompanyService(session)
+    companies = await service.list_companies()
+    return [CompanyRead.from_orm(c) for c in companies]

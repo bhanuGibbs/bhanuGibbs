@@ -16,7 +16,7 @@ async def create_role(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> RoleRead:
-    """Create a new role."""
+    """Create a new role. Only Super Admin can create roles."""
     if current_user["role"] != "Super Admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient privileges.")
     service = RoleService(session)
@@ -35,7 +35,7 @@ async def list_roles(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> list[RoleRead]:
-    """List all roles."""
+    """List all roles. Admin and Super Admin can list."""
     if current_user["role"] not in {"Admin", "Super Admin"}:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient privileges.")
     service = RoleService(session)

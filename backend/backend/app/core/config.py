@@ -37,8 +37,10 @@ _SETTINGS: Settings | None = None
 def get_settings() -> Settings:
     global _SETTINGS
     if _SETTINGS is None:
-        # Load .env file so environment variables are available (from cwd)
-        load_dotenv()
+        # Load .env file from the backend directory, overriding existing env vars
+        from pathlib import Path
+        env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+        load_dotenv(str(env_path), override=True)
         environment = os.getenv("ENVIRONMENT", "development")
         jwt_secret_key = os.getenv("JWT_SECRET_KEY", "changeme")
         if environment.lower() in {"production", "prod"} and (
@@ -64,3 +66,9 @@ def get_settings() -> Settings:
             smtp_from_email=os.getenv("SMTP_FROM_EMAIL", ""),
         )
     return _SETTINGS
+
+
+def reset_settings() -> None:
+    """Reset cached settings (useful for reload during development)."""
+    global _SETTINGS
+    _SETTINGS = None

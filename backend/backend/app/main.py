@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import os
+import time
+import uuid
+import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
+from app.core.rate_limit import limiter
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.core.config import get_settings
 from app.core.logging import configure_logging
@@ -30,19 +36,58 @@ cors_origins = [
     if origin.strip()
 ]
 
+# Rate limiter for authentication endpoints (imported from core.rate_limit)
+
 app = FastAPI(
     title=settings.app_name,
     description="Enterprise Quotation Management System API.",
     version="0.1.0",
 )
 
+# Rate limit exceeded handler
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Too many requests. Please try again later."},
+    )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
+
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    """Structured request/response logging middleware."""
+
+    async def dispatch(self, request: Request, call_next):
+        request_id = str(uuid.uuid4())[:8]
+        start_time = time.perf_counter()
+
+        # Skip health checks and static assets from logging
+        if request.url.path in ("/health", "/docs", "/openapi.json", "/redoc"):
+            response = await call_next(request)
+            return response
+
+        response = await call_next(request)
+        process_time = (time.perf_counter() - start_time) * 1000
+
+        logging.getLogger("request").info(
+            "%s %s %d %.1fms req_id=%s",
+            request.method,
+            request.url.path,
+            response.status_code,
+            process_time,
+            request_id,
+        )
+        return response
+
+
+app.add_middleware(RequestLoggingMiddleware)
 
 app.add_exception_handler(Exception, http_exception_handler)
 

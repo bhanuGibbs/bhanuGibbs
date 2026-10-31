@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import Customer
 from app.repositories.customer_repository import CustomerRepository
-from app.services.exceptions import ConflictError, NotFoundError
+from app.services.exceptions import ConflictError, NotFoundError, ServiceError
 
 
 class CustomerService:
@@ -119,4 +120,8 @@ class CustomerService:
             raise NotFoundError("Customer not found.")
 
         await self.repository.delete(customer)
-        await self.repository.commit()
+        try:
+            await self.repository.commit()
+        except IntegrityError:
+            await self.repository.rollback()
+            raise ServiceError("Cannot delete this customer because they are referenced in one or more quotations.")

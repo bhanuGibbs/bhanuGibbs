@@ -156,8 +156,8 @@ async def submit_quotation(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> QuotationRead:
-    """Create a new quotation from form-style data and persist it."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+    """Create a new quotation from form-style data and persist it. Sales and Admin can create."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -260,8 +260,8 @@ async def create_quotation_draft(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> QuotationRead:
-    """Create or update a draft quotation for preview."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+    """Create or update a draft quotation for preview. Sales and Admin can create."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -364,8 +364,8 @@ async def finalize_quotation(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> QuotationRead:
-    """Finalize a draft quotation and allocate a stable number."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+    """Finalize a draft quotation and allocate a stable number. Sales and Admin can finalize."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -390,8 +390,8 @@ async def create_quotation(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> QuotationRead:
-    """Create a new quotation."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+    """Create a new quotation. Sales and Admin can create."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -444,13 +444,13 @@ async def get_quotation(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> QuotationRead:
-    """Get a single quotation by ID for the authenticated user's company."""
+    """Get a single quotation by ID. Any user in the company can view."""
     if not current_user["company_id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
 
     service = QuotationService(session)
     quotation = await service.get_quotation(quotation_id)
-    if not quotation or str(quotation.company_id) != current_user["company_id"] or str(quotation.created_by_id) != current_user["id"]:
+    if not quotation or str(quotation.company_id) != current_user["company_id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
 
     return QuotationRead.from_orm(quotation)
@@ -481,8 +481,8 @@ async def update_quotation(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> QuotationRead:
-    """Update a quotation for the authenticated user's company."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+    """Update a quotation. Sales and Admin can update."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -520,8 +520,8 @@ async def update_invoice_payment_status(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> QuotationRead:
-    """Mark an owned finalized invoice as paid or unpaid."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+    """Mark an owned finalized invoice as paid or unpaid. Sales and Admin can update."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -547,8 +547,8 @@ async def delete_quotation(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> None:
-    """Delete a quotation for the authenticated user's company."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+    """Delete a quotation. Sales and Admin can delete."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -562,10 +562,12 @@ async def delete_quotation(
 
     service = QuotationService(session)
     quotation = await service.get_quotation(quotation_id)
-    if not quotation or str(quotation.company_id) != current_user["company_id"] or str(quotation.created_by_id) != current_user["id"]:
+    if not quotation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
+    if str(quotation.company_id) != current_user["company_id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quotation not found.")
 
-    await service.delete_quotation(quotation_id, current_user["id"])
+    await service.delete_quotation(quotation_id, current_user["id"], allow_admin_override=True)
 
 
 @router.get("/{quotation_id}/pdf")

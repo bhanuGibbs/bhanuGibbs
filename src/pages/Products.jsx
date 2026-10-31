@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import Header from '../components/Header';
 import { useAuth } from '../context/useAuth';
 import { createProduct, deleteProduct, getProducts, updateProduct } from '../integration/backend/api';
+import { decimalOnly, percentOnly, HSN_CODE_REGEX, preventPaste } from '../utils/numericInput';
 
 const emptyProduct = {
   name: '',
@@ -119,15 +120,24 @@ const Products = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="products-page min-h-screen bg-[#f7f8fa] text-slate-900">
+      <style>{`
+        .products-page ::selection { background: #d1fae5; color: #065f46; }
+        .products-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .products-page ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .products-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .products-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .products-page ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
       <Header onLogout={logout} user={user} />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="products-page mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 xl:grid-cols-[700px_minmax(0,1fr)]">
-          <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
+          <section className="rounded-2xl border border-slate-200/60 bg-white p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Product catalog</h2>
-                <p className="mt-2 text-sm text-slate-500">Products available for quotations.</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Product management</p>
+                <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-900">Product catalog</h2>
+                <p className="mt-1 text-sm text-slate-500">Products available for quotations.</p>
               </div>
               <div className="text-sm text-slate-500">
                 {loading ? 'Loading…' : `${products.length} product${products.length === 1 ? '' : 's'}`}
@@ -155,14 +165,14 @@ const Products = () => {
                           <button
                               type="button"
                               onClick={() => handleEdit(product)}
-                              className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600"
+                              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
                           >
                             Edit
                           </button>
                           <button
                               type="button"
                               onClick={() => handleDelete(product.id)}
-                              className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                              className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
                           >
                             Delete
                           </button>
@@ -181,15 +191,15 @@ const Products = () => {
               </table>
             </div>
           </section>
-          <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-soft">
-            <h2 className="text-lg font-semibold text-slate-900">{editingId ? 'Update Product' : 'New Product'}</h2>
-            <p className="mt-2 text-sm text-slate-500">Manage the product catalog for your company.</p>
+          <section className="rounded-2xl border border-slate-200/60 bg-white p-6">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">{editingId ? 'Update Product' : 'New Product'}</h2>
+            <p className="mt-1 text-sm text-slate-500">Manage the product catalog for your company.</p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               <label className="block text-sm font-medium text-slate-700">
                 Product name
                 <input
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.name}
                   onChange={(event) => setField('name', event.target.value)}
                   placeholder="Product name"
@@ -203,9 +213,10 @@ const Products = () => {
                   type="number"
                   min="0.01"
                   step="0.01"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                  inputMode="decimal"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.price}
-                  onChange={(event) => setField('price', event.target.value)}
+                  onChange={(event) => setField('price', decimalOnly(event.target.value, 12))}
                   placeholder="0.00"
                   required
                 />
@@ -214,7 +225,7 @@ const Products = () => {
               <label className="block text-sm font-medium text-slate-700">
                 SKU
                 <input
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.sku}
                   onChange={(event) => setField('sku', event.target.value)}
                   placeholder="SKU code"
@@ -225,7 +236,7 @@ const Products = () => {
                 Description
                 <textarea
                   rows="3"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.description}
                   onChange={(event) => setField('description', event.target.value)}
                   placeholder="Product description"
@@ -240,16 +251,17 @@ const Products = () => {
                     min="0"
                     max="100"
                     step="0.01"
-                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                    inputMode="decimal"
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                     value={form.gst_percentage}
-                    onChange={(event) => setField('gst_percentage', event.target.value)}
+                    onChange={(event) => setField('gst_percentage', percentOnly(event.target.value))}
                     placeholder="18"
                   />
                 </label>
                 <label className="block text-sm font-medium text-slate-700">
                   Unit
                   <input
-                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                     value={form.unit}
                     onChange={(event) => setField('unit', event.target.value)}
                     placeholder="Each, kg, hour…"
@@ -260,10 +272,15 @@ const Products = () => {
               <label className="block text-sm font-medium text-slate-700">
                 HSN/SAC code
                 <input
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.hsn_code}
-                  onChange={(event) => setField('hsn_code', event.target.value)}
-                  placeholder="HSN/SAC code"
+                  onChange={(event) => setField('hsn_code', event.target.value.replace(/[^0-9]/g, '').slice(0, 8))}
+                  placeholder="HSN/SAC code (4-8 digits)"
+                  maxLength={8}
+                  pattern={HSN_CODE_REGEX.source}
+                  title="Enter a valid HSN/SAC code (4-8 digits)"
+                  inputMode="numeric"
+                  onPaste={preventPaste}
                 />
               </label>
 
@@ -273,14 +290,14 @@ const Products = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center justify-center rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {editingId ? 'Save changes' : 'Save'}
                 </button>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
                 >
                   Cancel
                 </button>

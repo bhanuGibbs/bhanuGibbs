@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.product import Product
 from app.repositories.product_repository import ProductRepository
-from app.services.exceptions import ConflictError, NotFoundError
+from app.services.exceptions import ConflictError, NotFoundError, ServiceError
 
 
 def _is_sku_unique_violation(error: IntegrityError) -> bool:
@@ -122,4 +122,8 @@ class ProductService:
             raise NotFoundError("Product not found.")
 
         await self.repository.delete(product)
-        await self.repository.commit()
+        try:
+            await self.repository.commit()
+        except IntegrityError:
+            await self.repository.rollback()
+            raise ServiceError("Cannot delete this product because it is referenced in one or more quotations.")

@@ -2,7 +2,15 @@ import { ArrowUpRight, FileText, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AuthLayout = ({ eyebrow, title, description, children }) => (
-  <main className="min-h-screen bg-white lg:grid lg:grid-cols-[1.05fr_0.95fr]">
+  <main className="auth-layout min-h-screen bg-white lg:grid lg:grid-cols-[1.05fr_0.95fr]">
+    <style>{`
+      .auth-layout ::selection { background: #d1fae5; color: #065f46; }
+      .auth-layout ::-moz-selection { background: #d1fae5; color: #065f46; }
+      .auth-layout ::-webkit-scrollbar { width: 8px; height: 8px; }
+      .auth-layout ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+      .auth-layout ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+      .auth-layout ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    `}</style>
     <aside className="relative hidden min-h-screen overflow-hidden bg-slate-950 px-12 py-10 text-white lg:flex lg:flex-col xl:px-16">
       <div className="absolute -right-32 -top-24 h-96 w-96 rounded-full border border-white/10" />
       <div className="absolute -right-10 -top-2 h-96 w-96 rounded-full border border-white/10" />
@@ -60,8 +68,10 @@ const AuthLayout = ({ eyebrow, title, description, children }) => (
         <span className="text-base font-bold tracking-tight text-slate-950">KeelBill Ledger</span>
       </div>
       <div className="mx-auto w-full max-w-[440px]">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">{eyebrow}</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">{title}</h1>
+        {eyebrow ? (
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">{eyebrow}</p>
+        ) : null}
+        <h1 className={`${eyebrow ? 'mt-2' : 'mt-3'} text-3xl font-semibold tracking-tight text-slate-950`}>{title}</h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
         <div className="mt-8">{children}</div>
         <p className="mt-8 text-center text-xs leading-5 text-slate-400">

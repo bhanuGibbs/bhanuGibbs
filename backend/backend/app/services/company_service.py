@@ -58,3 +58,7 @@ class CompanyService:
     async def get_company(self, company_id: str) -> Company | None:
         """Return a company by its UUID."""
         return await self.repository.get(company_id)
+
+    async def get_company_by_name(self, name: str) -> Company | None:
+        """Return a company by its name."""
+        return await self.repository.get_by_name(name)

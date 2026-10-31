@@ -42,7 +42,7 @@ const Login = () => {
           <label className="block text-sm font-medium text-slate-700">
             Username
             <input
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.username}
               onChange={(event) => setForm({ ...form, username: event.target.value })}
               placeholder="Enter your username"
@@ -55,7 +55,7 @@ const Login = () => {
             Password
             <input
               type="password"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.password}
               onChange={(event) => setForm({ ...form, password: event.target.value })}
               placeholder="Enter your password"
@@ -69,17 +69,17 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
         <div className="mt-6 flex items-center justify-between text-sm text-slate-500">
-          <Link to="/forgot-password" className="font-semibold text-brand-600 hover:text-brand-700">
+          <Link to="/forgot-password" className="font-semibold text-emerald-700 hover:text-emerald-800">
             Forgot password?
           </Link>
-          <Link to="/register" className="font-semibold text-brand-600 hover:text-brand-700">
+          <Link to="/register" className="font-semibold text-emerald-700 hover:text-emerald-800">
             Create account
           </Link>
         </div>

@@ -18,8 +18,8 @@ async def create_product(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> ProductRead:
-    """Create a new product."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+    """Create a new product. Sales, Admin and Super Admin can create."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -59,10 +59,10 @@ async def get_product(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> ProductRead:
-    """Get a single product by ID."""
+    """Get a single product by ID. Any user in the company can view."""
     service = ProductService(session)
     product = await service.get_product(product_id)
-    if not product or str(product.company_id) != current_user["company_id"] or str(product.created_by_id) != current_user["id"]:
+    if not product or str(product.company_id) != current_user["company_id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
     return ProductRead.from_orm(product)
 
@@ -74,10 +74,15 @@ async def update_product(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> ProductRead:
-    """Update a product."""
+    """Update a product. Sales, Admin and Super Admin can update."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
     service = ProductService(session)
     product = await service.get_product(product_id)
-    if not product or str(product.company_id) != current_user["company_id"] or str(product.created_by_id) != current_user["id"]:
+    if not product or str(product.company_id) != current_user["company_id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
 
     updated = await service.update_product(
@@ -99,10 +104,17 @@ async def delete_product(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> None:
-    """Delete a product."""
+    """Delete a product. Sales, Admin and Super Admin can delete."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
     service = ProductService(session)
     product = await service.get_product(product_id)
-    if not product or str(product.company_id) != current_user["company_id"] or str(product.created_by_id) != current_user["id"]:
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+    if str(product.company_id) != current_user["company_id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
 
     await service.delete_product(product_id)

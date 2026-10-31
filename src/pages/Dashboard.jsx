@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
   CircleDollarSign,
@@ -14,7 +13,6 @@ import {
   Users,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import Header from '../components/Header';
 import { useAuth } from '../context/useAuth';
 import { getCustomers, getProducts, getQuotations } from '../integration/backend/api';
@@ -96,14 +94,32 @@ const Dashboard = () => {
     { label: 'Customers', value: data.customers.length, detail: 'In your customer directory', icon: Users },
   ];
 
+  const statusChipClasses = (status) => {
+    const s = (status || '').toLowerCase();
+    if (s === 'paid') return 'bg-emerald-50 text-emerald-700';
+    if (s === 'unpaid' || s === 'overdue') return 'bg-amber-50 text-amber-700';
+    if (s === 'cancelled' || s === 'void') return 'bg-rose-50 text-rose-700';
+    return 'bg-slate-100 text-slate-700';
+  };
+
   return (
     <div className="min-h-screen bg-[#f7f8fa] text-slate-900">
+      <style>{`
+        .dashboard-page ::selection { background: #d1fae5; color: #065f46; }
+        .dashboard-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .dashboard-page ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .dashboard-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .dashboard-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dashboard-page ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
       <Header onLogout={logout} user={user} />
-      <main className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <main className="dashboard-page mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700">Your workspace</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-[34px]">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+              Your workspace
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[34px]">
               Good {new Date().getHours() < 12 ? 'morning' : 'afternoon'}, {user?.username || 'there'}
             </h1>
             <p className="mt-2 text-sm text-slate-500">
@@ -192,7 +208,7 @@ const Dashboard = () => {
                         <td className="px-4 py-4 text-slate-600">{document.customer_name || '—'}</td>
                         <td className="px-4 py-4 text-slate-500">{formatAppDate(document.issued_at)}</td>
                         <td className="px-4 py-4">
-                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700">
+                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusChipClasses(document.status)}`}>
                             {document.status || 'Draft'}
                           </span>
                         </td>
@@ -241,12 +257,15 @@ const Dashboard = () => {
               </div>
             </section>
 
-            <section className="rounded-2xl bg-slate-950 p-5 text-white shadow-sm">
+            <section className="rounded-2xl bg-slate-950 p-5 text-white">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10"><Clock3 size={17} /></span>
-              <h2 className="mt-4 text-sm font-semibold">Keep everything up to date</h2>
+              <h2 className="mt-4 text-sm font-semibold tracking-tight">Keep everything up to date</h2>
               <p className="mt-2 text-xs leading-5 text-slate-300">
                 Add customer and company details once, then reuse them across your billing documents.
               </p>
+              <Link to="/new" className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300">
+                Create your first document <ArrowRight size={13} />
+              </Link>
             </section>
           </aside>
         </div>

@@ -16,8 +16,8 @@ async def create_customer(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> CustomerRead:
-    """Create a new customer."""
-    if current_user["role"] not in {"Super Admin", "Admin", "Manager", "Sales"}:
+    """Create a new customer. Sales, Admin and Super Admin can create."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
@@ -60,10 +60,10 @@ async def get_customer(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> CustomerRead:
-    """Get a single customer by ID."""
+    """Get a single customer by ID. Any user in the company can view."""
     service = CustomerService(session)
     customer = await service.get_customer(customer_id)
-    if not customer or str(customer.company_id) != current_user["company_id"] or str(customer.created_by_id) != current_user["id"]:
+    if not customer or str(customer.company_id) != current_user["company_id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found.")
     return CustomerRead.from_orm(customer)
 
@@ -75,10 +75,15 @@ async def update_customer(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> CustomerRead:
-    """Update a customer."""
+    """Update a customer. Sales, Admin and Super Admin can update."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
     service = CustomerService(session)
     customer = await service.get_customer(customer_id)
-    if not customer or str(customer.company_id) != current_user["company_id"] or str(customer.created_by_id) != current_user["id"]:
+    if not customer or str(customer.company_id) != current_user["company_id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found.")
 
     updated = await service.update_customer(
@@ -103,10 +108,17 @@ async def delete_customer(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> None:
-    """Delete a customer."""
+    """Delete a customer. Sales, Admin and Super Admin can delete."""
+    if current_user["role"] not in {"Sales", "Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
     service = CustomerService(session)
     customer = await service.get_customer(customer_id)
-    if not customer or str(customer.company_id) != current_user["company_id"] or str(customer.created_by_id) != current_user["id"]:
+    if not customer:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found.")
+    if str(customer.company_id) != current_user["company_id"]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found.")
 
     await service.delete_customer(customer_id)

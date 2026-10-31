@@ -169,3 +169,52 @@ class UserService:
 
         await self.repository.commit()
         return user
+
+    async def update_user_role(
+        self,
+        user_id: str,
+        role_name: str,
+        company_id: str | None = None,
+    ) -> User:
+        """Update a user's role. Admin can change roles within their company."""
+        try:
+            from uuid import UUID
+            UUID(user_id)
+        except ValueError:
+            raise NotFoundError("User not found.")
+
+        user = await self.repository.get_for_update(user_id)
+        if not user:
+            raise NotFoundError("User not found.")
+        if company_id and str(user.company_id) != company_id:
+            raise NotFoundError("User not found.")
+
+        role = await self.role_repository.get_by_name(role_name)
+        if not role:
+            raise NotFoundError("Role does not exist.")
+
+        user.role_id = role.id
+        await self.repository.commit()
+        await self.repository.session.refresh(user)
+        return user
+
+    async def delete_user(
+        self,
+        user_id: str,
+        company_id: str | None = None,
+    ) -> None:
+        """Delete a user. Admin can delete users within their company."""
+        try:
+            from uuid import UUID
+            UUID(user_id)
+        except ValueError:
+            raise NotFoundError("User not found.")
+
+        user = await self.repository.get_for_update(user_id)
+        if not user:
+            raise NotFoundError("User not found.")
+        if company_id and str(user.company_id) != company_id:
+            raise NotFoundError("User not found.")
+
+        await self.repository.delete(user)
+        await self.repository.commit()

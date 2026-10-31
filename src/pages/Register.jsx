@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import toast from 'react-hot-toast';
 import AuthLayout from '../components/AuthLayout';
-import { digitsOnly } from '../utils/numericInput';
+import { digitsOnly, preventPaste, getPasswordError } from '../utils/numericInput';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -11,10 +11,19 @@ const Register = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '', mobile_number: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setPasswordError('');
+
+    const pwErr = getPasswordError(form.password);
+    if (pwErr) {
+      setPasswordError(pwErr);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -43,7 +52,7 @@ const Register = () => {
           <label className="block text-sm font-medium text-slate-700">
             Username
             <input
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.username}
               onChange={(event) => setForm({ ...form, username: event.target.value })}
               placeholder="Choose a username"
@@ -56,7 +65,7 @@ const Register = () => {
             Email
             <input
               type="email"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.email}
               onChange={(event) => setForm({ ...form, email: event.target.value })}
               placeholder="Enter your email"
@@ -73,9 +82,10 @@ const Register = () => {
               maxLength={10}
               pattern="[0-9]{10}"
               title="Please provide valid data: enter a 10-digit mobile number."
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.mobile_number}
               onChange={(event) => setForm({ ...form, mobile_number: digitsOnly(event.target.value, 10) })}
+              onPaste={preventPaste}
               placeholder="Optional mobile number"
               autoComplete="tel"
             />
@@ -86,21 +96,28 @@ const Register = () => {
             <input
               type="password"
               minLength={8}
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white"
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={form.password}
-              onChange={(event) => setForm({ ...form, password: event.target.value })}
+              onChange={(event) => {
+                setForm({ ...form, password: event.target.value });
+                setPasswordError('');
+              }}
               placeholder="Create a strong password"
               autoComplete="new-password"
               required
             />
+            <p className="mt-1 text-xs text-slate-500">
+              At least 8 characters with uppercase, lowercase, a number, and a special character.
+            </p>
           </label>
 
+          {passwordError ? <p className="text-sm text-rose-600">{passwordError}</p> : null}
           {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? 'Setting up your workspace…' : 'Create account'}
           </button>
@@ -108,7 +125,7 @@ const Register = () => {
 
         <p className="mt-6 text-center text-sm text-slate-500">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-brand-600 hover:text-brand-700">
+          <Link to="/login" className="font-semibold text-emerald-700 hover:text-emerald-800">
             Sign in
           </Link>
         </p>

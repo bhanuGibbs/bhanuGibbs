@@ -4,21 +4,21 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
-from app.schemas.contact_fields import PhoneNumber, Pincode
+from app.schemas.contact_fields import NameField, PhoneNumber, Pincode, Gstin
 
 
 class CustomerBase(BaseModel):
     """Shared customer schema fields."""
 
-    name: str = Field(..., min_length=1, max_length=255)
+    name: NameField = Field(...)
     email: EmailStr | None = None
     phone_number: PhoneNumber = None
     address: str | None = Field(default=None, max_length=512)
-    company_name: str | None = Field(default=None, max_length=255)
-    gstin: str | None = Field(default=None, max_length=20)
-    country: str | None = Field(default=None, max_length=100)
-    state: str | None = Field(default=None, max_length=100)
-    city: str | None = Field(default=None, max_length=100)
+    company_name: NameField = None
+    gstin: Gstin = None
+    country: NameField = None
+    state: NameField = None
+    city: NameField = None
     pincode: Pincode = None
 
 
@@ -29,15 +29,15 @@ class CustomerCreate(CustomerBase):
 class CustomerUpdate(BaseModel):
     """Properties for updating a customer."""
 
-    name: str | None = Field(default=None, min_length=1, max_length=255)
+    name: NameField = None
     email: EmailStr | None = None
     phone_number: PhoneNumber = None
     address: str | None = Field(default=None, max_length=512)
-    company_name: str | None = Field(default=None, max_length=255)
-    gstin: str | None = Field(default=None, max_length=20)
-    country: str | None = Field(default=None, max_length=100)
-    state: str | None = Field(default=None, max_length=100)
-    city: str | None = Field(default=None, max_length=100)
+    company_name: NameField = None
+    gstin: Gstin = None
+    country: NameField = None
+    state: NameField = None
+    city: NameField = None
     pincode: Pincode = None
 
 

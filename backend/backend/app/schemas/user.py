@@ -1,13 +1,28 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, field_serializer
+from pydantic import BaseModel, EmailStr, Field, field_serializer, field_validator
 from app.schemas.contact_fields import PhoneNumber
 
 SubscriptionPlan = Literal["free", "basic", "premium"]
+
+PASSWORD_PATTERN = re.compile(
+    r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?]).{8,}$"
+)
+
+
+def validate_password_strength(value: str) -> str:
+    """Validate that a password meets complexity requirements."""
+    if not PASSWORD_PATTERN.match(value):
+        raise ValueError(
+            "Password must be at least 8 characters and contain uppercase, lowercase, "
+            "a number, and a special character."
+        )
+    return value
 
 
 class UserBase(BaseModel):
@@ -25,6 +40,11 @@ class UserCreate(UserBase):
     role_name: str = Field(..., min_length=3, max_length=50)
     is_superuser: bool = Field(default=False)
 
+    @field_validator("password")
+    @classmethod
+    def check_password_strength(cls, value: str) -> str:
+        return validate_password_strength(value)
+
 
 class UserRegister(BaseModel):
     """Fields required for self-registration."""
@@ -33,6 +53,11 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
     mobile_number: PhoneNumber = None
+
+    @field_validator("password")
+    @classmethod
+    def check_password_strength(cls, value: str) -> str:
+        return validate_password_strength(value)
 
 
 class UserProfileUpdate(BaseModel):
@@ -49,6 +74,12 @@ class UserPlanUpdate(BaseModel):
     subscription_plan: SubscriptionPlan
 
 
+class UserRoleUpdate(BaseModel):
+    """Role change reserved for administrators."""
+
+    role_name: str = Field(..., min_length=3, max_length=50)
+
+
 class ForgotPasswordRequest(BaseModel):
     """Request schema for forgot password."""
 
@@ -60,6 +91,11 @@ class PasswordResetRequest(BaseModel):
 
     token: str
     new_password: str = Field(..., min_length=8)
+
+    @field_validator("new_password")
+    @classmethod
+    def check_password_strength(cls, value: str) -> str:
+        return validate_password_strength(value)
 
 
 class TokenRefreshRequest(BaseModel):

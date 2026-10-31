@@ -2,16 +2,13 @@ from __future__ import annotations
 
 from typing import AsyncGenerator
 
-from fastapi import Depends, HTTPException, Security, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
 from app.models.role import Role
 from app.security import decode_token
 from app.services.user_service import UserService
-
-security_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
@@ -20,15 +17,26 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
+def extract_bearer_token(request: Request) -> str | None:
+    """Extract the Bearer token from the Authorization header."""
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header:
+        return None
+    parts = auth_header.split(" ", 1)
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return None
+    return parts[1]
+
+
 async def get_optional_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Security(security_scheme),
+    request: Request,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, str] | None:
     """Validate a bearer token when present; otherwise return None for local registration flows."""
-    if credentials is None:
+    token = extract_bearer_token(request)
+    if token is None:
         return None
 
-    token = credentials.credentials
     try:
         payload = decode_token(token)
     except ValueError:
@@ -53,11 +61,11 @@ async def get_optional_current_user(
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Security(security_scheme),
+    request: Request,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, str]:
     """Validate the bearer token and return the current user payload."""
-    current_user = await get_optional_current_user(credentials, session)
+    current_user = await get_optional_current_user(request, session)
     if not current_user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

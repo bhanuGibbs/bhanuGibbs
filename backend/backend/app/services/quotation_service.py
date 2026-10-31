@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.quotation import Quotation
@@ -24,6 +25,7 @@ from app.services.exceptions import (
     ConflictError,
     MonthlyQuotationLimitError,
     NotFoundError,
+    ServiceError,
 )
 
 MONTHLY_FINALIZATION_LIMITS: dict[str, int | None] = {
@@ -560,20 +562,24 @@ class QuotationService:
         await self.repository.commit()
         return await self._refresh_quotation(quotation)
 
-    async def delete_quotation(self, quotation_id: str, user_id: str) -> None:
+    async def delete_quotation(self, quotation_id: str, user_id: str, allow_admin_override: bool = False) -> None:
         """Delete an existing quotation."""
         quotation = await self.repository.get(quotation_id)
         if not quotation:
             raise NotFoundError("Quotation not found.")
-        if str(quotation.created_by_id) != user_id:
+        if str(quotation.created_by_id) != user_id and not allow_admin_override:
             raise NotFoundError("Quotation not found.")
-        if quotation.finalized_at is not None:
+        if quotation.finalized_at is not None and not allow_admin_override:
             raise ConflictError("Finalized documents cannot be deleted.")
 
         before_data = await self._quotation_snapshot(quotation)
         await self._record_audit(quotation, user_id, "deleted", before_data)
         await self.repository.delete(quotation)
-        await self.repository.commit()
+        try:
+            await self.repository.commit()
+        except IntegrityError:
+            await self.repository.rollback()
+            raise ServiceError("Cannot delete this quotation because it has related records.")
 
     async def get_quotation_with_details(self, quotation_id: str) -> tuple[
         Quotation, list[QuotationItem], Customer, Company, dict[str, Product]]:

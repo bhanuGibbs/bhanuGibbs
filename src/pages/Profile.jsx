@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import Header from '../components/Header';
 import { useAuth } from '../context/useAuth';
 import { updateCurrentUser } from '../integration/backend/auth';
-import { digitsOnly } from '../utils/numericInput';
+import { digitsOnly, preventPaste } from '../utils/numericInput';
 
 const Profile = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -42,15 +42,23 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="profile-page min-h-screen bg-[#f7f8fa]">
+      <style>{`
+        .profile-page ::selection { background: #d1fae5; color: #065f46; }
+        .profile-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .profile-page ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .profile-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .profile-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .profile-page ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
       <Header user={user} onLogout={logout} />
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="profile-page mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-7">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Account settings</p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">My profile</h1>
           <p className="mt-1 text-sm text-slate-500">Update your own account details. Your role and workspace access are managed separately.</p>
         </div>
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200/60 bg-white p-6 sm:p-8">
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium text-slate-700">
               Username
@@ -86,6 +94,7 @@ const Profile = () => {
                 name="mobile_number"
                 value={form.mobile_number}
                 onChange={(event) => setForm((current) => ({ ...current, mobile_number: digitsOnly(event.target.value, 10) }))}
+                onPaste={preventPaste}
                 className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
               />
             </label>

@@ -1,5 +1,6 @@
 import { ReceiptText } from 'lucide-react';
 import { calculateSummary } from '../utils/calculations';
+import { decimalOnly } from '../utils/numericInput';
 
 const Summary = ({ items, shipping, register, setValue, watch }) => {
   const summary = calculateSummary(items, shipping);
@@ -10,14 +11,14 @@ const Summary = ({ items, shipping, register, setValue, watch }) => {
   };
 
   return (
-    <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-soft sm:p-7">
+    <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
       <div className="mb-6 flex items-center gap-3">
-        <div className="rounded-2xl bg-brand-50 p-3 text-brand-600">
+        <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
           <ReceiptText size={18} /> 
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Summary</h2>
-          <p className="text-sm text-slate-500">Breakdown of subtotal, taxes, discounts, and total.</p>
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">Summary</h2>
+          <p className="mt-1 text-sm text-slate-500">Subtotals, taxes, and the final amount.</p>
         </div>
       </div>
 
@@ -29,7 +30,7 @@ const Summary = ({ items, shipping, register, setValue, watch }) => {
           </div>
           <div className="flex items-center justify-between text-sm text-slate-600">
             <span>Discount</span>
-            <span className="font-semibold text-emerald-600">-₹{summary.discount.toFixed(2)}</span>
+            <span className="font-semibold text-emerald-700">-₹{summary.discount.toFixed(2)}</span>
           </div>
           <div className="flex items-center justify-between text-sm text-slate-600">
             <span>GST Total</span>
@@ -41,7 +42,7 @@ const Summary = ({ items, shipping, register, setValue, watch }) => {
           </div>
           <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-base font-semibold text-slate-900">
             <span>Grand Total</span>
-            <span className="text-brand-600">₹{summary.grandTotal.toFixed(2)}</span>
+            <span className="text-emerald-700">₹{summary.grandTotal.toFixed(2)}</span>
           </div>
         </div>
 
@@ -50,9 +51,14 @@ const Summary = ({ items, shipping, register, setValue, watch }) => {
           <input
             type="number"
             min="0"
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            step="0.01"
+            inputMode="decimal"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             {...register('shipping', { min: 0 })}
-            onChange={handleShippingChange}
+            onChange={(event) => {
+              event.target.value = decimalOnly(event.target.value, 12);
+              handleShippingChange(event);
+            }}
           />
           <p className="mt-3 text-sm text-slate-500">Shipping is included in the grand total automatically.</p>
         </div>

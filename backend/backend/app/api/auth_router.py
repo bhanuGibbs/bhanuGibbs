@@ -5,10 +5,11 @@ import logging
 import hmac
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db_session
+from app.core.rate_limit import limiter
 from app.models.company import Company
 from app.models.role import Role
 from app.security import create_access_token, create_refresh_token, decode_token
@@ -33,7 +34,9 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/hour")
 async def register(
+    request: Request,
     payload: UserRegister,
     session: AsyncSession = Depends(get_db_session),
 ) -> UserRead:
@@ -74,7 +77,9 @@ async def register(
 
 
 @router.post("/login", response_model=Token)
+@limiter.limit("10/minute")
 async def login(
+    request: Request,
     username: str = Form(...),
     password: str = Form(...),
     session: AsyncSession = Depends(get_db_session),
@@ -211,7 +216,9 @@ async def logout(
 
 
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
+@limiter.limit("3/hour")
 async def forgot_password(
+    request: Request,
     payload: ForgotPasswordRequest,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, str]:
@@ -253,7 +260,7 @@ async def setup_company(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> CompanyRead:
-    """Create the first company profile for a newly registered user."""
+    """Create or join a company for a newly registered user."""
     user_service = UserService(session)
     company_service = CompanyService(session)
 
@@ -270,23 +277,32 @@ async def setup_company(
             detail="Company details are already completed.",
         )
 
-    company = await company_service.create_company(
-        name=payload.name,
-        address=payload.address,
-        phone_number=payload.phone_number,
-        email=payload.email,
-        website=payload.website,
-        gstin=payload.gstin,
-        country=payload.country,
-        state=payload.state,
-        city=payload.city,
-        pincode=payload.pincode,
-        commit=False,
-    )
-
-    user.company_id = company.id
-    user.is_profile_complete = True
-    await session.commit()
+    # Check if a company with this name already exists
+    existing_company = await company_service.get_company_by_name(payload.name)
+    if existing_company:
+        # Join the existing company
+        user.company_id = existing_company.id
+        user.is_profile_complete = True
+        await session.commit()
+        company = existing_company
+    else:
+        # Create a new company
+        company = await company_service.create_company(
+            name=payload.name,
+            address=payload.address,
+            phone_number=payload.phone_number,
+            email=payload.email,
+            website=payload.website,
+            gstin=payload.gstin,
+            country=payload.country,
+            state=payload.state,
+            city=payload.city,
+            pincode=payload.pincode,
+            commit=False,
+        )
+        user.company_id = company.id
+        user.is_profile_complete = True
+        await session.commit()
 
     # Build a plain-serializable response dict so Pydantic does not fail
     # when converting DB-native types (UUID, datetime) to strings.
@@ -310,7 +326,9 @@ async def setup_company(
 
 
 @router.post("/reset-password", status_code=status.HTTP_200_OK)
+@limiter.limit("5/hour")
 async def reset_password(
+    request: Request,
     payload: PasswordResetRequest,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, str]:

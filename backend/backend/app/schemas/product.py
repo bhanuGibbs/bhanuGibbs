@@ -5,6 +5,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+from app.schemas.contact_fields import HsnCode
 
 
 class ProductBase(BaseModel):
@@ -16,7 +17,7 @@ class ProductBase(BaseModel):
     sku: str | None = Field(default=None, max_length=100)
     gst_percentage: Decimal | None = Field(default=None, ge=0, le=100)
     unit: str | None = Field(default=None, max_length=50)
-    hsn_code: str | None = Field(default=None, max_length=50)
+    hsn_code: HsnCode = None
 
 
 class ProductCreate(ProductBase):
@@ -32,7 +33,7 @@ class ProductUpdate(BaseModel):
     sku: str | None = Field(default=None, max_length=100)
     gst_percentage: Decimal | None = Field(default=None, ge=0, le=100)
     unit: str | None = Field(default=None, max_length=50)
-    hsn_code: str | None = Field(default=None, max_length=50)
+    hsn_code: HsnCode = None
 
 
 class ProductRead(ProductBase):

@@ -1,15 +1,38 @@
-import { Building2, Mail, Phone, Globe, MapPin, BadgeCheck } from 'lucide-react';
-import { digitsOnly, PHONE_NUMBER_REGEX, PINCODE_REGEX } from '../utils/numericInput';
+import { useState, useMemo } from 'react';
+import { Building2, ChevronDown, Mail, Phone, Globe } from 'lucide-react';
+import { digitsOnly, nameOnly, NAME_REGEX, PHONE_NUMBER_REGEX, PINCODE_REGEX, URL_REGEX, GSTIN_REGEX, preventPaste } from '../utils/numericInput';
+import { indianStates, getCitiesForState } from '../utils/indianStates';
 
-const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100';
+const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
+const selectClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
 
 const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
+  const [collapsed, setCollapsed] = useState(true);
+  const [country, setCountry] = useState('India');
+  const [selectedState, setSelectedState] = useState('');
+  const cities = useMemo(() => getCitiesForState(selectedState), [selectedState]);
   const logoPreview = watch('company.logoPreview');
 
   const handleLogoUpload = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload a PNG, JPEG, WebP, or SVG image.');
+      event.target.value = '';
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('File size must be under 2MB.');
+      event.target.value = '';
+      return;
+    }
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -20,22 +43,28 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
   };
 
   return (
-    <section className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-soft sm:p-7">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="rounded-2xl bg-brand-50 p-3 text-brand-600">
+    <section className={`rounded-2xl border border-slate-200/60 bg-white ${collapsed ? 'pb-5 sm:pb-7' : ''}`}>
+      <button
+        type="button"
+        onClick={() => setCollapsed(!collapsed)}
+        className="flex w-full items-center gap-3 p-5 sm:p-7"
+      >
+        <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
           <Building2 size={18} />
         </div>
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Company Details</h2>
-          <p className="text-sm text-slate-500">Add your company identity and contact information.</p>
+        <div className="flex-1 text-left">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">Company Details</h2>
+          <p className="mt-1 text-sm text-slate-500">Your business information that appears on documents.</p>
         </div>
-      </div>
+        <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`} />
+      </button>
 
-      <div className="grid gap-5 md:grid-cols-2">
+      {!collapsed && (
+        <div className="grid gap-5 border-t border-slate-200/60 px-5 pb-5 pt-5 md:grid-cols-2 sm:px-7 sm:pb-7 sm:pt-5">
         <div className="md:col-span-2">
           <label className={labelClass}>Company Logo</label>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label className="flex cursor-pointer items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 transition hover:border-brand-500 hover:text-brand-600">
+            <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 transition hover:border-emerald-500 hover:text-emerald-700">
               <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
               Upload Logo
             </label>
@@ -49,7 +78,7 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
 
         <div className="md:col-span-2">
           <label className={labelClass}>Company Name</label>
-          <input className={inputClass} {...register('company.name')} />
+          <input className={inputClass} {...register('company.name', { pattern: { value: NAME_REGEX, message: 'Please enter only alphabetic characters' }, onChange: (event) => { event.target.value = nameOnly(event.target.value); } })} />
           {errors.company?.name ? <p className="mt-1 text-sm text-rose-500">{errors.company.name.message}</p> : null}
         </div>
 
@@ -61,19 +90,31 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
 
         <div>
           <label className={labelClass}>Country</label>
-          <input className={inputClass} {...register('company.country')} />
+          <select className={selectClass} value={country} onChange={(event) => { setCountry(event.target.value); setValue('company.country', event.target.value, { shouldValidate: true }); }}>
+            <option value="India">India</option>
+          </select>
           {errors.company?.country ? <p className="mt-1 text-sm text-rose-500">{errors.company.country.message}</p> : null}
         </div>
 
         <div>
           <label className={labelClass}>State</label>
-          <input className={inputClass} {...register('company.state')} />
+          <select className={selectClass} value={selectedState || ''} onChange={(event) => { setSelectedState(event.target.value); setValue('company.state', event.target.value || '', { shouldValidate: true }); setValue('company.city', '', { shouldValidate: true }); }}>
+            <option value="">Select state</option>
+            {indianStates.map((state) => (
+              <option key={state} value={state}>{state}</option>
+            ))}
+          </select>
           {errors.company?.state ? <p className="mt-1 text-sm text-rose-500">{errors.company.state.message}</p> : null}
         </div>
 
         <div>
           <label className={labelClass}>City</label>
-          <input className={inputClass} {...register('company.city')} />
+          <select className={selectClass} value={watch('company.city') || ''} onChange={(event) => { setValue('company.city', event.target.value || '', { shouldValidate: true }); }} disabled={!selectedState}>
+            <option value="">Select city</option>
+            {cities.map((city) => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
           {errors.company?.city ? <p className="mt-1 text-sm text-rose-500">{errors.company.city.message}</p> : null}
         </div>
 
@@ -111,10 +152,12 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
           <label className={labelClass}>Website</label>
           <div className="relative">
             <Globe className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
-            <input className={`${inputClass} pl-10`} {...register('company.website')} />
+            <input className={`${inputClass} pl-10`} type="url" {...register('company.website', { pattern: { value: URL_REGEX, message: 'Enter a valid website URL' } })} />
           </div>
+          {errors.company?.website ? <p className="mt-1 text-sm text-rose-500">{errors.company.website.message}</p> : null}
         </div>
       </div>
+      )}
     </section>
   );
 };

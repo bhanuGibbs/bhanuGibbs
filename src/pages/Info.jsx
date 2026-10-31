@@ -1,4 +1,4 @@
-import {
+﻿import {
   ArrowRight,
   FileText,
   LayoutDashboard,
@@ -38,10 +38,18 @@ const Info = () => {
   const { logout, user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="info-page min-h-screen bg-[#f7f8fa] text-slate-900">
+      <style>{`
+        .info-page ::selection { background: #d1fae5; color: #065f46; }
+        .info-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .info-page ::-webkit-scrollbar { width: 8px; height: 8px; }
+        .info-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .info-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .info-page ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
       <Header onLogout={logout} user={user} />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[28px] bg-slate-950 px-6 py-10 text-white shadow-soft sm:px-10 sm:py-14">
+        <section className="overflow-hidden rounded-2xl bg-slate-950 px-6 py-10 text-white sm:px-10 sm:py-14">
           <div className="max-w-2xl">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">About Ledger</p>
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Your billing work, in one place.</h1>
@@ -54,7 +62,7 @@ const Info = () => {
           </div>
         </section>
 
-        <section className="mt-8 grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 md:grid-cols-[1.3fr_1fr]">
+        <section className="mt-8 grid gap-6 rounded-2xl border border-slate-200/60 bg-white p-6 sm:p-8 md:grid-cols-[1.3fr_1fr]">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700">About Ledger</p>
             <h2 className="mt-2 text-xl font-bold tracking-tight text-slate-950">A simpler way to handle everyday billing</h2>
@@ -82,7 +90,7 @@ const Info = () => {
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {workflows.map(({ title, description, to, label, icon: Icon }) => (
-              <article key={title} className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <article key={title} className="flex flex-col rounded-2xl border border-slate-200/60 bg-white p-6">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
                   <Icon size={20} />
                 </span>
@@ -97,7 +105,7 @@ const Info = () => {
         </section>
 
         <section className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-6 sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">Payment tracking</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">Payment tracking</p>
           <h2 className="mt-2 text-xl font-bold tracking-tight text-slate-950">See what’s paid and what’s still due</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-700">
             In Billing, each invoice has a payment status. Filter your list to view paid or unpaid invoices, and mark an invoice paid when you receive payment (or unpaid if its status needs correcting). The Overview also summarizes invoices awaiting payment so you can keep an eye on outstanding amounts.
