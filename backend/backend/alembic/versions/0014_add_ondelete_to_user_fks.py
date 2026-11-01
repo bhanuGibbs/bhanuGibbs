@@ -16,8 +16,10 @@ def upgrade() -> None:
     """Add ondelete rules to foreign keys referencing users.id."""
 
     # auth_sessions.user_id -> CASCADE (delete sessions when user is deleted)
+    # Note: auth_sessions was created in 0006 without explicit FK name, so PostgreSQL
+    # auto-generated "auth_sessions_user_id_fkey" as the constraint name.
     with op.batch_alter_table("auth_sessions") as batch:
-        batch.drop_constraint("fk_auth_sessions_user_id_users", type_="foreignkey")
+        batch.drop_constraint("auth_sessions_user_id_fkey", type_="foreignkey")
         batch.create_foreign_key(
             "fk_auth_sessions_user_id_users", "users", ["user_id"], ["id"], ondelete="CASCADE"
         )
@@ -51,8 +53,10 @@ def upgrade() -> None:
         )
 
     # quotation_finalization_usage.user_id -> CASCADE
+    # Note: created in 0011 without explicit FK name, so PostgreSQL auto-generated
+    # "quotation_finalization_usage_user_id_fkey" as the constraint name.
     with op.batch_alter_table("quotation_finalization_usage") as batch:
-        batch.drop_constraint("fk_quotation_finalization_usage_user_id_users", type_="foreignkey")
+        batch.drop_constraint("quotation_finalization_usage_user_id_fkey", type_="foreignkey")
         batch.create_foreign_key(
             "fk_quotation_finalization_usage_user_id_users",
             "users",
@@ -68,7 +72,10 @@ def downgrade() -> None:
     with op.batch_alter_table("quotation_finalization_usage") as batch:
         batch.drop_constraint("fk_quotation_finalization_usage_user_id_users", type_="foreignkey")
         batch.create_foreign_key(
-            "fk_quotation_finalization_usage_user_id_users", "users", ["user_id"], ["id"]
+            "quotation_finalization_usage_user_id_fkey",
+            "users",
+            ["user_id"],
+            ["id"],
         )
 
     with op.batch_alter_table("quotations") as batch:
@@ -98,5 +105,5 @@ def downgrade() -> None:
     with op.batch_alter_table("auth_sessions") as batch:
         batch.drop_constraint("fk_auth_sessions_user_id_users", type_="foreignkey")
         batch.create_foreign_key(
-            "fk_auth_sessions_user_id_users", "users", ["user_id"], ["id"]
+            "auth_sessions_user_id_fkey", "users", ["user_id"], ["id"]
         )
