@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, HttpUrl
+from pydantic import BaseModel, Field
 from app.schemas.contact_fields import NameField, PhoneNumber, Pincode, Gstin
 
 
@@ -13,8 +13,8 @@ class CompanyBase(BaseModel):
     name: NameField = Field(...)
     address: str | None = Field(default=None, max_length=512)
     phone_number: PhoneNumber = None
-    email: EmailStr | None = None
-    website: HttpUrl | None = None
+    email: str | None = None
+    website: str | None = None
     gstin: Gstin = None
     country: NameField = None
     state: NameField = None
