@@ -32,6 +32,7 @@ class CompanyRead(CompanyBase):
     id: UUID
     phone_number: str | None = None
     pincode: str | None = None
+    gstin: str | None = None
     created_at: datetime
     updated_at: datetime
     currency: str | None = None
