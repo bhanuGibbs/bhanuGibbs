@@ -31,11 +31,13 @@ async def seed_roles(session: AsyncSession) -> None:
             if existing_role.description != role_data["description"]:
                 existing_role.description = role_data["description"]
                 await role_service.save()
+                print(f"Updated role description: {role_data['name']}")
         else:
             await role_service.create_role(
                 name=role_data["name"],
                 description=role_data["description"],
             )
+            print(f"Created role: {role_data['name']}")
 
 
 async def create_initial_data() -> None:
@@ -57,9 +59,13 @@ async def create_initial_data() -> None:
         raise
 
     try:
-        async with get_session() as session:
+        print("Starting role seeding...")
+        session = get_session()
+        async with session:
             await seed_roles(session)
+        print("Role seeding completed successfully.")
         logger.info("Default roles seeded successfully.")
     except Exception as e:
+        print(f"Role seeding failed: {e}")
         logger.error("Role seeding failed: %s. Default roles may be missing.", e)
         raise
