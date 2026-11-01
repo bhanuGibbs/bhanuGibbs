@@ -11,6 +11,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from app.core.rate_limit import limiter
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -45,6 +46,10 @@ app = FastAPI(
     description="Enterprise Quotation Management System API.",
     version="0.1.0",
 )
+
+# Initialize the rate limiter with the FastAPI app
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
 
 # Rate limit exceeded handler
 @app.exception_handler(RateLimitExceeded)

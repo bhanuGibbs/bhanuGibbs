@@ -115,7 +115,8 @@ async def login(
 
 
 @router.post("/refresh", response_model=Token)
-async def refresh_token(payload: TokenRefreshRequest, session: AsyncSession = Depends(get_db_session)) -> Token:
+@limiter.limit("10/minute")
+async def refresh_token(request: Request, payload: TokenRefreshRequest, session: AsyncSession = Depends(get_db_session)) -> Token:
     """Refresh JWT tokens using a valid refresh token."""
     try:
         token_payload = decode_token(payload.refresh_token)
@@ -189,7 +190,9 @@ async def refresh_token(payload: TokenRefreshRequest, session: AsyncSession = De
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
+@limiter.limit("10/minute")
 async def logout(
+    request: Request,
     payload: TokenRefreshRequest,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, str]:
