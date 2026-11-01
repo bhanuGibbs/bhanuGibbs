@@ -17,7 +17,7 @@ class AuthSession(BaseModel):
         UniqueConstraint("refresh_token_hash", name="uq_auth_sessions_refresh_token_hash"),
     )
 
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     refresh_token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     token_id: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)

@@ -18,6 +18,6 @@ class QuotationFinalizationUsage(BaseModel):
         Index("ix_quotation_finalization_usage_user_date", "user_id", "finalized_at"),
     )
 
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     quotation_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
     finalized_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)

@@ -26,9 +26,9 @@ class Quotation(BaseModel):
     description: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     customer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("customers.id"), nullable=False)
     company_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("companies.id"), nullable=False)
-    created_by_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_by_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     updated_by_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("users.id", name="fk_quotations_updated_by_id_users"), nullable=True
+        ForeignKey("users.id", name="fk_quotations_updated_by_id_users", ondelete="SET NULL"), nullable=True
     )
     issued_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     finalized_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
