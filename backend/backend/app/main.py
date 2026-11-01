@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import os
+import sys
 import time
+import traceback
 import uuid
 import logging
 
@@ -103,11 +105,17 @@ app.include_router(user_router)
 @app.on_event("startup")
 async def startup_event() -> None:
     """Initialize application resources on startup."""
-    print("Starting app")
+    print("Starting app", flush=True)
     configure_logging()
-    print("Before create_initial_data")
-    await create_initial_data()
-    print("Startup completed")
+    print("Before create_initial_data", flush=True)
+    try:
+        await create_initial_data()
+        print("Startup completed", flush=True)
+    except Exception as e:
+        print(f"FATAL: Startup failed with error: {e}", flush=True)
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.flush()
+        raise
 
 
 @app.get("/health", response_class=JSONResponse)

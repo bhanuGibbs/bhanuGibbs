@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sys
+import traceback
 from pathlib import Path
 
 from alembic import command
@@ -52,20 +54,25 @@ async def create_initial_data() -> None:
 
     try:
         await asyncio.to_thread(command.upgrade, config, "head")
+        print("Alembic migrations applied successfully.", flush=True)
         logger.info("Alembic migrations applied successfully.")
     except Exception as e:
+        print(f"FATAL: Alembic migration failed: {e}", flush=True)
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.flush()
         logger.error("Alembic migration failed: %s. The application may not function correctly with an outdated database schema.", e)
-        # Re-raise to prevent the application from starting with an incomplete schema
         raise
 
     try:
-        print("Starting role seeding...")
+        print("Starting role seeding...", flush=True)
         session = get_session()
         async with session:
             await seed_roles(session)
-        print("Role seeding completed successfully.")
+        print("Role seeding completed successfully.", flush=True)
         logger.info("Default roles seeded successfully.")
     except Exception as e:
-        print(f"Role seeding failed: {e}")
+        print(f"FATAL: Role seeding failed: {e}", flush=True)
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.flush()
         logger.error("Role seeding failed: %s. Default roles may be missing.", e)
         raise
