@@ -31,7 +31,8 @@ const AdminUsers = () => {
             const allCompanies = await getAllCompanies();
             setCompanies(allCompanies);
           } catch (error) {
-            // Silently fail — companies list is optional
+            console.error('Failed to load companies for Super Admin filter:', error);
+            toast.error(error.message || 'Unable to load companies');
           }
         }
         setUsers(await getAdminUsers());

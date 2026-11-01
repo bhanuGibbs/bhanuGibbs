@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-31T03:48:00Z",
+  "title": "Design System: KeelBill Ledger",
+  "extensions": {
+    "colorMeta": {
+      "emerald-accent": {
+        "role": "primary",
+        "displayName": "Emerald Accent",
+        "canonical": "#047857",
+        "tonalRamp": [
+          "#064e3b",
+          "#065f46",
+          "#047857",
+          "#059669",
+          "#10b981",
+          "#34d399",
+          "#6ee7b7",
+          "#d1fae5"
+        ]
+      },
+      "slate-950": {
+        "role": "neutral",
+        "displayName": "Slate 950",
+        "canonical": "#0f172a",
+        "tonalRamp": [
+          "#020617",
+          "#0f172a",
+          "#1e293b",
+          "#334155",
+          "#475569",
+          "#64748b",
+          "#94a3b8",
+          "#f1f5f9"
+        ]
+      },
+      "brand-blue": {
+        "role": "secondary",
+        "displayName": "Brand Blue",
+        "canonical": "#2563eb",
+        "tonalRamp": [
+          "#1e3a8a",
+          "#1e40af",
+          "#1d4ed8",
+          "#2563eb",
+          "#3b82f6",
+          "#60a5fa",
+          "#93c5fd",
+          "#dbeafe"
+        ]
+      },
+      "rose-error": {
+        "role": "functional",
+        "displayName": "Rose Error",
+        "canonical": "#f43f5e",
+        "tonalRamp": [
+          "#9f1239",
+          "#be123c",
+          "#e11d48",
+          "#f43f5e",
+          "#fb7185",
+          "#fda4af",
+          "#fecdd3",
+          "#ffe4e6"
+        ]
+      },
+      "amber-warning": {
+        "role": "functional",
+        "displayName": "Amber Warning",
+        "canonical": "#f59e0b",
+        "tonalRamp": [
+          "#78350f",
+          "#92400e",
+          "#b45309",
+          "#d97706",
+          "#f59e0b",
+          "#fbbf24",
+          "#fcd34d",
+          "#fef3c7"
+        ]
+      },
+      "page-bg": {
+        "role": "neutral",
+        "displayName": "Page Background",
+        "canonical": "#f7f8fa"
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#ffffff"
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default text for descriptions, table cells, and form help text."
+      },
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Page titles, section headers, and card headings with tight tracking."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, micro text, and table headers."
+      }
+    },
+    "shadows": [
+      {
+        "name": "soft",
+        "value": "0 10px 30px rgba(37, 99, 235, 0.12)",
+        "purpose": "Diffuse shadow on main form sections and card containers."
+      },
+      {
+        "name": "sm",
+        "value": "0 1px 2px rgba(0, 0, 0, 0.05)",
+        "purpose": "Minimal elevation on stat cards, list cards, and table containers."
+      },
+      {
+        "name": "xl",
+        "value": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+        "purpose": "Strong separation for dropdown menus, popovers, and account menu."
+      }
+    ],
+    "motion": [
+      {
+        "name": "default",
+        "value": "all 0.2s ease",
+        "purpose": "Standard transition for hover and focus state changes."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action button for downloading invoices and quotations.",
+      "html": "<button class=\"ds-btn-primary\">Download Invoice</button>",
+      "css": ".ds-btn-primary { background: #047857; color: #fff; padding: 8px 14px; border: none; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s ease; display: inline-flex; align-items: center; gap: 6px; } .ds-btn-primary:hover { background: #065f46; } .ds-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }"
+    },
+    {
+      "name": "Dark Button",
+      "kind": "button",
+      "refersTo": "button-dark",
+      "description": "Dark slate button for CTAs like 'Create document' and login submit.",
+      "html": "<button class=\"ds-btn-dark\">Create invoice</button>",
+      "css": ".ds-btn-dark { background: #0f172a; color: #fff; padding: 12px 16px; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s ease; display: inline-flex; align-items: center; gap: 8px; } .ds-btn-dark:hover { background: #064e3b; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard rounded input field with focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Enter company name\" />",
+      "css": ".ds-input { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 16px; font-size: 14px; color: #3b496b; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); outline: none; transition: border-color 0.2s ease, background 0.2s ease; } .ds-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px #dbeafe; background: #fff; } .ds-input::placeholder { color: #94a3b8; }"
+    },
+    {
+      "name": "Section Card",
+      "kind": "card",
+      "refersTo": "card-section",
+      "description": "Main form section container with large rounded corners.",
+      "html": "<div class=\"ds-card-section\"><div class=\"ds-card-header\"><span class=\"ds-card-icon\"></span><div><h3>Company Details</h3><p>Add your company identity.</p></div></div></div>",
+      "css": ".ds-card-section { background: #fff; border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 28px; padding: 20px; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.12); } @media (min-width: 640px) { .ds-card-section { padding: 28px; } } .ds-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; } .ds-card-icon { width: 44px; height: 44px; border-radius: 16px; background: #eff6ff; color: #1d4ed8; display: flex; align-items: center; justify-content: center; } .ds-card-header h3 { font-size: 18px; font-weight: 600; color: #1e293b; margin: 0; } .ds-card-header p { font-size: 14px; color: #64748b; margin: 0; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "description": "Dashboard statistics card with icon badge.",
+      "html": "<div class=\"ds-stat-card\"><div class=\"ds-stat-header\"><span>Outstanding</span><span class=\"ds-stat-icon\"></span></div><p class=\"ds-stat-value\">₹1,25,000.00</p><p class=\"ds-stat-detail\">Awaiting payment</p></div>",
+      "css": ".ds-stat-card { background: #fff; border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 16px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); } .ds-stat-header { display: flex; align-items: center; justify-content: space-between; } .ds-stat-header span { font-size: 13px; font-weight: 500; color: #64748b; } .ds-stat-icon { width: 36px; height: 36px; border-radius: 12px; background: #d1fae5; color: #047857; display: flex; align-items: center; justify-content: center; } .ds-stat-value { font-size: 27px; font-weight: 600; color: #0f172a; margin: 16px 0 8px; line-height: 1; letter-spacing: -0.015em; } .ds-stat-detail { font-size: 12px; color: #64748b; margin: 0; }"
+    },
+    {
+      "name": "Navigation Link",
+      "kind": "nav",
+      "description": "Header navigation link with active and hover states.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-link active\" href=\"#\"><span class=\"ds-nav-icon\"></span>Billing</a><a class=\"ds-nav-link\" href=\"#\"><span class=\"ds-nav-icon\"></span>Quotations</a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 4px; } .ds-nav-link { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; font-size: 13px; font-weight: 500; color: #64748b; text-decoration: none; transition: background 0.2s ease, color 0.2s ease; } .ds-nav-link:hover { background: #f1f5f9; color: #0f172a; } .ds-nav-link.active { background: #1e293b; color: #fff; } .ds-nav-icon { width: 16px; height: 16px; background: currentColor; border-radius: 2px; }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "description": "Rounded status badge for payment and document states.",
+      "html": "<span class=\"ds-chip ds-chip--paid\">Paid</span><span class=\"ds-chip ds-chip--unpaid\">Unpaid</span><span class=\"ds-chip ds-chip--draft\">Draft</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; } .ds-chip--paid { background: #d1fae5; color: #047857; } .ds-chip--unpaid { background: #fef3c7; color: #b45309; } .ds-chip--draft { background: #f1f5f9; color: #334155; }"
+    },
+    {
+      "name": "Quick Action Card",
+      "kind": "custom",
+      "description": "Interactive quick action link card with icon and hover state.",
+      "html": "<a class=\"ds-quick-action\" href=\"#\"><span class=\"ds-qa-icon\"></span><div><span class=\"ds-qa-title\">New document</span><span class=\"ds-qa-detail\">Prepare an invoice or quote</span></div></a>",
+      "css": ".ds-quick-action { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; text-decoration: none; transition: border-color 0.2s ease, background 0.2s ease; } .ds-quick-action:hover { border-color: #a7f3d0; background: rgba(209, 250, 229, 0.5); } .ds-qa-icon { width: 36px; height: 36px; border-radius: 8px; background: #d1fae5; color: #047857; display: flex; align-items: center; justify-content: center; flex-shrink: 0; } .ds-qa-title { display: block; font-size: 14px; font-weight: 600; color: #334155; } .ds-qa-detail { display: block; font-size: 12px; color: #64748b; margin-top: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Modern Workspace",
+    "overview": "KeelBill Ledger is a clean, efficient, and professional billing workspace that feels modern without being trendy. Every screen is organized, trustworthy, and effortless to use. The design combines a refined slate-grey and white foundation with subtle emerald accents, generous spacing, clear typography, and minimal borders.\n\nThe visual language follows a precision over decoration philosophy: every element serves a clear business purpose. Professionalism, clarity, and trust are communicated through consistent layouts, clean typography, balanced spacing, and subtle colors rather than unnecessary decoration.",
+    "keyCharacteristics": [
+      "Slate-grey and white foundation with emerald green as the meaningful accent",
+      "Generously rounded corners (16–28px) creating a soft, approachable feel",
+      "Card-based layout with subtle borders and light shadows",
+      "Clean Inter typeface with tight tracking on headings",
+      "Status-driven color coding: emerald for success, amber for warnings, rose for errors",
+      "Responsive design that adapts from desktop to mobile with table-to-card transformations"
+    ],
+    "rules": [
+      {
+        "name": "The Emerald Restraint Rule",
+        "body": "Emerald green is the voice of financial confidence. It appears on primary actions, success states, and positive indicators — never as decoration. Its rarity is what gives it weight.",
+        "section": "colors"
+      },
+      {
+        "name": "The Neutral Foundation Rule",
+        "body": "Slate grey and white carry 90% of the interface. Color is reserved for meaning: status, action, or error.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tight Heading Rule",
+        "body": "All headings use tracking-tight (letter-spacing -0.015em) for a refined, modern appearance. Body text uses default tracking for maximum readability.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Most surfaces rely on borders and background contrast for separation. Shadows appear only on elevated cards and dropdowns.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Border Opacity Rule",
+        "body": "Card borders use border-slate-200/80 (80% opacity) for a softer, more refined edge than solid borders.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use emerald green for primary actions and positive financial states — let its restraint give it meaning.",
+      "Do maintain 16–28px corner radius on cards and inputs for the soft, approachable character.",
+      "Do use tracking-tight on all headings for a refined, modern appearance.",
+      "Do prefer borders and background contrast over shadows for card separation.",
+      "Do keep form labels at 14px medium weight with 2px bottom margin for clear association.",
+      "Do use status chips (rounded-full) with tinted backgrounds for visual state communication.",
+      "Do ensure inputs are 16px font size on mobile to prevent iOS zoom."
+    ],
+    "donts": [
+      "Don't use emerald green as a background or decorative color — reserve it for action and meaning.",
+      "Don't add gradients, excessive shadows, or decorative elements that don't serve a business purpose.",
+      "Don't use sharp corners (0–4px radius) on primary UI elements — the system's character is softly rounded.",
+      "Don't exceed 34px font size except for the auth page hero — the system speaks in measured voices.",
+      "Don't use more than one accent color family per screen — emerald leads; brand blue appears only for focus states.",
+      "Don't remove or alter GST-related terminology, calculations, or Indian market conventions.",
+      "Don't change the PDF document formats, numbering systems, or company branding elements during UI improvements."
+    ]
+  }
+}
