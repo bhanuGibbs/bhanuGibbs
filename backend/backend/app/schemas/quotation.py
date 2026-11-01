@@ -4,24 +4,24 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, PositiveInt, constr
-from app.schemas.contact_fields import NameField, PhoneNumber, Pincode, Gstin, HsnCode
+from pydantic import BaseModel, Field, PositiveInt, constr
+from app.schemas.contact_fields import HsnCode
 from typing import Literal
 
 
 class QuotationCustomerInfo(BaseModel):
     """Customer details for free-form quotation submission."""
 
-    name: NameField = Field(...)
-    email: EmailStr | None = None
-    phone_number: PhoneNumber = None
+    name: str = Field(..., min_length=1, max_length=255)
+    email: str | None = None
+    phone_number: str | None = None
     address: str | None = Field(default=None, max_length=512)
-    company_name: NameField = None
-    gstin: Gstin = None
-    country: NameField = None
-    state: NameField = None
-    city: NameField = None
-    pincode: Pincode = None
+    company_name: str | None = None
+    gstin: str | None = None
+    country: str | None = None
+    state: str | None = None
+    city: str | None = None
+    pincode: str | None = None
 
 
 class QuotationSubmitItem(BaseModel):

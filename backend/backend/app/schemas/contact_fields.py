@@ -13,7 +13,7 @@ NameField = Annotated[
     Annotated[
         str,
         StringConstraints(
-            pattern=r"^[A-Za-z][A-Za-z\s'.-]*$",
+            pattern=r"^[A-Za-z0-9][A-Za-z0-9\s'.-]*$",
             min_length=1,
             max_length=255,
         ),
@@ -25,7 +25,7 @@ NameField = Annotated[
 PhoneNumber = Annotated[
     Annotated[
         str,
-        StringConstraints(pattern=r"^\d{10}$", min_length=10, max_length=10),
+        StringConstraints(pattern=r"^\+?[0-9]{6,15}$", min_length=6, max_length=15),
     ] | None,
     BeforeValidator(_empty_to_none),
 ]
@@ -33,7 +33,7 @@ PhoneNumber = Annotated[
 Pincode = Annotated[
     Annotated[
         str,
-        StringConstraints(pattern=r"^\d{6}$", min_length=6, max_length=6),
+        StringConstraints(pattern=r"^[A-Za-z0-9]{3,10}$", min_length=3, max_length=10),
     ] | None,
     BeforeValidator(_empty_to_none),
 ]
@@ -42,9 +42,9 @@ Gstin = Annotated[
     Annotated[
         str,
         StringConstraints(
-            pattern=r"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
-            min_length=15,
-            max_length=15,
+            pattern=r"^[A-Za-z0-9]{1,20}$",
+            min_length=1,
+            max_length=20,
         ),
     ] | None,
     BeforeValidator(_empty_to_none),

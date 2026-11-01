@@ -357,8 +357,6 @@ class QuotationService:
                 raise NotFoundError("Product does not exist.")
             if str(product.company_id) != company_id:
                 raise BadRequestError("Product does not belong to the current company.")
-            if str(product.created_by_id) != str(quotation.created_by_id):
-                raise NotFoundError("Product not found.")
 
             quantity = int(item_data["quantity"])
             unit_price = _money(Decimal(item_data["unit_price"]))
@@ -404,8 +402,6 @@ class QuotationService:
 
         if str(customer.company_id) != company_id:
             raise BadRequestError("Customer does not belong to the current company.")
-        if str(customer.created_by_id) != str(quotation.created_by_id):
-            raise NotFoundError("Customer not found.")
 
         company = await self.company_repository.get(company_id)
         if not company:
