@@ -9,8 +9,8 @@ services:
       APP_NAME: ${APP_NAME:-KeelBill Ledger API}
       ENVIRONMENT: ${ENVIRONMENT:-production}
       DEBUG: ${DEBUG:-False}
-      DATABASE_URL: ${DATABASE_URL_DOCKER}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY to a unique secret of at least 32 bytes}
+      DATABASE_URL: ${DATABASE_URL_DOCKER:-postgresql+asyncpg://postgres:Kbprakash%4078935@db:5432/quotation_db}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-gibbs_P}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       FRONTEND_URL: ${DOCKER_FRONTEND_URL:-https://keelbill.in}
       CORS_ORIGINS: ${DOCKER_CORS_ORIGINS:-https://keelbill.in,https://www.keelbill.in}
@@ -61,7 +61,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in backend/backend/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Kbprakash@78935}
       POSTGRES_DB: ${POSTGRES_DB:-quotation_db}
     # Database port is intentionally not exposed to the host.
     # Access the database only through the backend service.
