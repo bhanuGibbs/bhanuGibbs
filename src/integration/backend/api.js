@@ -357,6 +357,23 @@ export const deleteUser = async (userId) => {
   return true;
 };
 
+export const createUser = async (username, email, password) => {
+  const response = await authenticatedFetch(`${API_BASE}/users/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthorizedHeaders(),
+    },
+    body: JSON.stringify({ username, email, password }),
+  });
+
+  if (!response.ok) {
+    throw await readApiError(response, 'Unable to create user. Please try again.');
+  }
+
+  return response.json();
+};
+
 export const updateInvoicePaymentStatus = async (quotationId, paymentStatus) => {
   const response = await authenticatedFetch(`${API_BASE}/quotations/${quotationId}/payment-status`, {
     method: 'PATCH',

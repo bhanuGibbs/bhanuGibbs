@@ -53,12 +53,15 @@ async def create_user(
             detail="Insufficient privileges.",
         )
 
+    # Link the new user to the Admin's company (corporate login)
+    company_id = current_user.get("company_id")
     user = await service.create_user(
         username=payload.username,
         email=payload.email,
         password=payload.password,
         role_name="Sales",
         is_superuser=False,
+        company_id=company_id,
     )
     return await _to_user_read(user, session)
 

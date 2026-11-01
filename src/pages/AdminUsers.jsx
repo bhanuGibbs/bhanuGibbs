@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Trash2 } from 'lucide-react';
+import { Plus, Trash2, X } from 'lucide-react';
 import Header from '../components/Header';
 import { useAuth } from '../context/useAuth';
-import { getAdminUsers, getAllCompanies, updateUserPlan, updateUserRole, deleteUser } from '../integration/backend/api';
+import { getAdminUsers, getAllCompanies, updateUserPlan, updateUserRole, deleteUser, createUser } from '../integration/backend/api';
 
 const planOptions = [
   { value: 'free', label: 'Free — 10 per month' },
@@ -21,6 +21,11 @@ const AdminUsers = () => {
   const [selectedCompany, setSelectedCompany] = useState('');
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -108,6 +113,35 @@ const AdminUsers = () => {
     }
   };
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    if (!newUsername.trim() || !newEmail.trim() || !newPassword.trim()) {
+      toast.error('All fields are required.');
+      return;
+    }
+    setCreating(true);
+    try {
+      const newUser = await createUser(newUsername.trim(), newEmail.trim(), newPassword);
+      setUsers((current) => [...current, newUser]);
+      setNewUsername('');
+      setNewEmail('');
+      setNewPassword('');
+      setShowAddForm(false);
+      toast.success('User created and added to your company.');
+    } catch (error) {
+      toast.error(error.message || 'Unable to create user');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const resetAddForm = () => {
+    setNewUsername('');
+    setNewEmail('');
+    setNewPassword('');
+    setShowAddForm(false);
+  };
+
   return (
     <div className="admin-users-page min-h-screen bg-[#f7f8fa]">
       <style>{`
@@ -151,6 +185,106 @@ const AdminUsers = () => {
               ))}
             </select>
           </div>
+        )}
+
+        {/* Add Team Member Button */}
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-sm text-slate-500">
+            {users.length} user{users.length !== 1 ? 's' : ''} in
+            {user?.company_name ? ` ${user.company_name}` : ' your company'}
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+          >
+            {showAddForm ? <X size={16} /> : <Plus size={16} />}
+            {showAddForm ? 'Cancel' : 'Add Team Member'}
+          </button>
+        </div>
+
+        {/* Add Team Member Form */}
+        {showAddForm && (
+          <form
+            onSubmit={handleCreateUser}
+            className="mb-4 rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm"
+          >
+            <h3 className="mb-4 text-lg font-semibold text-slate-900">Add Team Member</h3>
+            <p className="mb-4 text-sm text-slate-500">
+              New members will be added to your company with the Sales role. You can change their
+              role after creating the account.
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <label
+                  htmlFor="new-username"
+                  className="mb-1 block text-sm font-medium text-slate-700"
+                >
+                  Username
+                </label>
+                <input
+                  id="new-username"
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  required
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  placeholder="johndoe"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="new-email"
+                  className="mb-1 block text-sm font-medium text-slate-700"
+                >
+                  Email
+                </label>
+                <input
+                  id="new-email"
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  required
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  placeholder="john@company.com"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="new-password"
+                  className="mb-1 block text-sm font-medium text-slate-700"
+                >
+                  Password
+                </label>
+                <input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  placeholder="Min 8 characters"
+                />
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={resetAddForm}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={creating}
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {creating ? 'Creating...' : 'Create User'}
+              </button>
+            </div>
+          </form>
         )}
 
         <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white">

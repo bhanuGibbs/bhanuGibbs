@@ -35,8 +35,12 @@ class UserService:
         role_name: str,
         mobile_number: str | None = None,
         is_superuser: bool = False,
+        company_id: str | None = None,
     ) -> User:
-        """Create a new user with a role assignment."""
+        """Create a new user with a role assignment.
+
+        If company_id is provided, the user is linked to that company (corporate login).
+        """
         existing_user = await self.repository.get_by_username(username)
         if existing_user:
             raise ConflictError("Username already exists.")
@@ -57,6 +61,7 @@ class UserService:
             hashed_password=hashed_password,
             role_id=role.id,
             is_superuser=is_superuser,
+            company_id=company_id,
         )
         await self.repository.add(user)
         await self.repository.commit()
