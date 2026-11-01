@@ -34,9 +34,9 @@ class ProductRepository(BaseRepository[Product]):
         return result.scalars().first()
 
     async def list_by_company(self, company_id: str, user_id: str) -> list[Product]:
-        """Return products owned by a user within a company."""
+        """Return all products within a company (shared across users)."""
         statement = select(Product).where(
-            Product.company_id == UUID(company_id), Product.created_by_id == UUID(user_id)
+            Product.company_id == UUID(company_id)
         ).order_by(Product.created_at.desc())
         result = await self.session.execute(statement)
         return result.scalars().all()
