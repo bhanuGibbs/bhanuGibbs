@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -22,7 +23,7 @@ class POSTransactionRepository:
     async def get(self, transaction_id: str) -> POSTransaction | None:
         """Get a transaction by ID."""
         result = await self.session.execute(
-            select(POSTransaction).where(POSTransaction.id == transaction_id)
+            select(POSTransaction).where(POSTransaction.id == uuid.UUID(transaction_id))
         )
         return result.scalar_one_or_none()
 
@@ -30,7 +31,7 @@ class POSTransactionRepository:
         self, company_id: str, start_date: date | None = None, end_date: date | None = None, status: str | None = None, limit: int | None = None
     ) -> list[POSTransaction]:
         """List transactions for a company with optional filters."""
-        statement = select(POSTransaction).where(POSTransaction.company_id == company_id)
+        statement = select(POSTransaction).where(POSTransaction.company_id == uuid.UUID(company_id))
         if start_date:
             statement = statement.where(POSTransaction.created_at >= start_date)
         if end_date:
@@ -46,14 +47,14 @@ class POSTransactionRepository:
     async def get_items(self, transaction_id: str) -> list[POSTransactionItem]:
         """Get all items for a transaction."""
         result = await self.session.execute(
-            select(POSTransactionItem).where(POSTransactionItem.transaction_id == transaction_id)
+            select(POSTransactionItem).where(POSTransactionItem.transaction_id == uuid.UUID(transaction_id))
         )
         return list(result.scalars().all())
 
     async def get_payments(self, transaction_id: str) -> list[POSPayment]:
         """Get all payments for a transaction."""
         result = await self.session.execute(
-            select(POSPayment).where(POSPayment.transaction_id == transaction_id)
+            select(POSPayment).where(POSPayment.transaction_id == uuid.UUID(transaction_id))
         )
         return list(result.scalars().all())
 
@@ -90,21 +91,21 @@ class POSTransactionRepository:
     async def get_returns(self, transaction_id: str) -> list[POSReturn]:
         """Get all returns for a transaction."""
         result = await self.session.execute(
-            select(POSReturn).where(POSReturn.transaction_id == transaction_id)
+            select(POSReturn).where(POSReturn.transaction_id == uuid.UUID(transaction_id))
         )
         return list(result.scalars().all())
 
     async def get_return_items(self, return_id: str) -> list[POSReturnItem]:
         """Get all items for a return."""
         result = await self.session.execute(
-            select(POSReturnItem).where(POSReturnItem.return_id == return_id)
+            select(POSReturnItem).where(POSReturnItem.return_id == uuid.UUID(return_id))
         )
         return list(result.scalars().all())
 
     async def list_returns_by_company(self, company_id: str) -> list[POSReturn]:
         """List returns for a company."""
         result = await self.session.execute(
-            select(POSReturn).where(POSReturn.company_id == company_id).order_by(POSReturn.created_at.desc())
+            select(POSReturn).where(POSReturn.company_id == uuid.UUID(company_id)).order_by(POSReturn.created_at.desc())
         )
         return list(result.scalars().all())
 
@@ -119,7 +120,7 @@ class POSTransactionRepository:
                 func.coalesce(func.sum(POSTransaction.tax_amount), 0),
             ).where(
                 and_(
-                    POSTransaction.company_id == company_id,
+                    POSTransaction.company_id == uuid.UUID(company_id),
                     POSTransaction.created_at >= today,
                     POSTransaction.created_at < tomorrow,
                     POSTransaction.status == "completed",

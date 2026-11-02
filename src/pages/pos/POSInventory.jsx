@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, ArrowDown, ArrowUp, Package, Plus, X } from 'lucide-react';
+import { AlertTriangle, ArrowDown, ArrowUp, CheckCircle, Package, Plus, X } from 'lucide-react';
 import Header from '../../components/Header';
 import toast from 'react-hot-toast';
 import { adjustPOSStock, getPOSInventory, getPOSInventoryLowStock, getPOSStockMovements, getPOSProducts } from '../../integration/backend/posApi';
@@ -14,6 +14,8 @@ const POSInventory = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdjust, setShowAdjust] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [lastAdjustment, setLastAdjustment] = useState(null);
   const [adjustForm, setAdjustForm] = useState({ product_id: '', quantity: 1, notes: '' });
 
   const loadData = useCallback(async () => {
@@ -40,13 +42,19 @@ const POSInventory = () => {
   const handleAdjust = async (e) => {
     e.preventDefault();
     try {
-      await adjustPOSStock({
+      const result = await adjustPOSStock({
         product_id: adjustForm.product_id,
         quantity: Number(adjustForm.quantity),
         notes: adjustForm.notes || undefined,
       });
-      toast.success('Stock adjusted');
+      const product = products.find(p => p.id === adjustForm.product_id);
+      setLastAdjustment({
+        productName: product?.name || 'Product',
+        quantity: Number(adjustForm.quantity),
+        newStock: result?.stock_quantity,
+      });
       setShowAdjust(false);
+      setShowSuccess(true);
       setAdjustForm({ product_id: '', quantity: 1, notes: '' });
       loadData();
     } catch (err) {
@@ -168,6 +176,47 @@ const POSInventory = () => {
                 <textarea value={adjustForm.notes} onChange={(e) => setAdjustForm({...adjustForm, notes: e.target.value})} placeholder="Notes (optional)" rows={2} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-emerald-500" />
                 <button type="submit" className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-700">Adjust Stock</button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Success Popup Modal */}
+        {showSuccess && lastAdjustment && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+              <div className="p-6 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 mb-4">
+                  <CheckCircle className="h-8 w-8 text-emerald-600" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Stock Adjusted Successfully!</h3>
+                <p className="text-sm text-slate-500 mb-4">The stock has been updated in your inventory.</p>
+                
+                <div className="bg-slate-50 rounded-xl p-4 mb-4 text-left space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Product</span>
+                    <span className="font-medium text-slate-900">{lastAdjustment.productName}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Quantity {lastAdjustment.quantity > 0 ? 'Added' : 'Removed'}</span>
+                    <span className={`font-medium ${lastAdjustment.quantity > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {lastAdjustment.quantity > 0 ? '+' : ''}{lastAdjustment.quantity}
+                    </span>
+                  </div>
+                  {lastAdjustment.newStock !== undefined && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">New Stock Level</span>
+                      <span className="font-bold text-slate-900">{lastAdjustment.newStock}</span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setShowSuccess(false)}
+                  className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -51,6 +51,7 @@ class POSInventoryService:
         )
         await self.inventory_repo.add_movement(movement)
         await self.inventory_repo.commit()
+        await self.inventory_repo.session.refresh(product)
         return product
 
     async def get_stock_movements(

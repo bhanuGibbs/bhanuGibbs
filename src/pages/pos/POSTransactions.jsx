@@ -10,6 +10,7 @@ const formatMoney = (value) =>
 const POSTransactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [detail, setDetail] = useState(null);
@@ -17,10 +18,12 @@ const POSTransactions = () => {
 
   const loadData = useCallback(async () => {
     try {
+      setError(null);
       const result = await getPOSTransactions(startDate || null, endDate || null, null);
-      setTransactions(result);
+      setTransactions(Array.isArray(result) ? result : []);
     } catch (err) {
       console.error('Failed to load transactions:', err);
+      setError(err.message || 'Failed to load transactions. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -111,6 +114,11 @@ const POSTransactions = () => {
       <Header />
       <div className="p-6 max-w-7xl mx-auto">
         <h1 className="text-2xl font-bold text-slate-900 mb-6">Transactions</h1>
+        {error && (
+          <div className="mb-4 p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm">
+            {error}
+          </div>
+        )}
         <div className="flex gap-3 mb-4">
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-emerald-500" />
           <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-emerald-500" />

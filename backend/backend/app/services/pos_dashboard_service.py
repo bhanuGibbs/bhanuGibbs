@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from datetime import date
 from decimal import Decimal
 
@@ -23,6 +24,7 @@ class POSDashboardService:
     async def get_dashboard_data(self, company_id: str) -> dict:
         """Get complete dashboard data for a company."""
         today = date.today()
+        company_uuid = uuid.UUID(company_id)
 
         # Today's stats
         today_stats = await self.transaction_repo.get_today_stats(company_id, today)
@@ -45,7 +47,7 @@ class POSDashboardService:
             .join(POSTransaction, POSTransactionItem.transaction_id == POSTransaction.id)
             .where(
                 and_(
-                    POSTransaction.company_id == company_id,
+                    POSTransaction.company_id == company_uuid,
                     POSTransaction.created_at >= today,
                     POSTransaction.created_at < tomorrow,
                     POSTransaction.status == "completed",
@@ -71,7 +73,7 @@ class POSDashboardService:
                 func.coalesce(func.sum(POSTransaction.payment_amount), 0).label("total"),
             ).where(
                 and_(
-                    POSTransaction.company_id == company_id,
+                    POSTransaction.company_id == company_uuid,
                     POSTransaction.created_at >= today,
                     POSTransaction.created_at < tomorrow,
                     POSTransaction.status == "completed",

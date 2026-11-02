@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useLocation} from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import toast, {Toaster} from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
 import Header from '../components/Header';
 import {useAuth} from '../context/useAuth';
@@ -272,7 +272,6 @@ const Home = () => {
                 .create-doc-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
                 .create-doc-page ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
             `}</style>
-            <Toaster position="top-right"/>
             <Header
                 onDownloadPdf={downloadPdf}
                 onReset={handleReset}

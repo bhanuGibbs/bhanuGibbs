@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +20,7 @@ class POSInventoryRepository:
         result = await self.session.execute(
             select(POSProduct).where(
                 and_(
-                    POSProduct.company_id == company_id,
+                    POSProduct.company_id == uuid.UUID(company_id),
                     POSProduct.is_active == True,
                     POSProduct.stock_quantity <= POSProduct.low_stock_threshold,
                 )
@@ -32,7 +33,7 @@ class POSInventoryRepository:
         result = await self.session.execute(
             select(POSProductVariant).where(
                 and_(
-                    POSProductVariant.company_id == company_id,
+                    POSProductVariant.company_id == uuid.UUID(company_id),
                     POSProductVariant.is_active == True,
                     POSProductVariant.stock_quantity <= POSProductVariant.low_stock_threshold,
                 )
@@ -50,9 +51,9 @@ class POSInventoryRepository:
         self, company_id: str, product_id: str | None = None, limit: int = 50
     ) -> list[POSStockMovement]:
         """List stock movements for a company."""
-        statement = select(POSStockMovement).where(POSStockMovement.company_id == company_id)
+        statement = select(POSStockMovement).where(POSStockMovement.company_id == uuid.UUID(company_id))
         if product_id:
-            statement = statement.where(POSStockMovement.product_id == product_id)
+            statement = statement.where(POSStockMovement.product_id == uuid.UUID(product_id))
         statement = statement.order_by(POSStockMovement.created_at.desc()).limit(limit)
         result = await self.session.execute(statement)
         return list(result.scalars().all())
@@ -74,7 +75,7 @@ class POSInventoryRepository:
     async def list_by_company(self, company_id: str) -> list[POSProduct]:
         """List all products for inventory tracking."""
         result = await self.session.execute(
-            select(POSProduct).where(POSProduct.company_id == company_id)
+            select(POSProduct).where(POSProduct.company_id == uuid.UUID(company_id))
         )
         return list(result.scalars().all())
 

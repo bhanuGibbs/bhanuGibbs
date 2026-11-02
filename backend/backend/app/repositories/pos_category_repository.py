@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from uuid import UUID
 
 from sqlalchemy import select
@@ -17,13 +18,13 @@ class POSCategoryRepository:
     async def get(self, category_id: str) -> POSCategory | None:
         """Get a category by ID."""
         result = await self.session.execute(
-            select(POSCategory).where(POSCategory.id == category_id)
+            select(POSCategory).where(POSCategory.id == uuid.UUID(category_id))
         )
         return result.scalar_one_or_none()
 
     async def list_by_company(self, company_id: str, active_only: bool = True) -> list[POSCategory]:
         """List categories for a company."""
-        statement = select(POSCategory).where(POSCategory.company_id == company_id)
+        statement = select(POSCategory).where(POSCategory.company_id == uuid.UUID(company_id))
         if active_only:
             statement = statement.where(POSCategory.is_active == True)
         result = await self.session.execute(statement)

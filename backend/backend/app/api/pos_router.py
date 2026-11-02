@@ -410,7 +410,7 @@ async def checkout(
     except BadRequestError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-    items_data = await service.transaction_repo.get_items(transaction.id)
+    items_data = await service.transaction_repo.get_items(str(transaction.id))
     return POSTransactionRead.model_validate({
         "id": str(transaction.id), "company_id": str(transaction.company_id),
         "transaction_number": transaction.transaction_number,
@@ -441,7 +441,7 @@ async def list_transactions(
     )
     result = []
     for t in transactions:
-        items = await service.transaction_repo.get_items(t.id)
+        items = await service.transaction_repo.get_items(str(t.id))
         result.append(POSTransactionRead.model_validate({
             "id": str(t.id), "company_id": str(t.company_id),
             "transaction_number": t.transaction_number,
@@ -470,7 +470,7 @@ async def get_transaction(
         transaction = await service.get_transaction(transaction_id, current_user["company_id"])
     except NotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found.")
-    items = await service.transaction_repo.get_items(transaction.id)
+    items = await service.transaction_repo.get_items(str(transaction.id))
     return POSTransactionRead.model_validate({
         "id": str(transaction.id), "company_id": str(transaction.company_id),
         "transaction_number": transaction.transaction_number,
@@ -502,7 +502,7 @@ async def cancel_transaction(
     except (NotFoundError, BadRequestError) as e:
         status_code = status.HTTP_404_NOT_FOUND if isinstance(e, NotFoundError) else status.HTTP_400_BAD_REQUEST
         raise HTTPException(status_code=status_code, detail=str(e))
-    items = await service.transaction_repo.get_items(transaction.id)
+    items = await service.transaction_repo.get_items(str(transaction.id))
     return POSTransactionRead.model_validate({
         "id": str(transaction.id), "company_id": str(transaction.company_id),
         "transaction_number": transaction.transaction_number,
