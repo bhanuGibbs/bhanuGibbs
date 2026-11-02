@@ -20,6 +20,7 @@ class CompanyBase(BaseModel):
     state: NameField = None
     city: NameField = None
     pincode: Pincode = None
+    business_profile: str = Field(default="invoice", pattern="^(invoice|pos)$")
 
 
 class CompanyCreate(CompanyBase):
@@ -33,6 +34,7 @@ class CompanyRead(CompanyBase):
     phone_number: str | None = None
     pincode: str | None = None
     gstin: str | None = None
+    business_profile: str = "invoice"
     created_at: datetime
     updated_at: datetime
     currency: str | None = None

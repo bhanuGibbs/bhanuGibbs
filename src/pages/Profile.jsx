@@ -9,6 +9,7 @@ const Profile = () => {
   const { user, logout, refreshUser } = useAuth();
   const [form, setForm] = useState({ username: '', email: '', mobile_number: '' });
   const [saving, setSaving] = useState(false);
+  const isPOS = user?.business_profile === 'pos';
 
   useEffect(() => {
     setForm({
@@ -108,10 +109,16 @@ const Profile = () => {
               <p className="mt-1 text-sm font-semibold capitalize text-slate-800">{user?.subscription_plan || 'free'}</p>
               <p className="mt-1 text-xs text-slate-600">
                 {user?.subscription_plan === 'premium'
-                  ? 'Unlimited finalized quotations and invoices.'
+                  ? isPOS
+                    ? 'Unlimited POS transactions.'
+                    : 'Unlimited finalized quotations and invoices.'
                   : user?.subscription_plan === 'basic'
-                    ? 'Up to 50 finalized quotations and invoices per month.'
-                    : 'Up to 10 finalized quotations and invoices per month.'}
+                    ? isPOS
+                      ? 'Up to 50 POS transactions per month.'
+                      : 'Up to 50 finalized quotations and invoices per month.'
+                    : isPOS
+                      ? 'Up to 10 POS transactions per month.'
+                      : 'Up to 10 finalized quotations and invoices per month.'}
               </p>
               <p className="mt-1 text-xs text-slate-500">Plan changes are managed by an administrator.</p>
             </div>

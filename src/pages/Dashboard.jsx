@@ -12,7 +12,7 @@ import {
   RotateCcw,
   Users,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../context/useAuth';
 import { getCustomers, getProducts, getQuotations } from '../integration/backend/api';
@@ -29,6 +29,12 @@ const formatMoney = (value, currency = 'INR') =>
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+
+  // Redirect POS users to POS dashboard
+  if (user?.business_profile === 'pos') {
+    return <Navigate to="/pos" replace />;
+  }
+
   const [data, setData] = useState({ quotations: [], customers: [], products: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-@limiter.limit("5/hour")
+@limiter.limit("20/hour")
 async def register(
     request: Request,
     payload: UserRegister,
@@ -301,6 +301,7 @@ async def setup_company(
             state=payload.state,
             city=payload.city,
             pincode=payload.pincode,
+            business_profile=payload.business_profile,
             commit=False,
         )
         user.company_id = company.id
@@ -321,6 +322,7 @@ async def setup_company(
         "state": company.state,
         "city": company.city,
         "pincode": company.pincode,
+        "business_profile": company.business_profile,
         "created_at": str(company.created_at),
         "updated_at": str(company.updated_at),
     }
@@ -382,6 +384,7 @@ async def read_current_user(
         "company_email": company.email if company else None,
         "company_website": company.website if company else None,
         "company_gstin": company.gstin if company else None,
+        "business_profile": company.business_profile if company else "invoice",
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     }

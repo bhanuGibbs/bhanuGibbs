@@ -77,7 +77,9 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
         </div>
 
         <div className="md:col-span-2">
-          <label className={labelClass}>Company Name</label>
+          <label className={labelClass}>
+            Company Name<span className="text-red-500">*</span>
+          </label>
           <input className={inputClass} {...register('company.name', { pattern: { value: NAME_REGEX, message: 'Please enter only alphabetic characters' }, onChange: (event) => { event.target.value = nameOnly(event.target.value); } })} />
           {errors.company?.name ? <p className="mt-1 text-sm text-rose-500">{errors.company.name.message}</p> : null}
         </div>

@@ -11,10 +11,12 @@ import {
   Plus,
   Receipt,
   RotateCcw,
+  ShoppingCart,
   Users,
   X,
 } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
+import { useAuth } from '../context/useAuth';
 
 const navigation = [
   { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
@@ -24,6 +26,14 @@ const navigation = [
   { to: '/customers', label: 'Customers', icon: Users },
   { to: '/products', label: 'Products', icon: Package },
   { to: '/info', label: 'Info', icon: InfoIcon },
+];
+
+const posNavigation = [
+  { to: '/pos', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/pos/terminal', label: 'Terminal', icon: ShoppingCart },
+  { to: '/pos/products', label: 'Products', icon: Package },
+  { to: '/pos/transactions', label: 'Transactions', icon: Receipt },
+  { to: '/pos/inventory', label: 'Inventory', icon: FileText },
 ];
 
 const Header = ({
@@ -37,7 +47,11 @@ const Header = ({
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const displayName = user?.username || user?.name || 'Account';
+  const { user: authUser, logout: authLogout } = useAuth();
+  const effectiveUser = user || authUser;
+  const isPOS = authUser?.business_profile === 'pos';
+  const currentNav = isPOS ? posNavigation : navigation;
+  const displayName = effectiveUser?.username || effectiveUser?.name || 'Account';
   const initials = displayName
     .split(/[\s@._-]+/)
     .filter(Boolean)
@@ -53,7 +67,7 @@ const Header = ({
 
   const renderNavigation = (onNavigate) => (
     <>
-      {navigation.map(({ to, label, icon: Icon, end }) => (
+      {currentNav.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}
           to={to}
@@ -65,7 +79,7 @@ const Header = ({
           {label}
         </NavLink>
       ))}
-      {(user?.role === 'Admin' || user?.role === 'Super Admin') ? (
+      {!isPOS && (effectiveUser?.role === 'Admin' || effectiveUser?.role === 'Super Admin') ? (
         <NavLink
           to="/admin/users"
           onClick={onNavigate}
@@ -95,7 +109,7 @@ const Header = ({
           {renderNavigation()}
         </nav>
 
-        {onSetDocumentMode ? (
+        {onSetDocumentMode && !isPOS ? (
           <div className="hidden items-center gap-2 lg:flex">
             <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
               {['quotation', 'billing'].map((mode) => (
@@ -147,7 +161,7 @@ const Header = ({
               </span>
               <span className="hidden max-w-[125px] sm:block">
                 <span className="block truncate text-xs font-semibold text-slate-800">{displayName}</span>
-                <span className="block truncate text-[11px] text-slate-500">{user?.email || 'Signed in'}</span>
+                <span className="block truncate text-[11px] text-slate-500">{effectiveUser?.email || 'Signed in'}</span>
               </span>
               <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
             </button>
@@ -155,9 +169,9 @@ const Header = ({
               <div className="absolute right-0 top-12 z-40 w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
                 <div className="border-b border-slate-100 px-3 py-2">
                   <p className="truncate text-sm font-semibold text-slate-900">{displayName}</p>
-                  <p className="truncate text-xs text-slate-500">{user?.email || ''}</p>
-                  {user?.role ? <p className="mt-1 text-xs text-emerald-700">{user.role}</p> : null}
-                  {user?.mobile_number ? <p className="mt-1 text-xs text-slate-500">{user.mobile_number}</p> : null}
+                  <p className="truncate text-xs text-slate-500">{effectiveUser?.email || ''}</p>
+                  {effectiveUser?.role ? <p className="mt-1 text-xs text-emerald-700">{effectiveUser.role}</p> : null}
+                  {effectiveUser?.mobile_number ? <p className="mt-1 text-xs text-slate-500">{effectiveUser.mobile_number}</p> : null}
                 </div>
                 <Link
                   to="/profile"
@@ -170,7 +184,7 @@ const Header = ({
                   type="button"
                   onClick={() => {
                     setAccountOpen(false);
-                    onLogout?.();
+                    (onLogout || authLogout)?.();
                   }}
                   className="mt-1 w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50"
                 >
@@ -193,7 +207,7 @@ const Header = ({
       {menuOpen ? (
         <nav className="grid grid-cols-2 gap-1 border-t border-slate-100 px-4 py-3 xl:hidden" aria-label="Mobile navigation">
           {renderNavigation(() => setMenuOpen(false))}
-          {onSetDocumentMode ? (
+          {onSetDocumentMode && !isPOS ? (
             <div className="col-span-2 flex gap-2 pt-2">
               <button
                 type="button"

@@ -25,13 +25,17 @@ const CustomerDetailsForm = ({ register, errors, watch, setValue }) => {
 
       <div className="grid gap-5 md:grid-cols-2">
         <div>
-          <label className={labelClass}>Customer Name</label>
+          <label className={labelClass}>
+            Customer Name<span className="text-red-500">*</span>
+          </label>
           <input className={inputClass} {...register('customer.name', { pattern: { value: NAME_REGEX, message: 'Please enter only alphabetic characters' }, onChange: (event) => { event.target.value = nameOnly(event.target.value); } })} />
           {errors.customer?.name ? <p className="mt-1 text-sm text-rose-500">{errors.customer.name.message}</p> : null}
         </div>
 
         <div>
-          <label className={labelClass}>Company Name</label>
+          <label className={labelClass}>
+            Company Name<span className="text-red-500">*</span>
+          </label>
           <input className={inputClass} {...register('customer.companyName', { pattern: { value: NAME_REGEX, message: 'Please enter only alphabetic characters' }, onChange: (event) => { event.target.value = nameOnly(event.target.value); } })} />
           {errors.customer?.companyName ? <p className="mt-1 text-sm text-rose-500">{errors.customer.companyName.message}</p> : null}
         </div>

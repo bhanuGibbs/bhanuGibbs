@@ -113,11 +113,11 @@ class UserService:
         """Return a user by email."""
         return await self.repository.get_by_email(email)
 
-    async def list_users(self, company_id: str | None = None) -> list[User]:
-        """Return a list of all users."""
+    async def list_users(self, company_id: str | None = None, business_profile: str | None = None) -> list[User]:
+        """Return a list of all users, optionally filtered by company or business profile."""
         if company_id:
-            return await self.repository.list_by_company(company_id)
-        return await self.repository.list_users()
+            return await self.repository.list_by_company(company_id, business_profile=business_profile)
+        return await self.repository.list_users(business_profile=business_profile)
 
     async def get_user_by_id(self, user_id: str) -> User | None:
         """Return a user by its UUID identifier."""

@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
+from app.models.company import Company
 from app.models.role import Role
 from app.security import decode_token
 from app.services.user_service import UserService
@@ -51,12 +52,14 @@ async def get_optional_current_user(
         return None
 
     role = await session.get(Role, user.role_id)
+    company = await session.get(Company, user.company_id) if user.company_id else None
 
     return {
         "id": str(user.id),
         "username": user.username,
         "role": role.name if role else "Viewer",
         "company_id": str(user.company_id) if user.company_id else None,
+        "business_profile": company.business_profile if company else "invoice",
     }
 
 

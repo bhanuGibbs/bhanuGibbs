@@ -19,6 +19,7 @@ const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState('');
+  const [selectedBusinessProfile, setSelectedBusinessProfile] = useState('');
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -51,10 +52,10 @@ const AdminUsers = () => {
     loadData();
   }, []);
 
-  const loadUsersByCompany = async (companyId) => {
+  const loadUsers = async (companyId, businessProfile) => {
     setLoading(true);
     try {
-      setUsers(await getAdminUsers(companyId || undefined));
+      setUsers(await getAdminUsers(companyId || undefined, businessProfile || undefined));
     } catch (error) {
       toast.error(error.message || 'Unable to load users');
     } finally {
@@ -64,7 +65,12 @@ const AdminUsers = () => {
 
   const handleCompanyChange = (companyId) => {
     setSelectedCompany(companyId);
-    loadUsersByCompany(companyId || null);
+    loadUsers(companyId || null, selectedBusinessProfile || null);
+  };
+
+  const handleBusinessProfileChange = (businessProfile) => {
+    setSelectedBusinessProfile(businessProfile);
+    loadUsers(selectedCompany || null, businessProfile || null);
   };
 
   const handlePlanChange = async (userId, subscriptionPlan) => {
@@ -166,24 +172,43 @@ const AdminUsers = () => {
           </p>
         </div>
 
-        {isSuperAdmin(user) && companies.length > 0 && (
-          <div className="mb-4 flex items-center gap-3">
-            <label htmlFor="company-filter" className="text-sm font-medium text-slate-700">
-              Filter by company
-            </label>
-            <select
-              id="company-filter"
-              value={selectedCompany}
-              onChange={(e) => handleCompanyChange(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
-            >
-              <option value="">All companies</option>
-              {companies.map((company) => (
-                <option key={company.id} value={company.id}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
+        {isSuperAdmin(user) && (
+          <div className="mb-4 flex flex-wrap items-center gap-4">
+            {companies.length > 0 && (
+              <div className="flex items-center gap-3">
+                <label htmlFor="company-filter" className="text-sm font-medium text-slate-700">
+                  Filter by company
+                </label>
+                <select
+                  id="company-filter"
+                  value={selectedCompany}
+                  onChange={(e) => handleCompanyChange(e.target.value)}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                >
+                  <option value="">All companies</option>
+                  {companies.map((company) => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <label htmlFor="business-profile-filter" className="text-sm font-medium text-slate-700">
+                Filter by profile
+              </label>
+              <select
+                id="business-profile-filter"
+                value={selectedBusinessProfile}
+                onChange={(e) => handleBusinessProfileChange(e.target.value)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+              >
+                <option value="">All profiles</option>
+                <option value="invoice">Quotations</option>
+                <option value="pos">POS</option>
+              </select>
+            </div>
           </div>
         )}
 

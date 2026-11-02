@@ -277,9 +277,12 @@ export const getQuotations = async () => {
   return response.json();
 };
 
-export const getAdminUsers = async (companyId) => {
-  const url = companyId
-    ? `${API_BASE}/users/admin?company_id=${companyId}`
+export const getAdminUsers = async (companyId, businessProfile) => {
+  const params = new URLSearchParams();
+  if (companyId) params.append('company_id', companyId);
+  if (businessProfile) params.append('business_profile', businessProfile);
+  const url = params.toString()
+    ? `${API_BASE}/users/admin?${params.toString()}`
     : `${API_BASE}/users/admin`;
   const response = await authenticatedFetch(url, {
     headers: {

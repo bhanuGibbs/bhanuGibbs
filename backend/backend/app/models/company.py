@@ -27,3 +27,4 @@ class Company(BaseModel):
     default_validity_days: Mapped[int | None] = mapped_column(nullable=True, default=30)
     logo_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     signature_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    business_profile: Mapped[str] = mapped_column(String(20), nullable=False, default="invoice")

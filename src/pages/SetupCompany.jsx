@@ -21,6 +21,7 @@ const SetupCompany = () => {
     state: '',
     city: '',
     pincode: '',
+    business_profile: 'invoice',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -46,6 +47,7 @@ const SetupCompany = () => {
         state: form.state.trim() || undefined,
         city: form.city.trim() || undefined,
         pincode: form.pincode.trim() || undefined,
+        business_profile: form.business_profile,
       });
       await refreshUser();
       toast.success('Company details saved successfully');
@@ -68,6 +70,36 @@ const SetupCompany = () => {
         </p>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          <fieldset className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <legend className="text-sm font-medium text-slate-700 px-2">Business type</legend>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition ${form.business_profile === 'invoice' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                <input
+                  type="radio"
+                  name="business_profile"
+                  value="invoice"
+                  checked={form.business_profile === 'invoice'}
+                  onChange={() => setForm({ ...form, business_profile: 'invoice' })}
+                  className="sr-only"
+                />
+                <span className="block text-sm font-semibold text-slate-900">Invoice / Quotation</span>
+                <span className="block text-xs text-slate-500 mt-1">Create invoices and quotations for your customers</span>
+              </label>
+              <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition ${form.business_profile === 'pos' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                <input
+                  type="radio"
+                  name="business_profile"
+                  value="pos"
+                  checked={form.business_profile === 'pos'}
+                  onChange={() => setForm({ ...form, business_profile: 'pos' })}
+                  className="sr-only"
+                />
+                <span className="block text-sm font-semibold text-slate-900">POS Billing</span>
+                <span className="block text-xs text-slate-500 mt-1">Point-of-sale billing with inventory and barcode support</span>
+              </label>
+            </div>
+          </fieldset>
+
           <label className="block text-sm font-medium text-slate-700">
             Company name
             <input

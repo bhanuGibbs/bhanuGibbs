@@ -25,6 +25,7 @@ class CompanyService:
         state: str | None = None,
         city: str | None = None,
         pincode: str | None = None,
+        business_profile: str = "invoice",
         commit: bool = True,
     ) -> Company:
         """Create a new company in the system."""
@@ -45,6 +46,7 @@ class CompanyService:
             state=state,
             city=city,
             pincode=pincode,
+            business_profile=business_profile,
         )
         await self.repository.add(company)
         if commit:

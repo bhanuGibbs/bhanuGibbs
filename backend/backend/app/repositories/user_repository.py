@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.company import Company
 from app.models.user import User
 from app.repositories.base import BaseRepository
 
@@ -33,15 +34,32 @@ class UserRepository(BaseRepository[User]):
         result = await self.session.execute(statement)
         return result.scalars().first()
 
-    async def list_users(self) -> list[User]:
-        """Return all users."""
-        statement = select(User)
+    async def list_users(self, business_profile: str | None = None) -> list[User]:
+        """Return all users, optionally filtered by business profile."""
+        if business_profile:
+            statement = (
+                select(User)
+                .join(Company, User.company_id == Company.id)
+                .where(Company.business_profile == business_profile)
+            )
+        else:
+            statement = select(User)
         result = await self.session.execute(statement)
         return result.scalars().all()
 
-    async def list_by_company(self, company_id: str) -> list[User]:
-        """Return users belonging to one company."""
-        statement = select(User).where(User.company_id == UUID(company_id))
+    async def list_by_company(self, company_id: str, business_profile: str | None = None) -> list[User]:
+        """Return users belonging to one company, optionally filtered by business profile."""
+        if business_profile:
+            statement = (
+                select(User)
+                .join(Company, User.company_id == Company.id)
+                .where(
+                    User.company_id == UUID(company_id),
+                    Company.business_profile == business_profile,
+                )
+            )
+        else:
+            statement = select(User).where(User.company_id == UUID(company_id))
         result = await self.session.execute(statement)
         return result.scalars().all()
 

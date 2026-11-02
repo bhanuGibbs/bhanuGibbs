@@ -122,6 +122,7 @@ class UserRead(UserBase):
     company_email: str | None = None
     company_website: str | None = None
     company_gstin: str | None = None
+    business_profile: str = "invoice"
     created_at: datetime
     updated_at: datetime
 

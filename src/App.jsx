@@ -13,6 +13,11 @@ import SetupCompany from './pages/SetupCompany';
 import Profile from './pages/Profile';
 import AdminUsers from './pages/AdminUsers';
 import Info from './pages/Info';
+import POSDashboard from './pages/pos/POSDashboard';
+import POSTerminal from './pages/pos/POSTerminal';
+import POSProducts from './pages/pos/POSProducts';
+import POSTransactions from './pages/pos/POSTransactions';
+import POSInventory from './pages/pos/POSInventory';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/useAuth';
 
@@ -132,6 +137,47 @@ function App() {
               <RequireAdmin>
                 <AdminUsers />
               </RequireAdmin>
+            </RequireAuth>
+          }
+        />
+        {/* POS Routes */}
+        <Route
+          path="/pos"
+          element={
+            <RequireAuth>
+              <POSDashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/pos/terminal"
+          element={
+            <RequireAuth>
+              <POSTerminal />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/pos/products"
+          element={
+            <RequireAuth>
+              <POSProducts />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/pos/transactions"
+          element={
+            <RequireAuth>
+              <POSTransactions />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/pos/inventory"
+          element={
+            <RequireAuth>
+              <POSInventory />
             </RequireAuth>
           }
         />

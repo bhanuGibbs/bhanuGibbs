@@ -34,6 +34,7 @@ async def _to_user_read(user, session: AsyncSession) -> UserRead:
         "company_email": company.email if company else None,
         "company_website": company.website if company else None,
         "company_gstin": company.gstin if company else None,
+        "business_profile": company.business_profile if company else None,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     })
@@ -69,23 +70,28 @@ async def create_user(
 @router.get("/admin", response_model=list[UserRead])
 async def list_users_for_admin(
     company_id: PyUUID | None = Query(None, description="Filter users by company (Super Admin only)"),
+    business_profile: str | None = Query(None, description="Filter users by business profile (Super Admin only)"),
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> list[UserRead]:
-    """List users for Admin (same company) and Super Admin (all users, optionally filtered by company)."""
+    """List users for Admin (same company) and Super Admin (all users, optionally filtered by company or business profile)."""
     if current_user["role"] not in {"Admin", "Super Admin"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
         )
-    # Admin sees only same company; Super Admin sees all (with optional company filter)
+    # Admin sees only same company; Super Admin sees all (with optional company and business profile filters)
     if current_user["role"] == "Super Admin":
-        # Super Admin can filter by company_id query parameter
+        # Super Admin can filter by company_id and business_profile query parameters
         filter_company_id = str(company_id) if company_id else None
+        filter_business_profile = business_profile if business_profile else None
     else:
-        # Admin is restricted to their own company
+        # Admin is restricted to their own company, no business profile filter
         filter_company_id = current_user["company_id"]
-    users = await UserService(session).list_users(company_id=filter_company_id)
+        filter_business_profile = None
+    users = await UserService(session).list_users(
+        company_id=filter_company_id, business_profile=filter_business_profile
+    )
     return [await _to_user_read(user, session) for user in users]
 
 
