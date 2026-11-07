@@ -28,6 +28,11 @@ input, select, textarea {
   max-width: 100%;
 }
 
+.password-visibility-toggle::-ms-reveal,
+.password-visibility-toggle::-ms-clear {
+  display: none;
+}
+
 .date-input {
   appearance: none;
   -webkit-appearance: none;
