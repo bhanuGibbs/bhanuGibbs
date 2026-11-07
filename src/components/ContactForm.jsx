@@ -57,19 +57,19 @@ const ContactForm = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 gap-12 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-5 lg:gap-16">
       {/* Contact Form */}
       <div className="lg:col-span-3">
-        <h3 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+        <h3 className="text-xl font-semibold tracking-tight text-[#1a1a1a] sm:text-2xl">
           Send us a message
         </h3>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm leading-6 text-[#555555]">
           Have a question or want a demo? Fill out the form and we will respond within 24 hours.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5" noValidate>
+        <form onSubmit={handleSubmit} className="mt-7 space-y-5" noValidate>
           <div>
-            <label htmlFor="contact-name" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="contact-name" className="block text-sm font-medium text-[#1a1a1a]">
               Name
             </label>
             <input
@@ -78,17 +78,17 @@ const ContactForm = () => {
               value={form.name}
               onChange={handleChange('name')}
               placeholder="Your full name"
-              className={`mt-2 w-full rounded-2xl border bg-slate-50 px-4 py-3 text-sm outline-none transition focus:bg-white ${
+              className={`mt-2 w-full rounded-xl border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
                 errors.name
-                  ? 'border-rose-300 focus:border-rose-500'
-                  : 'border-slate-200 focus:border-emerald-500'
+                  ? 'border-rose-400 focus:border-rose-500'
+                  : 'border-[#e5e5e5] focus:border-[#00605d]'
               }`}
             />
             {errors.name && <p className="mt-1.5 text-xs text-rose-600">{errors.name}</p>}
           </div>
 
           <div>
-            <label htmlFor="contact-email" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="contact-email" className="block text-sm font-medium text-[#1a1a1a]">
               Email
             </label>
             <input
@@ -97,17 +97,17 @@ const ContactForm = () => {
               value={form.email}
               onChange={handleChange('email')}
               placeholder="you@example.com"
-              className={`mt-2 w-full rounded-2xl border bg-slate-50 px-4 py-3 text-sm outline-none transition focus:bg-white ${
+              className={`mt-2 w-full rounded-xl border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
                 errors.email
-                  ? 'border-rose-300 focus:border-rose-500'
-                  : 'border-slate-200 focus:border-emerald-500'
+                  ? 'border-rose-400 focus:border-rose-500'
+                  : 'border-[#e5e5e5] focus:border-[#00605d]'
               }`}
             />
             {errors.email && <p className="mt-1.5 text-xs text-rose-600">{errors.email}</p>}
           </div>
 
           <div>
-            <label htmlFor="contact-mobile" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="contact-mobile" className="block text-sm font-medium text-[#1a1a1a]">
               Mobile Number
             </label>
             <input
@@ -116,17 +116,17 @@ const ContactForm = () => {
               value={form.mobile}
               onChange={handleChange('mobile')}
               placeholder="+91 1234567890"
-              className={`mt-2 w-full rounded-2xl border bg-slate-50 px-4 py-3 text-sm outline-none transition focus:bg-white ${
+              className={`mt-2 w-full rounded-xl border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
                 errors.mobile
-                  ? 'border-rose-300 focus:border-rose-500'
-                  : 'border-slate-200 focus:border-emerald-500'
+                  ? 'border-rose-400 focus:border-rose-500'
+                  : 'border-[#e5e5e5] focus:border-[#00605d]'
               }`}
             />
             {errors.mobile && <p className="mt-1.5 text-xs text-rose-600">{errors.mobile}</p>}
           </div>
 
           <div>
-            <label htmlFor="contact-message" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="contact-message" className="block text-sm font-medium text-[#1a1a1a]">
               Message
             </label>
             <textarea
@@ -135,10 +135,10 @@ const ContactForm = () => {
               value={form.message}
               onChange={handleChange('message')}
               placeholder="Tell us how we can help..."
-              className={`mt-2 w-full rounded-2xl border bg-slate-50 px-4 py-3 text-sm outline-none transition focus:bg-white resize-none ${
+              className={`mt-2 w-full resize-none rounded-xl border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
                 errors.message
-                  ? 'border-rose-300 focus:border-rose-500'
-                  : 'border-slate-200 focus:border-emerald-500'
+                  ? 'border-rose-400 focus:border-rose-500'
+                  : 'border-[#e5e5e5] focus:border-[#00605d]'
               }`}
             />
             {errors.message && <p className="mt-1.5 text-xs text-rose-600">{errors.message}</p>}
@@ -147,7 +147,7 @@ const ContactForm = () => {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#00605d] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#004d4a] disabled:cursor-not-allowed disabled:opacity-70"
           >
             <Send size={16} />
             {loading ? 'Sending...' : 'Send Message'}
@@ -157,46 +157,46 @@ const ContactForm = () => {
 
       {/* Static Contact Details */}
       <div className="lg:col-span-2">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+        <div className="rounded-2xl bg-[#00605d] p-6 text-white sm:p-8">
+          <h3 className="text-lg font-semibold tracking-tight text-white">
             Contact details
           </h3>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm leading-6 text-[#d3ece6]">
             Reach us directly through any of these channels.
           </p>
 
           <div className="mt-6 space-y-5">
             <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#a6e5d7]">
                 <Mail size={18} />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-900">Email</p>
-                <a href="mailto:hello@keelbill.com" className="text-sm text-emerald-700 hover:text-emerald-800">
+                <p className="text-sm font-medium text-white">Email</p>
+                <a href="mailto:hello@keelbill.com" className="text-sm text-[#d3ece6] underline decoration-white/30 underline-offset-4 hover:text-white">
                   keelbillsol@gmail.com
                 </a>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#a6e5d7]">
                 <Phone size={18} />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-900">Phone</p>
-                <a href="tel:+911234567890" className="text-sm text-emerald-700 hover:text-emerald-800">
+                <p className="text-sm font-medium text-white">Phone</p>
+                <a href="tel:+911234567890" className="text-sm text-[#d3ece6] underline decoration-white/30 underline-offset-4 hover:text-white">
                   +91 7893599474
                 </a>
               </div>
             </div>
 
             <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#a6e5d7]">
                 <MapPin size={18} />
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-900">Office</p>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm font-medium text-white">Office</p>
+                <p className="text-sm text-[#d3ece6]">
                   Vizianagaram Andhrapradesh<br />India
                 </p>
               </div>

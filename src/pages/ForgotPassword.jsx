@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Link , useNavigate} from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { AtSign, LoaderCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { fetchApi, readApiError } from '../utils/apiErrors';
+import AuthLayout from '../components/AuthLayout';
 
 const ForgotPassword = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -42,52 +43,55 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="forgot-password-page min-h-screen bg-[#f7f8fa] px-4 py-10 sm:px-6">
-      <style>{`
-        .forgot-password-page ::selection { background: #d1fae5; color: #065f46; }
-        .forgot-password-page ::-moz-selection { background: #d1fae5; color: #065f46; }
-        .forgot-password-page ::-webkit-scrollbar { width: 8px; height: 8px; }
-        .forgot-password-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        .forgot-password-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .forgot-password-page ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-      `}</style>
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200/60 bg-white p-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Forgot password</h1>
-        <p className="mt-2 text-sm text-slate-500">Enter your email to receive password reset instructions.</p>
-
-        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium text-slate-700">
-            Email
+    <AuthLayout
+      eyebrow="Account recovery"
+      title="Reset your password."
+      description="Enter the email address linked to your account and we’ll send password reset instructions."
+      variant="auth"
+    >
+      <form className="space-y-5" onSubmit={handleSubmit} aria-busy={loading}>
+        <label htmlFor="forgot-password-email" className="block text-sm font-semibold text-slate-800">
+          Email
+          <span className="relative mt-2 block">
+            <AtSign size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
             <input
+              id="forgot-password-email"
+              name="email"
               type="email"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+              className="min-h-12 w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="Enter your email"
+              autoComplete="email"
               required
             />
-          </label>
+          </span>
+        </label>
 
-          {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-          {message ? <p className="text-sm text-emerald-600">{message}</p> : null}
+        {error ? <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-sm leading-6 text-rose-800">{error}</p> : null}
+        {message ? <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-950">{message}</p> : null}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {loading ? 'Sending...' : 'Send reset instructions'}
-          </button>
-        </form>
+        <button
+          type="submit"
+          disabled={loading}
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:scale-[1.01] hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
+        >
+          {loading ? (
+            <>
+              <LoaderCircle size={17} className="animate-spin" aria-hidden="true" />
+              Sending...
+            </>
+          ) : 'Send reset instructions'}
+        </button>
+      </form>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Remembered your password?{' '}
-          <Link to="/login" className="font-semibold text-emerald-700 hover:text-emerald-800">
-            Sign in
-          </Link>
-        </p>
-      </div>
-    </div>
+      <p className="mt-4 text-center text-sm text-slate-700">
+        Remembered your password?{' '}
+        <Link to="/login" className="font-semibold text-emerald-800 underline-offset-4 transition hover:text-emerald-950 hover:underline">
+          Sign in
+        </Link>
+      </p>
+    </AuthLayout>
   );
 };
 
