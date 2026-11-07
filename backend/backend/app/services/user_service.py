@@ -67,6 +67,37 @@ class UserService:
         await self.repository.commit()
         return user
 
+    async def create_email_verification_token(self, user_id: str) -> str:
+        """Generate an email verification token for the given user."""
+        user = await self.repository.get(user_id)
+        if not user:
+            raise NotFoundError("User not found.")
+
+        token = secrets.token_urlsafe(32)
+        user.email_verification_token = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        user.email_verification_expires_at = datetime.utcnow() + timedelta(hours=24)
+        await self.repository.commit()
+        return token
+
+    async def verify_email(self, token: str) -> User:
+        """Verify the user's email if the verification token is valid."""
+        token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        user = await self.repository.get_by_email_verification_token(token_hash)
+        if not user or not user.email_verification_expires_at:
+            raise BadRequestError("Invalid or expired email verification token.")
+
+        if datetime.utcnow() > user.email_verification_expires_at:
+            raise BadRequestError("Invalid or expired email verification token.")
+
+        if user.is_email_verified:
+            return user
+
+        user.is_email_verified = True
+        user.email_verification_token = None
+        user.email_verification_expires_at = None
+        await self.repository.commit()
+        return user
+
     async def create_password_reset_token(self, email: str) -> str:
         """Generate a password reset token for the requested email."""
         user = await self.repository.get_by_email(email)
@@ -221,5 +252,6 @@ class UserService:
         if company_id and str(user.company_id) != company_id:
             raise NotFoundError("User not found.")
 
+        await self.repository.clear_user_references(user)
         await self.repository.delete(user)
         await self.repository.commit()

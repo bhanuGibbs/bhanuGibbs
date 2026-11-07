@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
   BarChart3,
-  DollarSign,
+  IndianRupee,
   Package,
+  FileText,
   Plus,
   RefreshCw,
-  Receipt,
   ShoppingCart,
   TrendingUp,
   Users,
@@ -97,13 +97,13 @@ const POSDashboard = () => {
     {
       label: "Today's Revenue",
       value: formatMoney(data?.today_sales?.revenue || 0),
-      icon: DollarSign,
+      icon: IndianRupee,
       color: 'emerald',
     },
     {
       label: 'Transactions',
       value: data?.today_sales?.transactions || 0,
-      icon: Receipt,
+      icon: FileText,
       color: 'blue',
     },
     {
@@ -264,7 +264,7 @@ const POSDashboard = () => {
           <div className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                <Receipt className="h-5 w-5 text-purple-600" />
+                <FileText className="h-5 w-5 text-purple-600" />
                 Recent Transactions
               </h3>
               <Link to="/pos/transactions" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">

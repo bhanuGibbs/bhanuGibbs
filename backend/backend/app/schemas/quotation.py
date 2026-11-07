@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, Field, PositiveInt, constr
+from pydantic import BaseModel, Field, PositiveInt, constr, field_validator
 from app.schemas.contact_fields import HsnCode
 from typing import Literal
 
@@ -54,6 +54,13 @@ class QuotationSubmit(BaseModel):
     shipping_amount: Decimal = Field(default=Decimal("0.00"), ge=0)
     customer: QuotationCustomerInfo
     items: list[QuotationSubmitItem]
+
+    @field_validator("items")
+    @classmethod
+    def items_must_not_be_empty(cls, v: list[QuotationSubmitItem]) -> list[QuotationSubmitItem]:
+        if not v:
+            raise ValueError("Quotation must contain at least one item")
+        return v
 
 
 
@@ -119,6 +126,14 @@ class QuotationUpdate(BaseModel):
     """Properties for updating a quotation."""
 
     title: str | None = Field(default=None, min_length=1, max_length=255)
+
+    @field_validator("title")
+    @classmethod
+    def title_must_not_be_whitespace(cls, v: str | None) -> str | None:
+        if v is not None and not v.strip():
+            raise ValueError("Title cannot be whitespace only")
+        return v
+
     description: str | None = None
     issued_at: datetime | None = None
     valid_until: datetime | None = None

@@ -26,6 +26,8 @@ class Settings:
     smtp_username: str
     smtp_password: str
     smtp_from_email: str
+    smtp_to_email: str
+
 
     def as_dict(self) -> dict[str, Any]:
         return self.__dict__
@@ -64,6 +66,7 @@ def get_settings() -> Settings:
             smtp_username=os.getenv("SMTP_USERNAME", ""),
             smtp_password=os.getenv("SMTP_PASSWORD", ""),
             smtp_from_email=os.getenv("SMTP_FROM_EMAIL", ""),
+            smtp_to_email=os.getenv("SMTP_TO_EMAIL", ""),
         )
     return _SETTINGS
 

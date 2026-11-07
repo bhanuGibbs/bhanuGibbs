@@ -2,13 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   ArrowUpRight,
-  CircleDollarSign,
+  IndianRupee,
   Clock3,
   FileCheck2,
   FilePlus2,
   FileText,
   Package,
-  Receipt,
   RotateCcw,
   Users,
 } from 'lucide-react';
@@ -16,6 +15,8 @@ import { Link, Navigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../context/useAuth';
 import { getCustomers, getProducts, getQuotations } from '../integration/backend/api';
+import { fetchExchangeRates } from '../integration/backend/exchangeRates';
+import { convertToINR } from '../utils/calculations';
 import { isInvoiceDocument } from '../utils/documentTypes';
 import { formatAppDate } from '../utils/dateFormat';
 
@@ -38,17 +39,20 @@ const Dashboard = () => {
   const [data, setData] = useState({ quotations: [], customers: [], products: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [exchangeRates, setExchangeRates] = useState(null);
 
   const loadDashboard = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const [quotations, customers, products] = await Promise.all([
+      const [quotations, customers, products, rates] = await Promise.all([
         getQuotations(),
         getCustomers(),
         getProducts(),
+        fetchExchangeRates(),
       ]);
       setData({ quotations, customers, products });
+      setExchangeRates(rates);
     } catch (requestError) {
       setError(requestError.message || 'Your workspace data could not be loaded.');
     } finally {
@@ -70,7 +74,7 @@ const Dashboard = () => {
   const invoices = data.quotations.filter(isInvoiceDocument);
   const outstanding = invoices
     .filter((invoice) => !['paid', 'cancelled', 'void'].includes((invoice.status || '').toLowerCase()))
-    .reduce((sum, invoice) => sum + Number(invoice.total_amount || 0), 0);
+    .reduce((sum, invoice) => sum + convertToINR(invoice.total_amount, invoice.currency, exchangeRates), 0);
   const activeQuotations = data.quotations.filter(
     (document) =>
       !isInvoiceDocument(document) &&
@@ -82,13 +86,13 @@ const Dashboard = () => {
       label: 'Invoices issued',
       value: invoices.length,
       detail: invoices.length ? 'Documents saved to your workspace' : 'No invoices issued yet',
-      icon: Receipt,
+      icon: FileText,
     },
     {
       label: 'Outstanding',
       value: formatMoney(outstanding),
       detail: invoices.length ? 'Issued invoices awaiting payment' : 'Create an invoice to track payments',
-      icon: CircleDollarSign,
+      icon: IndianRupee,
       accent: 'emerald',
     },
     {
@@ -198,7 +202,7 @@ const Dashboard = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${isInvoice ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                              {isInvoice ? <Receipt size={16} /> : <FileText size={16} />}
+                              <FileText size={16} />
                             </span>
                             <span>
                               <span className="block font-semibold text-slate-800">

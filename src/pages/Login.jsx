@@ -83,6 +83,15 @@ const Login = () => {
             Create account
           </Link>
         </div>
+
+        <div className="mt-4 text-center">
+          <Link
+            to="/landing"
+            className="text-xs text-slate-400 underline transition hover:text-slate-600"
+          >
+            Back to landing
+          </Link>
+        </div>
     </AuthLayout>
   );
 };

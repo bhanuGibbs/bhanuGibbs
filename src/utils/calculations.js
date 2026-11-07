@@ -4,6 +4,26 @@ export const roundCurrency = (value) => {
     return Math.round((amount + Math.sign(amount) * Number.EPSILON) * 100) / 100;
 };
 
+// Fallback exchange rates to INR if the API is unreachable.
+const FALLBACK_EXCHANGE_RATES_TO_INR = {
+    INR: 1,
+    USD: 83.5,
+    EUR: 91.0,
+};
+
+/**
+ * Convert an amount from the given currency to INR.
+ * Uses the provided exchange rates object, falling back to hardcoded rates if needed.
+ * If the currency is unknown or missing, the original amount is returned unchanged.
+ */
+export const convertToINR = (amount, currency, rates = null) => {
+    const value = Number(amount) || 0;
+    const exchangeRates = rates || FALLBACK_EXCHANGE_RATES_TO_INR;
+    const rate = exchangeRates[(currency || 'INR').toUpperCase()];
+    if (!rate) return value;
+    return roundCurrency(value * rate);
+};
+
 export const calculateLineAmounts = (item) => {
     const baseAmount = roundCurrency(Number(item.quantity || 0) * Number(item.rate || 0));
     const discount = roundCurrency((baseAmount * Number(item.discount || 0)) / 100);

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import String
+from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
@@ -27,4 +27,6 @@ class Company(BaseModel):
     default_validity_days: Mapped[int | None] = mapped_column(nullable=True, default=30)
     logo_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     signature_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    logo_data: Mapped[str | None] = mapped_column(Text, nullable=True)
+    seal_data: Mapped[str | None] = mapped_column(Text, nullable=True)
     business_profile: Mapped[str] = mapped_column(String(20), nullable=False, default="invoice")

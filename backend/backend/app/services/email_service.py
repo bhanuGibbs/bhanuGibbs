@@ -49,6 +49,32 @@ class EmailService:
             f"{urlencode({'token': token})}"
         )
 
+    def build_email_verification_url(self, token: str) -> str:
+        self.ensure_password_reset_configured()
+        return (
+            f"{self.settings.frontend_url}/verify-email?"
+            f"{urlencode({'token': token})}"
+        )
+
+    async def send_email_verification_email(self, recipient: str, token: str) -> None:
+        """Send an email verification email to a newly registered user."""
+        self.ensure_password_reset_configured()
+        verify_url = self.build_email_verification_url(token)
+        message = EmailMessage()
+        message["Subject"] = "Verify your KeelBill Ledger email"
+        message["From"] = self.settings.smtp_from_email
+        message["To"] = recipient
+        message.set_content(
+            "Welcome to KeelBill Ledger!\n\n"
+            f"Click this link within 24 hours to verify your email address:\n{verify_url}\n\n"
+            "If you did not create an account, you can ignore this email."
+        )
+
+        try:
+            await asyncio.to_thread(self._send_message, message)
+        except (OSError, smtplib.SMTPException) as error:
+            raise EmailDeliveryError("Email verification email could not be sent.") from error
+
     async def send_password_reset_email(self, recipient: str, token: str) -> None:
         self.ensure_password_reset_configured()
         reset_url = self.build_password_reset_url(token)
@@ -66,6 +92,40 @@ class EmailService:
             await asyncio.to_thread(self._send_message, message)
         except (OSError, smtplib.SMTPException) as error:
             raise EmailDeliveryError("Password reset email could not be sent.") from error
+
+    def ensure_contact_alert_configured(self) -> None:
+        required = (
+            self.settings.smtp_host,
+            self.settings.smtp_username,
+            self.settings.smtp_password,
+            self.settings.smtp_from_email,
+            self.settings.smtp_to_email,
+        )
+        if not all(required):
+            raise EmailConfigurationError("Contact alert email is not configured.")
+
+    async def send_contact_alert_email(
+        self, sender_name: str, sender_email: str, sender_mobile: str, message_text: str
+    ) -> None:
+        """Send an alert email to the admin when a contact form is submitted."""
+        self.ensure_contact_alert_configured()
+        message = EmailMessage()
+        message["Subject"] = f"New contact form message from {sender_name}"
+        message["From"] = self.settings.smtp_from_email
+        message["To"] = self.settings.smtp_to_email
+        message.set_content(
+            f"You received a new message from the KeelBill Ledger contact form.\n\n"
+            f"Name: {sender_name}\n"
+            f"Email: {sender_email}\n"
+            f"Mobile: {sender_mobile}\n\n"
+            f"Message:\n{message_text}\n\n"
+            f"---\nReply to: {sender_email}"
+        )
+
+        try:
+            await asyncio.to_thread(self._send_message, message)
+        except (OSError, smtplib.SMTPException) as error:
+            raise EmailDeliveryError("Contact alert email could not be sent.") from error
 
     def _send_message(self, message: EmailMessage) -> None:
         with smtplib.SMTP(

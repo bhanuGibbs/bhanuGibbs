@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Barcode,
   ChevronLeft,
   ChevronRight,
   CreditCard,
-  DollarSign,
+  IndianRupee,
   Minus,
   Plus,
   QrCode,
@@ -33,6 +33,8 @@ const formatMoney = (value) =>
     minimumFractionDigits: 2,
   }).format(Number(value) || 0);
 
+const DEFAULT_TAX_RATE = 18;
+
 const POSTerminal = () => {
   const { user } = useAuth();
   const [categories, setCategories] = useState([]);
@@ -40,20 +42,38 @@ const POSTerminal = () => {
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [barcodeInput, setBarcodeInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [discount, setDiscount] = useState('0');
   const [showCheckout, setShowCheckout] = useState(false);
+  const [taxRate, setTaxRate] = useState(DEFAULT_TAX_RATE);
   const barcodeRef = useRef(null);
+  const searchDebounceRef = useRef(null);
+
+  // Debounce search input to avoid excessive API calls
+  useEffect(() => {
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    searchDebounceRef.current = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, [search]);
 
   // Load categories and products
   const loadData = useCallback(async () => {
     try {
       const [cats, prods] = await Promise.all([
         getPOSCategories(),
-        getPOSProducts(selectedCategory, search),
+        getPOSProducts(selectedCategory, debouncedSearch),
       ]);
       setCategories(cats);
       setProducts(prods);
@@ -62,7 +82,7 @@ const POSTerminal = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, search]);
+  }, [selectedCategory, debouncedSearch]);
 
   useEffect(() => {
     loadData();
@@ -91,6 +111,7 @@ const POSTerminal = () => {
         );
       }
       const price = variant?.selling_price || product.selling_price;
+      const itemTax = variant?.tax_rate ?? product.tax_rate ?? taxRate;
       return [
         ...prev,
         {
@@ -103,7 +124,7 @@ const POSTerminal = () => {
           unit_price: Number(price),
           unit: product.unit,
           discount: 0,
-          tax: 18,
+          tax: itemTax,
         },
       ];
     });
@@ -148,15 +169,21 @@ const POSTerminal = () => {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Calculate totals
+  // Calculate totals with per-item tax rates
   const subtotal = cart.reduce(
     (sum, item) => sum + item.unit_price * item.quantity,
     0
   );
   const discountAmount = Number(discount) || 0;
   const afterDiscount = subtotal - discountAmount;
-  const taxAmount = afterDiscount * 0.18;
+  const taxAmount = cart.reduce((sum, item) => {
+    const itemSubtotal = item.unit_price * item.quantity;
+    // Proportionally apply discount to each item
+    const itemAfterDiscount = subtotal > 0 ? (itemSubtotal / subtotal) * afterDiscount : itemSubtotal;
+    return sum + (itemAfterDiscount * (item.tax || DEFAULT_TAX_RATE) / 100);
+  }, 0);
   const grandTotal = afterDiscount + taxAmount;
+  const averageTaxRate = afterDiscount > 0 ? (taxAmount / afterDiscount) * 100 : 0;
 
   // Checkout
   const handleCheckout = async () => {
@@ -196,11 +223,8 @@ const POSTerminal = () => {
     }
   };
 
-  // Print receipt
+  // Print receipt using hidden iframe to avoid popup blockers
   const printReceipt = (transaction) => {
-    const receiptWindow = window.open('', '_blank', 'width=300,height=500');
-    if (!receiptWindow) return;
-
     const itemsHtml = transaction.items
       .map(
         (item) => `
@@ -211,7 +235,7 @@ const POSTerminal = () => {
       )
       .join('');
 
-    receiptWindow.document.write(`
+    const receiptHtml = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -238,21 +262,54 @@ const POSTerminal = () => {
         <div class="divider"></div>
         <div class="row"><span>Subtotal</span><span>${formatMoney(transaction.subtotal)}</span></div>
         <div class="row"><span>Discount</span><span>-${formatMoney(transaction.discount)}</span></div>
-        <div class="row"><span>Tax (18%)</span><span>${formatMoney(transaction.tax_amount)}</span></div>
+        <div class="row"><span>Tax</span><span>${formatMoney(transaction.tax_amount)}</span></div>
         <div class="divider"></div>
         <div class="row" style="font-weight:bold;font-size:14px;"><span>TOTAL</span><span>${formatMoney(transaction.grand_total)}</span></div>
         <div class="row"><span>Payment</span><span>${transaction.payment_method.toUpperCase()}</span></div>
         <div class="divider"></div>
         <div class="center"><p>Thank you for your purchase!</p></div>
-        <script>window.print();</script>
       </body>
       </html>
-    `);
-    receiptWindow.document.close();
+    `;
+
+    // Try hidden iframe first to avoid popup blockers
+    let iframe = document.getElementById('receipt-print-iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'receipt-print-iframe';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+    }
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(receiptHtml);
+    iframeDoc.close();
+
+    // Wait for content to load, then print
+    setTimeout(() => {
+      try {
+        iframe.contentWindow.print();
+      } catch (e) {
+        // Fallback to window.open if iframe print fails
+        const fallbackWindow = window.open('', '_blank', 'width=300,height=500');
+        if (fallbackWindow) {
+          fallbackWindow.document.write(receiptHtml);
+          fallbackWindow.document.write('<script>window.print();</script>');
+          fallbackWindow.document.close();
+        } else {
+          toast.error('Popup blocked. Please allow popups for receipt printing.');
+        }
+      }
+    }, 250);
   };
 
   const paymentMethods = [
-    { id: 'cash', label: 'Cash', icon: DollarSign },
+    { id: 'cash', label: 'Cash', icon: IndianRupee },
     { id: 'upi', label: 'UPI', icon: QrCode },
     { id: 'card', label: 'Card', icon: CreditCard },
     { id: 'other', label: 'Other', icon: Wallet },
@@ -474,9 +531,28 @@ const POSTerminal = () => {
                     min="0"
                   />
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Tax (18%)</span>
-                  <span>{formatMoney(taxAmount)}</span>
+                <div className="flex justify-between text-slate-600 items-center">
+                  <span>Tax</span>
+                  <div className="flex items-center gap-2">
+                    <span>{formatMoney(taxAmount)}</span>
+                    <span className="text-xs text-slate-400">({averageTaxRate.toFixed(1)}%)</span>
+                  </div>
+                </div>
+                <div className="flex justify-between text-slate-600 items-center">
+                  <span className="text-xs">Default Rate</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      value={taxRate}
+                      onChange={(e) => setTaxRate(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                      className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-right text-xs"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                      title="Default tax rate (%) for new cart items"
+                    />
+                    <span className="text-xs text-slate-400">%</span>
+                  </div>
                 </div>
                 <div className="flex justify-between font-bold text-lg text-slate-900 pt-2 border-t border-slate-200">
                   <span>Total</span>

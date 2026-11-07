@@ -9,7 +9,6 @@ import {
   Menu,
   Package,
   Plus,
-  Receipt,
   RotateCcw,
   ShoppingCart,
   Users,
@@ -21,7 +20,7 @@ import { useAuth } from '../context/useAuth';
 const navigation = [
   { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: '/new', label: 'Create document', icon: Plus },
-  { to: '/billing', label: 'Billing', icon: Receipt },
+  { to: '/billing', label: 'Billing', icon: FileText },
   { to: '/quotations', label: 'Quotations', icon: FileText },
   { to: '/customers', label: 'Customers', icon: Users },
   { to: '/products', label: 'Products', icon: Package },
@@ -32,8 +31,15 @@ const posNavigation = [
   { to: '/pos', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/pos/terminal', label: 'Terminal', icon: ShoppingCart },
   { to: '/pos/products', label: 'Products', icon: Package },
-  { to: '/pos/transactions', label: 'Transactions', icon: Receipt },
+  { to: '/pos/transactions', label: 'Transactions', icon: FileText },
   { to: '/pos/inventory', label: 'Inventory', icon: FileText },
+];
+
+const challanNavigation = [
+  { to: '/delivery-challans', label: 'Challan List', icon: FileText, end: true },
+  { to: '/delivery-challan/new', label: 'Create Challan', icon: Plus },
+  { to: '/customers', label: 'Customers', icon: Users },
+  { to: '/products', label: 'Products', icon: Package },
 ];
 
 const Header = ({
@@ -50,7 +56,8 @@ const Header = ({
   const { user: authUser, logout: authLogout } = useAuth();
   const effectiveUser = user || authUser;
   const isPOS = authUser?.business_profile === 'pos';
-  const currentNav = isPOS ? posNavigation : navigation;
+  const isChallan = authUser?.business_profile === 'delivery_challan';
+  const currentNav = isChallan ? challanNavigation : isPOS ? posNavigation : navigation;
   const displayName = effectiveUser?.username || effectiveUser?.name || 'Account';
   const initials = displayName
     .split(/[\s@._-]+/)
@@ -79,7 +86,7 @@ const Header = ({
           {label}
         </NavLink>
       ))}
-      {!isPOS && (effectiveUser?.role === 'Admin' || effectiveUser?.role === 'Super Admin') ? (
+      {!isPOS && !isChallan && (effectiveUser?.role === 'Admin' || effectiveUser?.role === 'Super Admin') ? (
         <NavLink
           to="/admin/users"
           onClick={onNavigate}
@@ -97,7 +104,7 @@ const Header = ({
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-3" aria-label="Ledger home">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-white">
-            <Receipt size={20} strokeWidth={2} />
+            <FileText size={20} strokeWidth={2} />
           </span>
           <span>
             <span className="block text-[15px] font-bold tracking-tight text-slate-950">Ledger</span>
@@ -109,7 +116,7 @@ const Header = ({
           {renderNavigation()}
         </nav>
 
-        {onSetDocumentMode && !isPOS ? (
+        {onSetDocumentMode && !isPOS && !isChallan ? (
           <div className="hidden items-center gap-2 lg:flex">
             <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
               {['quotation', 'billing'].map((mode) => (
@@ -133,6 +140,26 @@ const Header = ({
             >
               <ArrowDownToLine size={14} />
               {isSubmitting ? 'Saving & preparing…' : `Download ${documentMode === 'billing' ? 'Invoice' : 'Quotation'}`}
+            </button>
+            <button
+              type="button"
+              onClick={onReset}
+              aria-label="Clear document"
+              className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+            >
+              <RotateCcw size={15} />
+            </button>
+          </div>
+        ) : isChallan && onDownloadPdf ? (
+          <div className="hidden items-center gap-2 lg:flex">
+            <button
+              type="button"
+              onClick={onDownloadPdf}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <ArrowDownToLine size={14} />
+              {isSubmitting ? 'Saving & preparing…' : 'Download Delivery Challan'}
             </button>
             <button
               type="button"
@@ -207,7 +234,7 @@ const Header = ({
       {menuOpen ? (
         <nav className="grid grid-cols-2 gap-1 border-t border-slate-100 px-4 py-3 xl:hidden" aria-label="Mobile navigation">
           {renderNavigation(() => setMenuOpen(false))}
-          {onSetDocumentMode && !isPOS ? (
+          {(onSetDocumentMode && !isPOS && !isChallan) || (isChallan && onDownloadPdf) ? (
             <div className="col-span-2 flex gap-2 pt-2">
               <button
                 type="button"
@@ -215,7 +242,7 @@ const Header = ({
                 disabled={isSubmitting}
                 className="flex-1 rounded-xl bg-emerald-700 px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
               >
-                {isSubmitting ? 'Saving & preparing…' : `Download ${documentMode === 'billing' ? 'Invoice' : 'Quotation'}`}
+                {isSubmitting ? 'Saving & preparing…' : (isChallan ? 'Download Delivery Challan' : `Download ${documentMode === 'billing' ? 'Invoice' : 'Quotation'}`)}
               </button>
             </div>
           ) : null}

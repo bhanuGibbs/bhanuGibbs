@@ -7,3 +7,10 @@ export const getInvoicePaymentStatus = (document) => {
   if (['final', 'unpaid'].includes(status)) return 'Unpaid';
   return document?.status || 'Draft';
 };
+
+export const getDeliveryChallanPaymentStatus = (document) => {
+  const status = String(document?.status || '').trim().toLowerCase();
+  if (status === 'paid') return 'Paid';
+  if (['final', 'finalized', 'unpaid'].includes(status)) return 'Unpaid';
+  return document?.status || 'Draft';
+};

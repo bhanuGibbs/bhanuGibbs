@@ -1,9 +1,8 @@
-﻿import {
+import {
   ArrowRight,
   FileText,
   LayoutDashboard,
   Package,
-  Receipt,
   Users,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -23,7 +22,7 @@ const workflows = [
     description: 'Review invoices, filter by payment status, and update an invoice when a customer pays.',
     to: '/billing',
     label: 'Open billing',
-    icon: Receipt,
+    icon: FileText,
   },
   {
     title: 'Manage customers and products',

@@ -15,7 +15,7 @@ const AuthLayout = ({ eyebrow, title, description, children }) => (
       <div className="absolute -right-32 -top-24 h-96 w-96 rounded-full border border-white/10" />
       <div className="absolute -right-10 -top-2 h-96 w-96 rounded-full border border-white/10" />
       <div className="absolute -bottom-52 -left-28 h-[480px] w-[480px] rounded-full bg-emerald-500/10 blur-3xl" />
-      <Link to="/" className="relative flex w-fit items-center gap-3">
+      <Link to="/landing" className="relative flex w-fit items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600">
           <FileText size={20} />
         </span>

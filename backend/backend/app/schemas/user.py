@@ -122,7 +122,10 @@ class UserRead(UserBase):
     company_email: str | None = None
     company_website: str | None = None
     company_gstin: str | None = None
+    company_logo_data: str | None = Field(default=None, max_length=1_400_000)
+    company_seal_data: str | None = Field(default=None, max_length=1_400_000)
     business_profile: str | None = "invoice"
+    is_email_verified: bool = False
     created_at: datetime
     updated_at: datetime
 

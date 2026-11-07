@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Ban, ExternalLink, X, Printer, Receipt } from 'lucide-react';
+import { Ban, ExternalLink, X, Printer } from 'lucide-react';
 import Header from '../../components/Header';
 import toast from 'react-hot-toast';
 import { cancelPOSTransaction, getPOSTransaction, getPOSTransactions } from '../../integration/backend/posApi';

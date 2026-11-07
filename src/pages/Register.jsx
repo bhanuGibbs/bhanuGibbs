@@ -33,8 +33,8 @@ const Register = () => {
         password: form.password,
         mobile_number: form.mobile_number.trim() || undefined,
       });
-      toast.success('Account created — welcome to your workspace');
-      navigate('/');
+      toast.success('Account created! Please check your email to verify your account.');
+      navigate('/verify-email');
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {

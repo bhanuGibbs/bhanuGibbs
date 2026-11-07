@@ -35,6 +35,8 @@ async def create_company(
         state=payload.state,
         city=payload.city,
         pincode=payload.pincode,
+        logo_data=payload.logo_data,
+        seal_data=payload.seal_data,
     )
     return CompanyRead.from_orm(company)
 

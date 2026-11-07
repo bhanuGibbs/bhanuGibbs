@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from pydantic import BeforeValidator, StringConstraints
+from pydantic import BeforeValidator, StringConstraints, field_validator
 
 
 def _empty_to_none(value: object) -> object:
@@ -20,6 +20,16 @@ NameField = Annotated[
     ] | None,
     BeforeValidator(_empty_to_none),
 ]
+
+
+def _strip_name(value: str | None) -> str | None:
+    """Strip whitespace from name fields and reject whitespace-only names."""
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return None
+        return stripped
+    return value
 
 
 PhoneNumber = Annotated[

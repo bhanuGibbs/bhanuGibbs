@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Home from './pages/Home';
 import Billing from './pages/Billing';
 import Dashboard from './pages/Dashboard';
@@ -9,15 +10,19 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import SetupCompany from './pages/SetupCompany';
 import Profile from './pages/Profile';
 import AdminUsers from './pages/AdminUsers';
 import Info from './pages/Info';
+import LandingPage from './pages/LandingPage';
 import POSDashboard from './pages/pos/POSDashboard';
 import POSTerminal from './pages/pos/POSTerminal';
 import POSProducts from './pages/pos/POSProducts';
 import POSTransactions from './pages/pos/POSTransactions';
 import POSInventory from './pages/pos/POSInventory';
+import DeliveryChallans from './pages/DeliveryChallans';
+import DeliveryChallanForm from './components/DeliveryChallanForm';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/useAuth';
 
@@ -46,6 +51,28 @@ const RequireAuth = ({ children }) => {
   return children;
 };
 
+const RootRedirect = () => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="rounded-3xl border border-slate-200 bg-white px-6 py-8 shadow-soft">
+          <p className="text-sm text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Authenticated users go to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Unauthenticated users always see the landing page
+  return <Navigate to="/landing" replace />;
+};
+
 const RequireAdmin = ({ children }) => {
   const { user } = useAuth();
   if (user?.role !== 'Admin' && user?.role !== 'Super Admin') {
@@ -57,15 +84,18 @@ const RequireAdmin = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-right" />
       <Routes>
+        <Route path="/" element={<RootRedirect />} />
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <RequireAuth>
               <Dashboard />
             </RequireAuth>
           }
         />
+        <Route path="/landing" element={<LandingPage />} />
         <Route
           path="/new"
           element={
@@ -181,10 +211,28 @@ function App() {
             </RequireAuth>
           }
         />
+        {/* Delivery Challan Routes */}
+        <Route
+          path="/delivery-challans"
+          element={
+            <RequireAuth>
+              <DeliveryChallans />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/delivery-challan/new"
+          element={
+            <RequireAuth>
+              <DeliveryChallanForm />
+            </RequireAuth>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>

@@ -27,6 +27,8 @@ from app.api.quotation_router import router as quotation_router
 from app.api.role_router import router as role_router
 from app.api.user_router import router as user_router
 from app.api.pos_router import router as pos_router
+from app.api.contact_router import router as contact_router
+from app.api.exchange_rates_router import router as exchange_rates_router
 
 settings = get_settings()
 cors_origins = [
@@ -107,6 +109,8 @@ app.include_router(quotation_router)
 app.include_router(role_router)
 app.include_router(user_router)
 app.include_router(pos_router)
+app.include_router(contact_router)
+app.include_router(exchange_rates_router)
 
 
 @app.on_event("startup")

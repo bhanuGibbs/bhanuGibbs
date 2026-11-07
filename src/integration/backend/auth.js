@@ -267,3 +267,35 @@ export const resetPassword = async ({ token, new_password }) => {
 
   return await response.json();
 };
+
+export const verifyEmail = async (token) => {
+  const response = await fetchApi(`${API_BASE}/auth/verify-email`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ token }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, 'Email verification failed'));
+  }
+
+  return await response.json();
+};
+
+export const resendVerificationEmail = async (email) => {
+  const response = await fetchApi(`${API_BASE}/auth/resend-verification`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, 'Failed to resend verification email'));
+  }
+
+  return await response.json();
+};

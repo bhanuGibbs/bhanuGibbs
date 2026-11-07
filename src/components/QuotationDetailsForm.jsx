@@ -1,4 +1,4 @@
-import { FileText, CircleDollarSign } from 'lucide-react';
+import { FileText, IndianRupee } from 'lucide-react';
 import DateInput from './DateInput';
 
 const inputClass = 'block min-w-0 w-full max-w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
@@ -32,11 +32,11 @@ const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) 
         <div className="min-w-0">
           <label className={labelClass}>Currency</label>
           <div className="relative min-w-0">
-            <CircleDollarSign className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
+            <IndianRupee className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
             <select className={`${inputClass} pl-10`} {...register('quotation.currency')}>
-              <option value="INR">Indian Rupee (INR)</option>
-              <option value="USD">US Dollar (USD)</option>
-              <option value="EUR">Euro (EUR)</option>
+              <option value="INR">Indian Rupee (₹ INR)</option>
+              <option value="USD">US Dollar ($ USD)</option>
+              <option value="EUR">Euro (€ EUR)</option>
             </select>
           </div>
           {errors.quotation?.currency ? <p className="mt-1 text-sm text-rose-500">{errors.quotation.currency.message}</p> : null}

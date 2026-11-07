@@ -39,7 +39,11 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const currentUser = await getCurrentUser();
+        // Timeout after 5 seconds if the backend is unreachable
+        const timeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Backend connection timeout')), 5000)
+        );
+        const currentUser = await Promise.race([getCurrentUser(), timeout]);
         setUser(currentUser);
         setIsAuthenticated(true);
       } catch {

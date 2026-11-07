@@ -3,7 +3,6 @@ import {
   ArrowDownToLine,
   ArrowRight,
   FileText,
-  Receipt,
   Search,
   Trash2,
 } from 'lucide-react';
@@ -13,7 +12,9 @@ import Header from '../components/Header';
 import DateInput from '../components/DateInput';
 import { useAuth } from '../context/useAuth';
 import { deleteQuotation, downloadQuotationPdf, getQuotations, updateInvoicePaymentStatus } from '../integration/backend/api';
+import { fetchExchangeRates } from '../integration/backend/exchangeRates';
 import { buildSavedDocumentPdfData, createDocumentPdfBlob, downloadPdfBlob } from '../pdf/documentPdf';
+import { convertToINR } from '../utils/calculations';
 import { getInvoicePaymentStatus, isInvoiceDocument } from '../utils/documentTypes';
 import { formatAppDate } from '../utils/dateFormat';
 
@@ -42,12 +43,18 @@ const Documents = ({ documentType }) => {
   const [paymentFilter, setPaymentFilter] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [exchangeRates, setExchangeRates] = useState(null);
 
   const loadDocuments = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      setQuotations(await getQuotations());
+      const [docs, rates] = await Promise.all([
+        getQuotations(),
+        fetchExchangeRates(),
+      ]);
+      setQuotations(docs);
+      setExchangeRates(rates);
     } catch (requestError) {
       setError(requestError.message || `Unable to load ${isBilling ? 'invoices' : 'quotations'}.`);
     } finally {
@@ -93,11 +100,12 @@ const Documents = ({ documentType }) => {
   const paymentTotals = useMemo(() => {
     return dateFilteredDocuments.reduce((totals, invoice) => {
       const status = getInvoicePaymentStatus(invoice);
-      if (status === 'Paid') totals.paid += Number(invoice.total_amount) || 0;
-      if (status === 'Unpaid') totals.unpaid += Number(invoice.total_amount) || 0;
+      const amountInINR = convertToINR(invoice.total_amount, invoice.currency, exchangeRates);
+      if (status === 'Paid') totals.paid += amountInINR;
+      if (status === 'Unpaid') totals.unpaid += amountInINR;
       return totals;
     }, { paid: 0, unpaid: 0 });
-  }, [dateFilteredDocuments]);
+  }, [dateFilteredDocuments, exchangeRates]);
 
   const handlePaymentStatusChange = async (document) => {
     const currentStatus = getInvoicePaymentStatus(document);
@@ -177,7 +185,7 @@ const Documents = ({ documentType }) => {
             state={{ documentMode: isBilling ? 'billing' : 'quotation' }}
             className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
           >
-            {isBilling ? <Receipt size={16} /> : <FileText size={16} />}
+            {isBilling ? <FileText size={16} /> : <FileText size={16} />}
             Create {isBilling ? 'invoice' : 'quotation'}
           </Link>
         </div>
@@ -367,7 +375,7 @@ const Documents = ({ documentType }) => {
           {!loading && documents.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                {isBilling ? <Receipt size={21} /> : <FileText size={21} />}
+                {isBilling ? <FileText size={21} /> : <FileText size={21} />}
               </span>
               <h3 className="mt-4 text-sm font-semibold text-slate-900">
                 {search

@@ -34,6 +34,9 @@ class User(BaseModel):
     )
     password_reset_token: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     password_reset_expires_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    email_verification_token: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    email_verification_expires_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     role: Mapped[Role] = relationship("Role", backref="users")
     company: Mapped[Company | None] = relationship("Company", backref="users")

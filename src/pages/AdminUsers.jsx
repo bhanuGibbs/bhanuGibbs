@@ -207,6 +207,7 @@ const AdminUsers = () => {
                 <option value="">All profiles</option>
                 <option value="invoice">Quotations</option>
                 <option value="pos">POS</option>
+                <option value="delivery_challan">Delivery Challan</option>
               </select>
             </div>
           </div>

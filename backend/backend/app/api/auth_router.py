@@ -40,7 +40,7 @@ async def register(
     payload: UserRegister,
     session: AsyncSession = Depends(get_db_session),
 ) -> UserRead:
-    """Register a new backend user account."""
+    """Register a new backend user account and send email verification."""
     service = UserService(session)
     user = await service.create_user(
         username=payload.username,
@@ -50,6 +50,8 @@ async def register(
         role_name="Sales",
         is_superuser=False,
     )
+
+    # Collect all response data before email sending to avoid session issues
     role = await session.get(Role, user.role_id)
     company = await session.get(Company, user.company_id) if user.company_id else None
     user_data = {
@@ -70,9 +72,36 @@ async def register(
         "company_email": company.email if company else None,
         "company_website": company.website if company else None,
         "company_gstin": company.gstin if company else None,
+        "is_email_verified": user.is_email_verified,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     }
+
+    # Generate and send email verification token in background
+    user_id = str(user.id)
+    email = payload.email
+
+    async def send_verification_in_background():
+        from app.core.database import get_session
+        from app.services.user_service import UserService
+        from app.services.email_service import EmailService, EmailConfigurationError, EmailDeliveryError
+        try:
+            bg_session = get_session()
+            bg_service = UserService(bg_session)
+            verification_token = await bg_service.create_email_verification_token(user_id)
+            email_service = EmailService()
+            await email_service.send_email_verification_email(email, verification_token)
+            logger.info(f"Email verification sent to {email}")
+        except EmailConfigurationError:
+            logger.warning("Email verification not sent: SMTP not configured")
+        except EmailDeliveryError:
+            logger.warning(f"Failed to send verification email to {email}")
+        except Exception as e:
+            logger.error(f"Background email verification failed for {email}: {e}", exc_info=True)
+
+    import asyncio
+    asyncio.create_task(send_verification_in_background())
+
     return UserRead.model_validate(user_data)
 
 
@@ -302,6 +331,8 @@ async def setup_company(
             city=payload.city,
             pincode=payload.pincode,
             business_profile=payload.business_profile,
+            logo_data=payload.logo_data,
+            seal_data=payload.seal_data,
             commit=False,
         )
         user.company_id = company.id
@@ -385,10 +416,85 @@ async def read_current_user(
         "company_website": company.website if company else None,
         "company_gstin": company.gstin if company else None,
         "business_profile": company.business_profile if company else "invoice",
+        "company_logo_data": company.logo_data if company else None,
+        "company_seal_data": company.seal_data if company else None,
+        "is_email_verified": user.is_email_verified,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     }
     return UserRead.model_validate(user_data)
+
+
+@router.post("/verify-email", status_code=status.HTTP_200_OK)
+@limiter.limit("10/minute")
+async def verify_email(
+    request: Request,
+    payload: dict[str, str],
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, str]:
+    """Verify a user's email address using the verification token."""
+    token = payload.get("token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification token is required.",
+        )
+    service = UserService(session)
+    try:
+        user = await service.verify_email(token)
+        return {
+            "message": "Email verified successfully.",
+            "email": user.email,
+        }
+    except BadRequestError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        )
+
+
+@router.post("/resend-verification", status_code=status.HTTP_200_OK)
+@limiter.limit("5/hour")
+async def resend_verification_email(
+    request: Request,
+    payload: dict[str, str],
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, str]:
+    """Resend the email verification email to the given email address."""
+    email = payload.get("email")
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email address is required.",
+        )
+    service = UserService(session)
+    user = await service.get_user_by_email(email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+    if user.is_email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is already verified.",
+        )
+    try:
+        verification_token = await service.create_email_verification_token(str(user.id))
+        email_service = EmailService()
+        await email_service.send_email_verification_email(email, verification_token)
+        logger.info(f"Verification email resent to {email}")
+        return {"message": "Verification email sent successfully."}
+    except EmailConfigurationError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Email service is not configured.",
+        )
+    except EmailDeliveryError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send verification email.",
+        )
 
 
 @router.patch("/me", response_model=UserRead)

@@ -22,11 +22,43 @@ const SetupCompany = () => {
     city: '',
     pincode: '',
     business_profile: 'invoice',
+    logo_data: '',
+    seal_data: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedState, setSelectedState] = useState('');
   const cities = useMemo(() => getCitiesForState(selectedState), [selectedState]);
+
+  const handleCompanyImageUpload = (event, field, label) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/png', 'image/jpeg'].includes(file.type)) {
+      setError(`${label} must be a PNG or JPEG image.`);
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > 1_000_000) {
+      setError(`${label} must be smaller than 1 MB.`);
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') {
+        setError(`Unable to read the ${label.toLowerCase()}. Please try another image.`);
+        return;
+      }
+
+      setForm((current) => ({ ...current, [field]: reader.result }));
+      setError('');
+    };
+    reader.onerror = () => setError(`Unable to read the ${label.toLowerCase()}. Please try another image.`);
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -43,6 +75,8 @@ const SetupCompany = () => {
         email: form.email.trim() || undefined,
         website: website || undefined,
         gstin: form.gstin.trim() || undefined,
+        logo_data: form.logo_data || undefined,
+        seal_data: form.seal_data || undefined,
         country: form.country.trim() || undefined,
         state: form.state.trim() || undefined,
         city: form.city.trim() || undefined,
@@ -66,7 +100,7 @@ const SetupCompany = () => {
       description="These details are saved to your company profile and added to the business documents you create."
     >
         <p className="mb-6 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-900">
-          Your account is ready. Add your company details once and they’ll automatically appear on your invoices and quotations.
+          Your account is ready. Add your company details once and they'll automatically appear on your invoices, quotations, or delivery challans.
         </p>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -97,8 +131,55 @@ const SetupCompany = () => {
                 <span className="block text-sm font-semibold text-slate-900">POS Billing</span>
                 <span className="block text-xs text-slate-500 mt-1">Point-of-sale billing with inventory and barcode support</span>
               </label>
+              <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition sm:col-span-2 ${form.business_profile === 'delivery_challan' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                <input
+                  type="radio"
+                  name="business_profile"
+                  value="delivery_challan"
+                  checked={form.business_profile === 'delivery_challan'}
+                  onChange={() => setForm({ ...form, business_profile: 'delivery_challan' })}
+                  className="sr-only"
+                />
+                <span className="block text-sm font-semibold text-slate-900">Delivery Challan</span>
+                <span className="block text-xs text-slate-500 mt-1">Create delivery challans for agricultural seed distribution</span>
+              </label>
             </div>
           </fieldset>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              { field: 'logo_data', label: 'Company logo', id: 'company-logo' },
+              { field: 'seal_data', label: 'Company seal · Optional', id: 'company-seal' },
+            ].map(({ field, label, id }) => (
+              <div key={field}>
+                <label htmlFor={id} className="mb-2 block text-sm font-medium text-slate-700">{label}</label>
+                <input
+                  id={id}
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  onChange={(event) => handleCompanyImageUpload(event, field, label.replace(' · Optional', ''))}
+                  className="block w-full text-sm text-slate-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+                />
+                <p className="mt-1 text-xs text-slate-500">PNG or JPEG, up to 1 MB</p>
+                {form[field] ? (
+                  <div className="mt-3 flex items-center gap-3">
+                    <img
+                      src={form[field]}
+                      alt={`${label.replace(' · Optional', '')} preview`}
+                      className="h-16 max-w-28 rounded-lg border border-slate-200 bg-white object-contain p-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setForm((current) => ({ ...current, [field]: '' }))}
+                      className="text-sm font-medium text-slate-600 underline underline-offset-2 hover:text-slate-900"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
 
           <label className="block text-sm font-medium text-slate-700">
             Company name

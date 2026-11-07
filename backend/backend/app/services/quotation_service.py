@@ -540,16 +540,17 @@ class QuotationService:
             user_id: str,
             status: str,
     ) -> Quotation:
-        """Update the payment status of an owned, finalized invoice."""
+        """Update the payment status of an owned, finalized invoice or delivery challan."""
         quotation = await self.repository.get(quotation_id)
         if not quotation or str(quotation.company_id) != company_id:
             raise NotFoundError("Invoice not found.")
         if str(quotation.created_by_id) != user_id:
             raise NotFoundError("Invoice not found.")
-        if quotation.title.strip().lower() not in {"invoice", "billing"}:
-            raise BadRequestError("Payment status can only be changed for invoices.")
-        if quotation.status.strip().lower() not in {"final", "paid", "unpaid"}:
-            raise BadRequestError("Only finalized invoices can be marked paid or unpaid.")
+        document_title = quotation.title.strip().lower()
+        if document_title not in {"invoice", "billing", "delivery challan"}:
+            raise BadRequestError("Payment status can only be changed for invoices and delivery challans.")
+        if quotation.status.strip().lower() not in {"final", "finalized", "paid", "unpaid"}:
+            raise BadRequestError("Only finalized invoices and delivery challans can be marked paid or unpaid.")
 
         before_data = await self._quotation_snapshot(quotation)
         quotation.status = status
