@@ -530,13 +530,7 @@ const DeliveryChallanForm = () => {
                           <input className={inputClass} placeholder="e.g. IR-64" {...register(`items.${index}.variety`)} />
                         </td>
                         <td data-label="Seed Class" className="px-2 py-3 align-top">
-                          <select className={inputClass} {...register(`items.${index}.seedClass`)}>
-                            <option value="">Select</option>
-                            <option value="Foundation">Foundation</option>
-                            <option value="Certified">Certified</option>
-                            <option value="Plants Breeders">Plants Breeders</option>
-                            <option value="Registered">Registered</option>
-                          </select>
+                          <input className={inputClass} placeholder="seed class" {...register(`items.${index}.seedClass`)} />
                         </td>
                         <td data-label="Lot No" className="px-2 py-3 align-top">
                           <input className={inputClass} placeholder="Lot No" {...register(`items.${index}.lotNo`)} />
