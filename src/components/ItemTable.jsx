@@ -3,7 +3,7 @@ import { Plus, Save, Trash2 } from 'lucide-react';
 import { calculateItemAmount } from '../utils/calculations';
 import { decimalOnly, percentOnly, HSN_CODE_REGEX, preventPaste } from '../utils/numericInput';
 
-const inputClass = 'block min-w-0 w-full max-w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
+const inputClass = 'block min-w-0 w-full max-w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
 
 const ItemTable = ({
   items,
@@ -20,7 +20,7 @@ const ItemTable = ({
   const [openProductId, setOpenProductId] = useState('');
 
   return (
-  <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+  <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div>
         <h2 className="text-lg font-semibold tracking-tight text-slate-900">Items</h2>
@@ -64,7 +64,7 @@ const ItemTable = ({
             );
             const listId = `quotation-products-${item.id}`;
             return (
-              <tr key={item.id} className="item-entry-row rounded-2xl bg-slate-50/70">
+              <tr key={item.id} className="item-entry-row rounded-lg bg-slate-50/70">
                 <td data-label="Product" className="rounded-l-2xl px-2 py-3 align-top">
                   <div className="relative">
                     <input
@@ -155,7 +155,7 @@ const ItemTable = ({
                   <input type="number" min="0" max="100" step="0.01" inputMode="decimal" className={inputClass} {...register(`items.${index}.gst`, { valueAsNumber: true, min: 0, max: 100 })} />
                 </td>
                 <td data-label="Amount" className="px-2 py-3 align-top">
-                  <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700">
+                  <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700">
                     ₹{amount.toFixed(2)}
                   </div>
                 </td>
@@ -164,7 +164,7 @@ const ItemTable = ({
                     type="button"
                     onClick={() => onRemoveItem(index)}
                     aria-label={`Remove item ${index + 1}`}
-                    className="rounded-2xl border border-rose-200 bg-rose-50 p-2.5 text-rose-600 transition hover:bg-rose-100"
+                    className="rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-rose-600 transition hover:bg-rose-100"
                   >
                     <Trash2 size={16} />
                   </button>

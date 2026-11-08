@@ -11,7 +11,7 @@ const Summary = ({ items, shipping, register, setValue, watch }) => {
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+    <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
       <div className="mb-6 flex items-center gap-3">
         <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
           <ReceiptText size={18} /> 
@@ -53,7 +53,7 @@ const Summary = ({ items, shipping, register, setValue, watch }) => {
             min="0"
             step="0.01"
             inputMode="decimal"
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             {...register('shipping', { min: 0 })}
             onChange={(event) => {
               event.target.value = decimalOnly(event.target.value, 12);

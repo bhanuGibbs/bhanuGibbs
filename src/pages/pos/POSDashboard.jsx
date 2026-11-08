@@ -3,14 +3,12 @@ import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
   BarChart3,
-  IndianRupee,
   Package,
   FileText,
   Plus,
   RefreshCw,
   ShoppingCart,
   TrendingUp,
-  Users,
 } from 'lucide-react';
 import Header from '../../components/Header';
 import { useAuth } from '../../context/useAuth';
@@ -97,35 +95,20 @@ const POSDashboard = () => {
     {
       label: "Today's Revenue",
       value: formatMoney(data?.today_sales?.revenue || 0),
-      icon: IndianRupee,
-      color: 'emerald',
     },
     {
       label: 'Transactions',
       value: data?.today_sales?.transactions || 0,
-      icon: FileText,
-      color: 'blue',
     },
     {
       label: 'Total Products',
       value: data?.inventory?.total_products || 0,
-      icon: Package,
-      color: 'purple',
     },
     {
       label: 'Low Stock',
       value: data?.inventory?.low_stock_count || 0,
-      icon: AlertTriangle,
-      color: 'amber',
     },
   ];
-
-  const colorMap = {
-    emerald: 'bg-emerald-100 text-emerald-700',
-    blue: 'bg-blue-100 text-blue-700',
-    purple: 'bg-purple-100 text-purple-700',
-    amber: 'bg-amber-100 text-amber-700',
-  };
 
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
@@ -160,22 +143,12 @@ const POSDashboard = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-500">{stat.label}</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
-                  </div>
-                  <div className={`rounded-lg p-3 ${colorMap[stat.color]}`}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                </div>
+          {stats.map((stat) => (
+            <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-5">
+              <p className="text-sm text-slate-500">{stat.label}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-900">{stat.value}</p>
               </div>
-            );
-          })}
+          ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -237,8 +210,8 @@ const POSDashboard = () => {
                 <AlertTriangle className="h-5 w-5 text-amber-600" />
                 Low Stock Alert
               </h3>
-              <Link to="/pos/inventory" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
-                View Inventory →
+              <Link to="/pos/inventory" className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 underline hover:text-emerald-800">
+                Open inventory
               </Link>
             </div>
             {data?.low_stock_products?.length > 0 ? (
@@ -267,8 +240,8 @@ const POSDashboard = () => {
                 <FileText className="h-5 w-5 text-purple-600" />
                 Recent Transactions
               </h3>
-              <Link to="/pos/transactions" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
-                View All →
+              <Link to="/pos/transactions" className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 underline hover:text-emerald-800">
+                All transactions
               </Link>
             </div>
             {data?.recent_transactions?.length > 0 ? (
@@ -298,8 +271,8 @@ const POSDashboard = () => {
               <Package className="h-5 w-5 text-purple-600" />
               Inventory Summary
             </h3>
-            <Link to="/pos/inventory" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
-              Manage Inventory →
+            <Link to="/pos/inventory" className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 underline hover:text-emerald-800">
+              Manage inventory
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

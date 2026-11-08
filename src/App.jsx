@@ -23,6 +23,7 @@ import POSTransactions from './pages/pos/POSTransactions';
 import POSInventory from './pages/pos/POSInventory';
 import DeliveryChallans from './pages/DeliveryChallans';
 import DeliveryChallanForm from './components/DeliveryChallanForm';
+import SalesInventoryDashboard from './pages/SalesInventoryDashboard';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/useAuth';
 
@@ -49,6 +50,12 @@ const RequireAuth = ({ children }) => {
   }
 
   return children;
+};
+
+const RequireBusinessProfile = ({ profiles, children }) => {
+  const { user } = useAuth();
+  if (profiles.includes(user?.business_profile)) return children;
+  return <Navigate to={user?.business_profile === 'sales_inventory' ? '/sales-inventory' : '/dashboard'} replace />;
 };
 
 const RootRedirect = () => {
@@ -100,7 +107,9 @@ function App() {
           path="/new"
           element={
             <RequireAuth>
-              <Home />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <Home />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -108,7 +117,9 @@ function App() {
           path="/billing"
           element={
             <RequireAuth>
-              <Billing />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <Billing />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -116,7 +127,9 @@ function App() {
           path="/customers"
           element={
             <RequireAuth>
-              <Customers />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <Customers />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -124,7 +137,9 @@ function App() {
           path="/products"
           element={
             <RequireAuth>
-              <Products />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <Products />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -132,7 +147,9 @@ function App() {
           path="/quotations"
           element={
             <RequireAuth>
-              <Quotations />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <Quotations />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -175,7 +192,9 @@ function App() {
           path="/pos"
           element={
             <RequireAuth>
-              <POSDashboard />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <POSDashboard />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -183,7 +202,9 @@ function App() {
           path="/pos/terminal"
           element={
             <RequireAuth>
-              <POSTerminal />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <POSTerminal />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -191,7 +212,9 @@ function App() {
           path="/pos/products"
           element={
             <RequireAuth>
-              <POSProducts />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <POSProducts />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -199,7 +222,9 @@ function App() {
           path="/pos/transactions"
           element={
             <RequireAuth>
-              <POSTransactions />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <POSTransactions />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -207,7 +232,9 @@ function App() {
           path="/pos/inventory"
           element={
             <RequireAuth>
-              <POSInventory />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <POSInventory />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -216,7 +243,9 @@ function App() {
           path="/delivery-challans"
           element={
             <RequireAuth>
-              <DeliveryChallans />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <DeliveryChallans />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />
@@ -224,7 +253,19 @@ function App() {
           path="/delivery-challan/new"
           element={
             <RequireAuth>
-              <DeliveryChallanForm />
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <DeliveryChallanForm />
+              </RequireBusinessProfile>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/sales-inventory"
+          element={
+            <RequireAuth>
+              <RequireBusinessProfile profiles={['sales_inventory']}>
+                <SalesInventoryDashboard />
+              </RequireBusinessProfile>
             </RequireAuth>
           }
         />

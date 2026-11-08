@@ -307,7 +307,7 @@ const Home = () => {
                     <TermsConditions register={register}/>
                     <SignatureUpload register={register} watch={watch} setValue={setValue}/>
                     <Footer/>
-                    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
+                    <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
                         <p className="text-sm font-semibold text-slate-900">Choose document type</p>
                         <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
                             {['quotation', 'billing'].map((mode) => (
@@ -335,7 +335,7 @@ const Home = () => {
                 </form>
 
                 {showPdfPreview && pdfData ? (
-                    <section className="rounded-2xl border border-slate-200/60 bg-white p-4 sm:p-6">
+                    <section className="rounded-lg border border-slate-200/60 bg-white p-4 sm:p-6">
                         <div className="mb-4">
                             <h2 className="text-lg font-semibold tracking-tight text-slate-900">Downloaded document preview</h2>
                             <p className="text-sm text-slate-500">This preview is the same PDF file that was downloaded.</p>

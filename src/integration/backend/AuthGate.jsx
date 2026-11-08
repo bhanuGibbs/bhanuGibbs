@@ -42,7 +42,7 @@ const AuthGate = ({ children }) => {
     return (
       <div className="min-h-screen bg-[#f7f8fa]">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-slate-200/60 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-6 flex flex-col gap-3 rounded-lg border border-slate-200/60 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-base font-bold text-emerald-700">
                 {(user?.username || 'U').charAt(0).toUpperCase()}
@@ -78,13 +78,13 @@ const AuthGate = ({ children }) => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f7f8fa] px-4 py-8">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200/60 bg-white p-6">
+      <div className="w-full max-w-md rounded-lg border border-slate-200/60 bg-white p-6">
         <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{mode === 'register' ? 'Create account' : 'Login'}</h2>
         <p className="mt-2 text-sm text-slate-500">Use your backend account to access the quotation software.</p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <input
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
             placeholder="Username"
             value={form.username}
             onChange={(event) => setForm({ ...form, username: event.target.value })}
@@ -93,7 +93,7 @@ const AuthGate = ({ children }) => {
 
           {mode === 'register' ? (
             <input
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
               placeholder="Email"
               type="email"
               value={form.email}
@@ -103,7 +103,7 @@ const AuthGate = ({ children }) => {
           ) : null}
 
           <input
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
             placeholder="Password"
             type="password"
             value={form.password}

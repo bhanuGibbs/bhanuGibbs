@@ -52,7 +52,7 @@ export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const URL_REGEX = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
 export const HSN_CODE_REGEX = /^\d{4,8}$/;
 export const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
-export const NAME_REGEX = /^[A-Za-z][A-Za-z\s'.-]*$/;
+export const NAME_REGEX = /^[A-Za-z][A-Za-z\s'.\-]*$/;
 
 // --- Validation functions ---
 

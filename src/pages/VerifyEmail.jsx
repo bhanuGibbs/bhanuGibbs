@@ -67,13 +67,13 @@ const VerifyEmail = () => {
     >
       {verified ? (
         <div className="space-y-6">
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
             <p className="font-semibold">✓ Email verified!</p>
             <p className="mt-1">{message}</p>
           </div>
           <Link
             to="/login"
-            className="block w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white text-center transition hover:bg-emerald-800"
+            className="block w-full rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white text-center transition hover:bg-emerald-800"
           >
             Go to login
           </Link>
@@ -81,19 +81,19 @@ const VerifyEmail = () => {
       ) : (
         <div className="space-y-6">
           {loading && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
               <p>Verifying your email...</p>
             </div>
           )}
 
           {error && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+            <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
               <p className="font-semibold">Verification failed</p>
               <p className="mt-1">{error}</p>
             </div>
           )}
 
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
             <p className="font-semibold">Didn't receive the email?</p>
             <p className="mt-1">Check your spam folder or request a new verification email below.</p>
           </div>
@@ -103,7 +103,7 @@ const VerifyEmail = () => {
               Email address
               <input
                 type="email"
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                 value={resendEmail}
                 onChange={(event) => setResendEmail(event.target.value)}
                 placeholder="Enter your email"
@@ -114,7 +114,7 @@ const VerifyEmail = () => {
             <button
               type="submit"
               disabled={resendLoading}
-              className="w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {resendLoading ? 'Sending...' : 'Resend verification email'}
             </button>

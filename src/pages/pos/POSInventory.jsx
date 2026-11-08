@@ -162,7 +162,7 @@ const POSInventory = () => {
         {/* Adjust Stock Modal */}
         {showAdjust && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md">
+            <div className="bg-white rounded-lg w-full max-w-md">
               <div className="flex items-center justify-between p-4 border-b border-slate-200">
                 <h2 className="font-semibold text-slate-900">Adjust Stock</h2>
                 <button onClick={() => setShowAdjust(false)} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>
@@ -183,7 +183,7 @@ const POSInventory = () => {
         {/* Success Popup Modal */}
         {showSuccess && lastAdjustment && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="bg-white rounded-lg w-full max-w-md shadow-2xl">
               <div className="p-6 text-center">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 mb-4">
                   <CheckCircle className="h-8 w-8 text-emerald-600" />

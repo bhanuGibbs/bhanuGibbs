@@ -49,7 +49,7 @@ const Login = () => {
               <input
                 id="login-username"
                 name="username"
-                className="min-h-12 w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
+                className="min-h-12 w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-4 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
                 value={form.username}
                 onChange={(event) => setForm({ ...form, username: event.target.value })}
                 placeholder="Enter your username"
@@ -67,7 +67,7 @@ const Login = () => {
                 id="login-password"
                 name="password"
                 type={passwordVisible ? 'text' : 'password'}
-                className="password-visibility-toggle min-h-12 w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-12 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
+                className="password-visibility-toggle min-h-12 w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-12 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
                 value={form.password}
                 onChange={(event) => setForm({ ...form, password: event.target.value })}
                 placeholder="Enter your password"

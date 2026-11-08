@@ -3,8 +3,8 @@ import { UserRound, Mail, Phone } from 'lucide-react';
 import { digitsOnly, nameOnly, NAME_REGEX, PHONE_NUMBER_REGEX, PINCODE_REGEX, GSTIN_REGEX, preventPaste } from '../utils/numericInput';
 import { indianStates, getCitiesForState } from '../utils/indianStates';
 
-const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
-const selectClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60';
+const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
+const selectClass = 'w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
 
 const CustomerDetailsForm = ({ register, errors, watch, setValue }) => {
@@ -12,7 +12,7 @@ const CustomerDetailsForm = ({ register, errors, watch, setValue }) => {
   const [selectedState, setSelectedState] = useState('');
   const cities = useMemo(() => getCitiesForState(selectedState), [selectedState]);
   return (
-    <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+    <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
       <div className="mb-6 flex items-center gap-3">
         <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
           <UserRound size={18} />

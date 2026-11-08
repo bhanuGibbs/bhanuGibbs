@@ -32,7 +32,7 @@ const SignatureUpload = ({ register, watch, setValue }) => {
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+    <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
       <div className="mb-6 flex items-center gap-3">
         <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
           <Signature size={18} />
@@ -49,7 +49,7 @@ const SignatureUpload = ({ register, watch, setValue }) => {
           Upload Signature
         </label>
         {signaturePreview ? (
-          <div className="flex h-24 w-56 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-3">
+          <div className="flex h-24 w-56 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white p-3">
             <img src={signaturePreview} alt="Signature preview" className="max-h-full max-w-full object-contain" />
           </div>
         ) : null}

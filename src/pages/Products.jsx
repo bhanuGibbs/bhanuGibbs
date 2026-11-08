@@ -132,10 +132,10 @@ const Products = () => {
       <Header onLogout={logout} user={user} />
       <main className="products-page mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 xl:grid-cols-[700px_minmax(0,1fr)]">
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-6">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Product management</p>
+                <p className="text-xs font-semibold text-emerald-700">Product management</p>
                 <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-900">Product catalog</h2>
                 <p className="mt-1 text-sm text-slate-500">Products available for quotations.</p>
               </div>
@@ -165,14 +165,14 @@ const Products = () => {
                           <button
                               type="button"
                               onClick={() => handleEdit(product)}
-                              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+                              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
                           >
                             Edit
                           </button>
                           <button
                               type="button"
                               onClick={() => handleDelete(product.id)}
-                              className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                              className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
                           >
                             Delete
                           </button>
@@ -191,7 +191,7 @@ const Products = () => {
               </table>
             </div>
           </section>
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-6">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-6">
             <h2 className="text-lg font-semibold tracking-tight text-slate-900">{editingId ? 'Update Product' : 'New Product'}</h2>
             <p className="mt-1 text-sm text-slate-500">Manage the product catalog for your company.</p>
 
@@ -199,7 +199,7 @@ const Products = () => {
               <label className="block text-sm font-medium text-slate-700">
                 Product name
                 <input
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.name}
                   onChange={(event) => setField('name', event.target.value)}
                   placeholder="Product name"
@@ -214,7 +214,7 @@ const Products = () => {
                   min="0.01"
                   step="0.01"
                   inputMode="decimal"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.price}
                   onChange={(event) => setField('price', decimalOnly(event.target.value, 12))}
                   placeholder="0.00"
@@ -225,7 +225,7 @@ const Products = () => {
               <label className="block text-sm font-medium text-slate-700">
                 SKU
                 <input
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.sku}
                   onChange={(event) => setField('sku', event.target.value)}
                   placeholder="SKU code"
@@ -236,7 +236,7 @@ const Products = () => {
                 Description
                 <textarea
                   rows="3"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.description}
                   onChange={(event) => setField('description', event.target.value)}
                   placeholder="Product description"
@@ -252,7 +252,7 @@ const Products = () => {
                     max="100"
                     step="0.01"
                     inputMode="decimal"
-                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                    className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                     value={form.gst_percentage}
                     onChange={(event) => setField('gst_percentage', percentOnly(event.target.value))}
                     placeholder="18"
@@ -261,7 +261,7 @@ const Products = () => {
                 <label className="block text-sm font-medium text-slate-700">
                   Unit
                   <input
-                    className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                    className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                     value={form.unit}
                     onChange={(event) => setField('unit', event.target.value)}
                     placeholder="Each, kg, hour…"
@@ -272,7 +272,7 @@ const Products = () => {
               <label className="block text-sm font-medium text-slate-700">
                 HSN/SAC code
                 <input
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.hsn_code}
                   onChange={(event) => setField('hsn_code', event.target.value.replace(/[^0-9]/g, '').slice(0, 8))}
                   placeholder="HSN/SAC code (4-8 digits)"
@@ -290,14 +290,14 @@ const Products = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {editingId ? 'Save changes' : 'Save'}
                 </button>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
                 >
                   Cancel
                 </button>

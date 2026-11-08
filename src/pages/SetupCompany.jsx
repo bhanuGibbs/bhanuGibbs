@@ -10,6 +10,7 @@ import { indianStates, getCitiesForState } from '../utils/indianStates';
 const SetupCompany = () => {
   const navigate = useNavigate();
   const { refreshUser, user } = useAuth();
+  const profileLocked = user?.business_profile === 'sales_inventory';
   const [form, setForm] = useState({
     name: '',
     address: '',
@@ -21,7 +22,7 @@ const SetupCompany = () => {
     state: '',
     city: '',
     pincode: '',
-    business_profile: 'invoice',
+    business_profile: user?.business_profile || 'invoice',
     logo_data: '',
     seal_data: '',
   });
@@ -97,17 +98,21 @@ const SetupCompany = () => {
     <AuthLayout
       eyebrow="One last step"
       title="Tell us about your business."
-      description="These details are saved to your company profile and added to the business documents you create."
+      description={form.business_profile === 'sales_inventory'
+        ? 'Set up the organization that will own this Sales & Inventory workspace.'
+        : 'These details are saved to your company profile and added to the business documents you create.'}
     >
         <p className="mb-6 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-900">
-          Your account is ready. Add your company details once and they'll automatically appear on your invoices, quotations, or delivery challans.
+          {form.business_profile === 'sales_inventory'
+            ? 'Your account is ready. Register your organization to create its own Sales & Inventory workspace. Only your organization’s users and data will be connected to it.'
+            : "Your account is ready. Add your company details once and they'll automatically appear on your invoices, quotations, or delivery challans."}
         </p>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <fieldset className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <legend className="text-sm font-medium text-slate-700 px-2">Business type</legend>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition ${form.business_profile === 'invoice' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+              {!profileLocked && <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition ${form.business_profile === 'invoice' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                 <input
                   type="radio"
                   name="business_profile"
@@ -118,8 +123,8 @@ const SetupCompany = () => {
                 />
                 <span className="block text-sm font-semibold text-slate-900">Invoice / Quotation</span>
                 <span className="block text-xs text-slate-500 mt-1">Create invoices and quotations for your customers</span>
-              </label>
-              <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition ${form.business_profile === 'pos' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+              </label>}
+              {!profileLocked && <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition ${form.business_profile === 'pos' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                 <input
                   type="radio"
                   name="business_profile"
@@ -130,8 +135,8 @@ const SetupCompany = () => {
                 />
                 <span className="block text-sm font-semibold text-slate-900">POS Billing</span>
                 <span className="block text-xs text-slate-500 mt-1">Point-of-sale billing with inventory and barcode support</span>
-              </label>
-              <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition sm:col-span-2 ${form.business_profile === 'delivery_challan' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+              </label>}
+              {!profileLocked && <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition sm:col-span-2 ${form.business_profile === 'delivery_challan' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                 <input
                   type="radio"
                   name="business_profile"
@@ -142,6 +147,18 @@ const SetupCompany = () => {
                 />
                 <span className="block text-sm font-semibold text-slate-900">Delivery Challan</span>
                 <span className="block text-xs text-slate-500 mt-1">Create delivery challans for agricultural seed distribution</span>
+              </label>}
+              <label className={`relative cursor-pointer rounded-lg border-2 p-3 transition sm:col-span-2 ${form.business_profile === 'sales_inventory' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+                <input
+                  type="radio"
+                  name="business_profile"
+                  value="sales_inventory"
+                  checked={form.business_profile === 'sales_inventory'}
+                  onChange={() => setForm({ ...form, business_profile: 'sales_inventory' })}
+                  className="sr-only"
+                />
+                <span className="block text-sm font-semibold text-slate-900">Sales & Inventory Management</span>
+                <span className="block text-xs text-slate-500 mt-1">Manage your organization's customers, orders, products, and stock</span>
               </label>
             </div>
           </fieldset>

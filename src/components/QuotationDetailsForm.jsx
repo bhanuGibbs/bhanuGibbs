@@ -1,7 +1,7 @@
 import { FileText, IndianRupee } from 'lucide-react';
 import DateInput from './DateInput';
 
-const inputClass = 'block min-w-0 w-full max-w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
+const inputClass = 'block min-w-0 w-full max-w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
 const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
 
 const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) => {
@@ -9,7 +9,7 @@ const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) 
   const documentLabel = isInvoice ? 'Invoice' : 'Quotation';
 
   return (
-    <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+    <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
       <div className="mb-6 flex items-center gap-3">
         <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
           <FileText size={18} />

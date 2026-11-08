@@ -1,18 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowDown,
-  ArrowRight,
-  ArrowUpRight,
-  BadgeIndianRupee,
-  Boxes,
-  FileCheck2,
-  FileText,
-  PackageCheck,
-  ReceiptText,
-  ShoppingBasket,
-  Truck,
-} from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import LandingNavbar from '../components/LandingNavbar';
 import LandingProductPreview from '../components/LandingProductPreview';
@@ -28,7 +16,6 @@ const services = [
     description: 'Build clear, itemized quotations with customer details, pricing, and GST in one document.',
     image: quotationPreview,
     imageAlt: 'Sample quotation with company and customer details, itemized pricing, GST, and total',
-    icon: FileCheck2,
   },
   {
     id: 'point-of-sale',
@@ -36,7 +23,6 @@ const services = [
     description: 'See sales activity, top-selling products, and payment breakdowns from your POS workspace.',
     image: posPreview,
     imageAlt: 'KeelBill Ledger point-of-sale dashboard with sales overview, top-selling products, and payment breakdown',
-    icon: ShoppingBasket,
   },
   {
     id: 'delivery-challans',
@@ -44,7 +30,6 @@ const services = [
     description: 'Record consignor and consignee details, packing information, and dispatch particulars in a print-ready challan.',
     image: challanPreview,
     imageAlt: 'Sample delivery challan showing consignor, consignee, packing, dispatch details, and totals',
-    icon: Truck,
   },
 ];
 
@@ -88,10 +73,13 @@ const LandingPage = () => {
           --ledger-line: #e7dfd8;
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
+        .landing-page h1,
+        .landing-page h2,
+        .landing-page h3 {
+          font-family: Lora, Georgia, 'Times New Roman', serif;
+        }
         .landing-page ::selection { background: #bcece2; color: #003f3d; }
         .landing-page :focus-visible { outline: 3px solid #1abc9c; outline-offset: 3px; }
-        .landing-page .flow-step:hover .flow-icon { transform: translateY(-3px); background: #00605d; color: white; }
-        .landing-page .flow-icon { transition: transform 220ms ease, background-color 220ms ease, color 220ms ease; }
         @media (prefers-reduced-motion: reduce) {
           .landing-page *, .landing-page *::before, .landing-page *::after {
             scroll-behavior: auto !important;
@@ -117,24 +105,21 @@ const LandingPage = () => {
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <button
                   onClick={() => navigate('/login')}
-                  className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-xl bg-[#00605d] px-6 py-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(0,96,93,0.16)] transition hover:bg-[#004d4a] active:translate-y-px"
+                  className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#00605d] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#004d4a] active:translate-y-px"
                 >
                   Get Started
-                  <ArrowRight size={17} className="transition-transform group-hover:translate-x-1" />
                 </button>
                 <button
                   onClick={() => scrollToSection('features')}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#cfc5bc] bg-transparent px-5 py-3 text-sm font-semibold text-[#1a1a1a] transition hover:border-[#00605d] hover:bg-white/70"
+                  className="inline-flex min-h-12 items-center justify-center rounded-lg border border-[#cfc5bc] bg-transparent px-5 py-3 text-sm font-semibold text-[#1a1a1a] transition hover:border-[#00605d] hover:bg-white/70"
                 >
                   Explore the workspace
-                  <ArrowDown size={15} />
                 </button>
               </div>
 
-              <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-[#e7dfd8] pt-5 text-xs font-medium text-[#555555]">
-                <span className="inline-flex items-center gap-2"><BadgeIndianRupee size={16} className="text-[#00605d]" />GST-ready documents</span>
-                <span className="inline-flex items-center gap-2"><Boxes size={16} className="text-[#00605d]" />Saved customers & products</span>
-              </div>
+              <p className="mt-9 border-t border-[#e7dfd8] pt-5 text-xs font-medium text-[#555555]">
+                GST-ready documents · Saved customers &amp; products
+              </p>
             </div>
 
             <div className="min-w-0">
@@ -143,32 +128,13 @@ const LandingPage = () => {
           </div>
 
           <div className="mx-auto mt-12 max-w-7xl border-t border-[#e7dfd8] pt-7 sm:mt-16 lg:mt-20">
-            <div className="grid gap-5 sm:grid-cols-[minmax(150px,0.7fr)_repeat(3,minmax(0,1fr))] sm:items-center sm:gap-4">
-              <div className="max-w-[15ch]">
-                <p className="text-sm font-semibold text-[#1a1a1a]">One set of details.</p>
-                <p className="mt-1 text-sm leading-5 text-[#555555]">Ready across your workflow.</p>
-              </div>
-              {[
-                { label: 'CUSTOMER & PRODUCTS', Icon: FileText },
-                { label: 'QUOTATIONS & INVOICES', Icon: ReceiptText },
-                { label: 'SALES & DISPATCH', Icon: PackageCheck },
-              ].map(({ label, Icon }, index) => (
-                <div className="flow-step flex items-center gap-3" key={label}>
-                  <span className="flow-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e1f3ed] text-[#00605d]">
-                    <Icon size={18} strokeWidth={1.8} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-semibold tracking-[0.12em] text-[#555555]">{label}</p>
-                    <div className="mt-2 flex items-center gap-1" aria-hidden="true">
-                      <span className="h-1 w-1 rounded-full bg-[#1abc9c]" />
-                      <span className="h-px w-8 bg-[#a7d7ca]" />
-                      <span className="h-1 w-1 rounded-full bg-[#1abc9c]" />
-                    </div>
-                  </div>
-                  {index < 2 && <ArrowRight size={15} className="ml-auto hidden text-[#78bdae] sm:block" aria-hidden="true" />}
-                </div>
-              ))}
-            </div>
+            <p className="text-sm leading-7 text-[#555555]">
+              <span className="font-semibold text-[#1a1a1a]">Keep the details once.</span> Save customers and products for reuse.
+              <span className="mx-3 text-[#cfc5bc]">|</span>
+              <span className="font-semibold text-[#1a1a1a]">Prepare the paperwork.</span> Create quotations, invoices, and delivery challans.
+              <span className="mx-3 text-[#cfc5bc]">|</span>
+              <span className="font-semibold text-[#1a1a1a]">Follow the work through.</span> Review sales and dispatch from the same workspace.
+            </p>
           </div>
         </section>
 
@@ -183,12 +149,10 @@ const LandingPage = () => {
                   Explore the document and sales workflows in KeelBill Ledger.
                 </p>
               </div>
-              <span className="hidden pb-1 text-xs font-semibold tracking-[0.14em] text-[#00605d] sm:inline">MADE FOR DAILY BUSINESS</span>
             </div>
 
             <div className="mt-3">
               {services.map((service, index) => {
-                const Icon = service.icon;
                 return (
                   <article
                     key={service.id}
@@ -197,9 +161,6 @@ const LandingPage = () => {
                     }`}
                   >
                     <div className="max-w-md">
-                      <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-[#e1f3ed] text-[#00605d]">
-                        <Icon size={20} strokeWidth={1.8} />
-                      </div>
                       <h3 className="text-xl font-semibold leading-tight tracking-[-0.025em] text-[#1a1a1a] sm:text-[22px]">
                         {service.title}
                       </h3>
@@ -209,18 +170,17 @@ const LandingPage = () => {
                       {index === 0 && (
                         <button
                           onClick={() => navigate('/login')}
-                          className="group mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#00605d] hover:text-[#004d4a]"
+                          className="mt-6 text-sm font-semibold text-[#00605d] underline decoration-[#00605d]/30 underline-offset-4 hover:decoration-[#00605d]"
                         >
                           Create your first document
-                          <ArrowUpRight size={16} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                         </button>
                       )}
                     </div>
-                    <figure className="overflow-hidden rounded-2xl border border-[#e7dfd8] bg-[#f8f4f0] p-2 sm:p-3">
+                    <figure className="overflow-hidden rounded-lg border border-[#e7dfd8] bg-[#f8f4f0] p-2 sm:p-3">
                       <img
                         src={service.image}
                         alt={service.imageAlt}
-                        className="block h-auto max-h-[28rem] w-full rounded-xl object-contain object-center"
+                        className="block h-auto max-h-[28rem] w-full rounded-md object-contain object-center"
                         loading="lazy"
                       />
                     </figure>
@@ -246,10 +206,7 @@ const LandingPage = () => {
 
       <footer className="bg-[#004d4a] px-5 py-8 text-white sm:px-8 lg:px-10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-[#a6e5d7]">
-              <FileText size={18} />
-            </span>
+          <div className="flex items-center gap-2">
             <span className="text-sm font-semibold">KeelBill Ledger</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-white/75">

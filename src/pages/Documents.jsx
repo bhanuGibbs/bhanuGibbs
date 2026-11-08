@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowDownToLine,
-  ArrowRight,
   FileText,
   Search,
   Trash2,
@@ -170,7 +169,7 @@ const Documents = ({ documentType }) => {
       <main className="documents-page mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+            <p className="text-xs font-semibold text-emerald-700">
               {isBilling ? 'Accounts receivable' : 'Sales workspace'}
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
@@ -183,7 +182,7 @@ const Documents = ({ documentType }) => {
           <Link
             to="/new"
             state={{ documentMode: isBilling ? 'billing' : 'quotation' }}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
+            className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
           >
             {isBilling ? <FileText size={16} /> : <FileText size={16} />}
             Create {isBilling ? 'invoice' : 'quotation'}
@@ -192,7 +191,7 @@ const Documents = ({ documentType }) => {
 
         {isBilling ? (
           <>
-          <section className="mb-4 rounded-2xl border border-slate-200/60 bg-white p-5" aria-label="Filter invoices by issue date">
+          <section className="mb-4 rounded-lg border border-slate-200/60 bg-white p-5" aria-label="Filter invoices by issue date">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h2 className="text-sm font-semibold tracking-tight text-slate-900">Invoice date range</h2>
@@ -216,17 +215,17 @@ const Documents = ({ documentType }) => {
           </section>
 
           <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Invoice payment totals">
-            <article className="rounded-2xl border border-slate-200/60 bg-white p-5">
+            <article className="rounded-lg border border-slate-200/60 bg-white p-5">
               <p className="text-sm font-medium text-slate-700">Total invoiced</p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid + paymentTotals.unpaid)}</p>
               <p className="mt-1 text-xs text-slate-500">Paid and unpaid invoices in this date range</p>
             </article>
-            <article className="rounded-2xl border border-emerald-200/60 bg-white p-5">
+            <article className="rounded-lg border border-emerald-200/60 bg-white p-5">
               <p className="text-sm font-medium text-emerald-700">Paid invoices</p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid)}</p>
               <p className="mt-1 text-xs text-slate-500">Total amount recorded as paid</p>
             </article>
-            <article className="rounded-2xl border border-amber-200/60 bg-white p-5">
+            <article className="rounded-lg border border-amber-200/60 bg-white p-5">
               <p className="text-sm font-medium text-amber-700">Unpaid invoices</p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.unpaid)}</p>
               <p className="mt-1 text-xs text-slate-500">Total amount still awaiting payment</p>
@@ -235,14 +234,14 @@ const Documents = ({ documentType }) => {
           </>
         ) : null}
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white">
+        <section className="overflow-hidden rounded-lg border border-slate-200/60 bg-white">
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
             <div>
               <h2 className="text-sm font-semibold text-slate-900">All {isBilling ? 'invoices' : 'quotations'}</h2>
               <p className="mt-1 text-xs text-slate-500">{loading ? 'Loading your documents…' : `${documents.length} document${documents.length === 1 ? '' : 's'}`}</p>
             </div>
             {isBilling ? (
-              <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1" role="group" aria-label="Filter invoices by payment status">
+              <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1" role="group" aria-label="Filter invoices by payment status">
                 {[
                   {value: 'all', label: 'All'},
                   {value: 'unpaid', label: 'Unpaid'},
@@ -264,7 +263,7 @@ const Documents = ({ documentType }) => {
                 ))}
               </div>
             ) : null}
-            <label className="flex w-full max-w-xs items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-400 focus-within:border-emerald-400">
+            <label className="flex w-full max-w-xs items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-400 focus-within:border-emerald-400">
               <Search size={15} />
               <input
                 value={search}
@@ -374,7 +373,7 @@ const Documents = ({ documentType }) => {
           </div>
           {!loading && documents.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                 {isBilling ? <FileText size={21} /> : <FileText size={21} />}
               </span>
               <h3 className="mt-4 text-sm font-semibold text-slate-900">
@@ -392,8 +391,8 @@ const Documents = ({ documentType }) => {
                     : 'Create your first document to get started.'}
               </p>
               {!search && (!isBilling || paymentFilter === 'all') ? (
-                <Link to="/new" state={{ documentMode: isBilling ? 'billing' : 'quotation' }} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700">
-                  Create {isBilling ? 'invoice' : 'quotation'} <ArrowRight size={14} />
+                <Link to="/new" state={{ documentMode: isBilling ? 'billing' : 'quotation' }} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 underline">
+                  Create {isBilling ? 'invoice' : 'quotation'}
                 </Link>
               ) : null}
             </div>

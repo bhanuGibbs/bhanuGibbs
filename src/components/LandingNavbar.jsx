@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, FileText, Menu, X } from 'lucide-react';
+import { FileText, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LandingNavbar = () => {
@@ -15,11 +15,11 @@ const LandingNavbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[#e7dfd8] bg-[#f8f4f0]/95 backdrop-blur">
+    <nav className="sticky top-0 z-50 border-b border-[#e7dfd8] bg-[#f8f4f0]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5 sm:px-8 lg:px-10">
         <Link to="/" className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00605d] text-[#c5f1e7]">
-            <FileText size={18} className="text-white" />
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#00605d] text-[#c5f1e7]">
+            <FileText size={16} className="text-white" />
           </span>
           <span>
             <span className="block text-sm font-semibold tracking-tight text-[#1a1a1a]">KeelBill Ledger</span>
@@ -42,10 +42,9 @@ const LandingNavbar = () => {
           </button>
           <Link
             to="/login"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#00605d] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#004d4a]"
+            className="inline-flex min-h-11 items-center rounded-lg bg-[#00605d] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#004d4a]"
           >
             Get started
-            <ArrowRight size={15} />
           </Link>
         </div>
 

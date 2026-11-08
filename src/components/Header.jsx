@@ -42,6 +42,10 @@ const challanNavigation = [
   { to: '/products', label: 'Products', icon: Package },
 ];
 
+const salesInventoryNavigation = [
+  { to: '/sales-inventory', label: 'Workspace', icon: LayoutDashboard, end: true },
+];
+
 const Header = ({
   onDownloadPdf,
   onReset,
@@ -57,7 +61,10 @@ const Header = ({
   const effectiveUser = user || authUser;
   const isPOS = authUser?.business_profile === 'pos';
   const isChallan = authUser?.business_profile === 'delivery_challan';
-  const currentNav = isChallan ? challanNavigation : isPOS ? posNavigation : navigation;
+  const isSalesInventory = authUser?.business_profile === 'sales_inventory';
+  const currentNav = isSalesInventory
+    ? salesInventoryNavigation
+    : isChallan ? challanNavigation : isPOS ? posNavigation : navigation;
   const displayName = effectiveUser?.username || effectiveUser?.name || 'Account';
   const initials = displayName
     .split(/[\s@._-]+/)
@@ -93,22 +100,26 @@ const Header = ({
           className={navLinkClass}
         >
           <Users size={16} strokeWidth={1.8} />
-          Plans & users
+          {isSalesInventory ? 'Team access' : 'Plans & users'}
         </NavLink>
       ) : null}
     </>
   );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex shrink-0 items-center gap-3" aria-label="Ledger home">
+        <Link to="/" className="flex shrink-0 items-center gap-3" aria-label={isSalesInventory ? 'Sales and Inventory workspace' : 'Ledger home'}>
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-white">
-            <FileText size={20} strokeWidth={2} />
+            {isSalesInventory ? <Package size={20} strokeWidth={1.8} /> : <FileText size={20} strokeWidth={2} />}
           </span>
           <span>
-            <span className="block text-[15px] font-bold tracking-tight text-slate-950">Ledger</span>
-            <span className="hidden text-[11px] text-slate-500 sm:block">Billing workspace</span>
+            <span className="block text-[15px] font-bold tracking-tight text-slate-950">
+              {isSalesInventory ? 'Sales & Inventory' : 'Ledger'}
+            </span>
+            <span className="hidden text-[11px] text-slate-500 sm:block">
+              {isSalesInventory ? (effectiveUser?.company_name || 'Organization workspace') : 'Billing workspace'}
+            </span>
           </span>
         </Link>
 
@@ -193,7 +204,7 @@ const Header = ({
               <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
             </button>
             {accountOpen ? (
-              <div className="absolute right-0 top-12 z-40 w-60 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+              <div className="absolute right-0 top-12 z-40 w-60 rounded-lg border border-slate-200 bg-white p-2 shadow-xl">
                 <div className="border-b border-slate-100 px-3 py-2">
                   <p className="truncate text-sm font-semibold text-slate-900">{displayName}</p>
                   <p className="truncate text-xs text-slate-500">{effectiveUser?.email || ''}</p>

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { submitContactForm } from '../integration/backend/contact';
 
@@ -78,7 +77,7 @@ const ContactForm = () => {
               value={form.name}
               onChange={handleChange('name')}
               placeholder="Your full name"
-              className={`mt-2 w-full rounded-xl border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
+              className={`mt-2 w-full rounded-lg border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
                 errors.name
                   ? 'border-rose-400 focus:border-rose-500'
                   : 'border-[#e5e5e5] focus:border-[#00605d]'
@@ -97,7 +96,7 @@ const ContactForm = () => {
               value={form.email}
               onChange={handleChange('email')}
               placeholder="you@example.com"
-              className={`mt-2 w-full rounded-xl border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
+              className={`mt-2 w-full rounded-lg border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
                 errors.email
                   ? 'border-rose-400 focus:border-rose-500'
                   : 'border-[#e5e5e5] focus:border-[#00605d]'
@@ -116,7 +115,7 @@ const ContactForm = () => {
               value={form.mobile}
               onChange={handleChange('mobile')}
               placeholder="+91 1234567890"
-              className={`mt-2 w-full rounded-xl border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
+              className={`mt-2 w-full rounded-lg border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
                 errors.mobile
                   ? 'border-rose-400 focus:border-rose-500'
                   : 'border-[#e5e5e5] focus:border-[#00605d]'
@@ -135,7 +134,7 @@ const ContactForm = () => {
               value={form.message}
               onChange={handleChange('message')}
               placeholder="Tell us how we can help..."
-              className={`mt-2 w-full resize-none rounded-xl border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
+              className={`mt-2 w-full resize-none rounded-lg border bg-white px-4 py-3 text-base text-[#1a1a1a] shadow-[inset_0_1px_2px_rgba(26,26,26,0.03)] placeholder:text-[#777777] outline-none transition focus:bg-white focus:ring-4 focus:ring-[#1abc9c]/15 ${
                 errors.message
                   ? 'border-rose-400 focus:border-rose-500'
                   : 'border-[#e5e5e5] focus:border-[#00605d]'
@@ -147,9 +146,8 @@ const ContactForm = () => {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#00605d] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#004d4a] disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex min-h-11 items-center rounded-lg bg-[#00605d] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#004d4a] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            <Send size={16} />
             {loading ? 'Sending...' : 'Send Message'}
           </button>
         </form>
@@ -157,7 +155,7 @@ const ContactForm = () => {
 
       {/* Static Contact Details */}
       <div className="lg:col-span-2">
-        <div className="rounded-2xl bg-[#00605d] p-6 text-white sm:p-8">
+        <div className="rounded-lg bg-[#00605d] p-6 text-white sm:p-8">
           <h3 className="text-lg font-semibold tracking-tight text-white">
             Contact details
           </h3>
@@ -166,40 +164,25 @@ const ContactForm = () => {
           </p>
 
           <div className="mt-6 space-y-5">
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#a6e5d7]">
-                <Mail size={18} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">Email</p>
-                <a href="mailto:hello@keelbill.com" className="text-sm text-[#d3ece6] underline decoration-white/30 underline-offset-4 hover:text-white">
-                  keelbillsol@gmail.com
-                </a>
-              </div>
+            <div>
+              <p className="text-sm font-medium text-white">Email</p>
+              <a href="mailto:hello@keelbill.com" className="inline-block mt-1 text-sm text-[#d3ece6] underline decoration-white/30 underline-offset-4 hover:text-white">
+                keelbillsol@gmail.com
+              </a>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#a6e5d7]">
-                <Phone size={18} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">Phone</p>
-                <a href="tel:+911234567890" className="text-sm text-[#d3ece6] underline decoration-white/30 underline-offset-4 hover:text-white">
-                  +91 7893599474
-                </a>
-              </div>
+            <div>
+              <p className="text-sm font-medium text-white">Phone</p>
+              <a href="tel:+911234567890" className="inline-block mt-1 text-sm text-[#d3ece6] underline decoration-white/30 underline-offset-4 hover:text-white">
+                +91 7893599474
+              </a>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#a6e5d7]">
-                <MapPin size={18} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">Office</p>
-                <p className="text-sm text-[#d3ece6]">
-                  Vizianagaram Andhrapradesh<br />India
-                </p>
-              </div>
+            <div>
+              <p className="text-sm font-medium text-white">Office</p>
+              <p className="mt-1 text-sm text-[#d3ece6]">
+                Vizianagaram, Andhra Pradesh<br />India
+              </p>
             </div>
           </div>
         </div>

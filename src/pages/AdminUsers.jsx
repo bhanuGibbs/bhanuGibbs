@@ -16,6 +16,7 @@ const isSuperAdmin = (u) => u?.role === 'Super Admin';
 
 const AdminUsers = () => {
   const { user, logout } = useAuth();
+  const isSalesInventory = user?.business_profile === 'sales_inventory';
   const [users, setUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState('');
@@ -161,18 +162,20 @@ const AdminUsers = () => {
       <Header user={user} onLogout={logout} />
       <main className="admin-users-page mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+          <p className="text-xs font-semibold text-emerald-700">
             Administration
           </p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
-            Users and subscription plans
+            {isSalesInventory ? 'Team access' : 'Users and subscription plans'}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Assign a plan after confirming the user's payment. New accounts start on Free.
+            {isSalesInventory
+              ? 'Sales & Inventory users can have the Sales or Admin role.'
+              : "Assign a plan after confirming the user's payment. New accounts start on Free."}
           </p>
         </div>
 
-        {isSuperAdmin(user) && (
+        {isSuperAdmin(user) && !isSalesInventory && (
           <div className="mb-4 flex flex-wrap items-center gap-4">
             {companies.length > 0 && (
               <div className="flex items-center gap-3">
@@ -208,6 +211,7 @@ const AdminUsers = () => {
                 <option value="invoice">Quotations</option>
                 <option value="pos">POS</option>
                 <option value="delivery_challan">Delivery Challan</option>
+                <option value="sales_inventory">Sales & Inventory Management</option>
               </select>
             </div>
           </div>
@@ -233,7 +237,7 @@ const AdminUsers = () => {
         {showAddForm && (
           <form
             onSubmit={handleCreateUser}
-            className="mb-4 rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm"
+            className="mb-4 rounded-lg border border-slate-200/60 bg-white p-5 shadow-sm"
           >
             <h3 className="mb-4 text-lg font-semibold text-slate-900">Add Team Member</h3>
             <p className="mb-4 text-sm text-slate-500">
@@ -313,7 +317,7 @@ const AdminUsers = () => {
           </form>
         )}
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white">
+        <div className="overflow-hidden rounded-lg border border-slate-200/60 bg-white">
           {loading ? (
             <p className="px-6 py-10 text-center text-sm text-slate-500">Loading users…</p>
           ) : users.length === 0 ? (
@@ -325,7 +329,7 @@ const AdminUsers = () => {
                   <tr>
                     <th className="px-5 py-3 font-semibold">User</th>
                     <th className="px-5 py-3 font-semibold">Role</th>
-                    {isSuperAdmin(user) && (
+                    {isSuperAdmin(user) && !isSalesInventory && (
                       <>
                         <th className="px-5 py-3 font-semibold">Plan</th>
                         <th className="px-5 py-3 font-semibold">Plan limits</th>
@@ -363,7 +367,7 @@ const AdminUsers = () => {
                           </select>
                         )}
                       </td>
-                      {isSuperAdmin(user) && (
+                      {isSuperAdmin(user) && !isSalesInventory && (
                         <>
                           <td className="px-5 py-4">
                             <select

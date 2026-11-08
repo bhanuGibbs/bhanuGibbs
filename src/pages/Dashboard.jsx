@@ -1,15 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ArrowRight,
-  ArrowUpRight,
-  IndianRupee,
-  Clock3,
-  FileCheck2,
-  FilePlus2,
   FileText,
-  Package,
   RotateCcw,
-  Users,
 } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -109,13 +101,11 @@ const Dashboard = () => {
           label: 'Delivery challans',
           value: deliveryChallans.length,
           detail: `${draftChallans} draft${draftChallans === 1 ? '' : 's'} in your workspace`,
-          icon: FileText,
         },
         {
           label: 'Outstanding',
           value: formatMoney(challanOutstanding),
           detail: 'Finalized challans awaiting payment',
-          icon: IndianRupee,
           accent: 'emerald',
         },
         {
@@ -124,31 +114,27 @@ const Dashboard = () => {
             (challan) => getDeliveryChallanPaymentStatus(challan) === 'Unpaid',
           ).length,
           detail: 'Finalized challans awaiting payment',
-          icon: FileCheck2,
         },
-        { label: 'Customers', value: data.customers.length, detail: 'In your customer directory', icon: Users },
+        { label: 'Customers', value: data.customers.length, detail: 'In your customer directory' },
       ]
     : [
         {
           label: 'Invoices issued',
           value: invoices.length,
           detail: invoices.length ? 'Documents saved to your workspace' : 'No invoices issued yet',
-          icon: FileText,
         },
         {
           label: 'Outstanding',
           value: formatMoney(outstanding),
           detail: invoices.length ? 'Issued invoices awaiting payment' : 'Create an invoice to track payments',
-          icon: IndianRupee,
           accent: 'emerald',
         },
         {
           label: 'Open quotations',
           value: activeQuotations,
           detail: 'Draft and finalized quotes awaiting response',
-          icon: FileCheck2,
         },
-        { label: 'Customers', value: data.customers.length, detail: 'In your customer directory', icon: Users },
+        { label: 'Customers', value: data.customers.length, detail: 'In your customer directory' },
       ];
 
   const statusChipClasses = (status) => {
@@ -174,10 +160,7 @@ const Dashboard = () => {
       <main className="dashboard-page mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-              Your workspace
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-[34px]">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-[34px]">
               Good {new Date().getHours() < 12 ? 'morning' : 'afternoon'}, {user?.username || 'there'}
             </h1>
             <p className="mt-2 text-sm text-slate-500">
@@ -189,7 +172,7 @@ const Dashboard = () => {
         </div>
 
         {error ? (
-          <div role="alert" className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-rose-200 bg-rose-50 p-4">
+          <div role="alert" className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-rose-200 bg-rose-50 p-4">
             <p className="text-sm text-rose-800">{error}</p>
             <button
               type="button"
@@ -203,17 +186,11 @@ const Dashboard = () => {
         ) : null}
 
         <section aria-label="Business overview" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {stats.map(({ label, value, detail, icon: Icon, accent }) => (
-            <article key={label} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          {stats.map(({ label, value, detail, accent }) => (
+            <article key={label} className="rounded-xl border border-slate-200/80 bg-white p-5">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[13px] font-medium text-slate-500">{label}</span>
-                <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl ${
-                    accent === 'emerald' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'
-                  }`}
-                >
-                  <Icon size={17} strokeWidth={1.8} />
-                </span>
+                {accent === 'emerald' ? <span className="text-xs font-medium text-emerald-700">To collect</span> : null}
               </div>
               <p className="mt-4 text-[27px] font-semibold leading-none tracking-tight text-slate-950">
                 {loading ? <span className="inline-block h-7 w-20 animate-pulse rounded bg-slate-100" /> : value}
@@ -224,7 +201,7 @@ const Dashboard = () => {
         </section>
 
         <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_335px]">
-          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+          <section className="overflow-hidden rounded-xl border border-slate-200/80 bg-white">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
               <div>
                 <h2 className="text-base font-semibold text-slate-900">
@@ -302,9 +279,9 @@ const Dashboard = () => {
                         </p>
                         <Link
                           to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'}
-                          className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700"
+                          className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 underline"
                         >
-                          {isDeliveryChallanProfile ? 'Create your first challan' : 'Create your first document'} <ArrowRight size={14} />
+                          {isDeliveryChallanProfile ? 'Create your first challan' : 'Create your first document'}
                         </Link>
                       </td>
                     </tr>
@@ -315,37 +292,30 @@ const Dashboard = () => {
           </section>
 
           <aside className="space-y-6">
-            <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+            <section className="rounded-xl border border-slate-200/80 bg-white p-5">
               <h2 className="text-sm font-semibold text-slate-900">Quick actions</h2>
               <div className="mt-4 space-y-2">
-                <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><FilePlus2 size={17} /></span>
+                <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="group flex items-center gap-3 rounded-lg border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
                   <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800">{isDeliveryChallanProfile ? 'Create challan' : 'New document'}</span><span className="mt-0.5 block text-xs text-slate-500">{isDeliveryChallanProfile ? 'Prepare a delivery challan' : 'Prepare an invoice or quote'}</span></span>
-                  <ArrowUpRight size={15} className="text-slate-400 transition group-hover:text-emerald-700" />
                 </Link>
-                <Link to="/customers" className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700"><Users size={17} /></span>
+                <Link to="/customers" className="group flex items-center gap-3 rounded-lg border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
                   <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800">Add a customer</span><span className="mt-0.5 block text-xs text-slate-500">{loading ? 'Loading directory…' : `${data.customers.length} in your directory`}</span></span>
-                  <ArrowUpRight size={15} className="text-slate-400 transition group-hover:text-emerald-700" />
                 </Link>
-                <Link to="/products" className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700"><Package size={17} /></span>
+                <Link to="/products" className="group flex items-center gap-3 rounded-lg border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
                   <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800">Manage products</span><span className="mt-0.5 block text-xs text-slate-500">{loading ? 'Loading catalog…' : `${data.products.length} in your catalog`}</span></span>
-                  <ArrowUpRight size={15} className="text-slate-400 transition group-hover:text-emerald-700" />
                 </Link>
               </div>
             </section>
 
-            <section className="rounded-2xl bg-slate-950 p-5 text-white">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10"><Clock3 size={17} /></span>
-              <h2 className="mt-4 text-sm font-semibold tracking-tight">Keep everything up to date</h2>
+            <section className="rounded-lg bg-slate-950 p-5 text-white">
+              <h2 className="text-sm font-semibold tracking-tight">Keep everything up to date</h2>
               <p className="mt-2 text-xs leading-5 text-slate-300">
                 {isDeliveryChallanProfile
                   ? 'Add customer and company details once, then reuse them on your delivery challans.'
                   : 'Add customer and company details once, then reuse them across your billing documents.'}
               </p>
-              <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300">
-                {isDeliveryChallanProfile ? 'Create your first challan' : 'Create your first document'} <ArrowRight size={13} />
+              <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 underline hover:text-emerald-300">
+                {isDeliveryChallanProfile ? 'Create your first challan' : 'Create your first document'}
               </Link>
             </section>
           </aside>

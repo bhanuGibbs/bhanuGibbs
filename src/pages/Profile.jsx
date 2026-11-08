@@ -55,11 +55,11 @@ const Profile = () => {
       <Header user={user} onLogout={logout} />
       <main className="profile-page mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Account settings</p>
+          <p className="text-xs font-semibold text-emerald-700">Account settings</p>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">My profile</h1>
           <p className="mt-1 text-sm text-slate-500">Update your own account details. Your role and workspace access are managed separately.</p>
         </div>
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200/60 bg-white p-6 sm:p-8">
+        <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200/60 bg-white p-6 sm:p-8">
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium text-slate-700">
               Username
@@ -70,7 +70,7 @@ const Profile = () => {
                 name="username"
                 value={form.username}
                 onChange={handleChange}
-                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
               />
             </label>
             <label className="block text-sm font-medium text-slate-700">
@@ -81,7 +81,7 @@ const Profile = () => {
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
               />
             </label>
             <label className="block text-sm font-medium text-slate-700">
@@ -96,15 +96,15 @@ const Profile = () => {
                 value={form.mobile_number}
                 onChange={(event) => setForm((current) => ({ ...current, mobile_number: digitsOnly(event.target.value, 10) }))}
                 onPaste={preventPaste}
-                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
               />
             </label>
-            <div className="rounded-xl bg-slate-50 px-4 py-3">
+            <div className="rounded-lg bg-slate-50 px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Role</p>
               <p className="mt-1 text-sm font-semibold text-slate-800">{user?.role || 'Viewer'}</p>
               <p className="mt-1 text-xs text-slate-500">Role changes are not available from profile settings.</p>
             </div>
-            <div className="rounded-xl bg-emerald-50 px-4 py-3">
+            <div className="rounded-lg bg-emerald-50 px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Subscription plan</p>
               <p className="mt-1 text-sm font-semibold capitalize text-slate-800">{user?.subscription_plan || 'free'}</p>
               <p className="mt-1 text-xs text-slate-600">
@@ -127,7 +127,7 @@ const Profile = () => {
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? 'Saving…' : 'Save profile'}
             </button>

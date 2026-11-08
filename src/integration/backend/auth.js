@@ -68,6 +68,7 @@ export const getStoredUser = () => {
       username: parsed.username || 'Unknown user',
       email: parsed.email || 'No email available',
       role: parsed.role || 'Viewer',
+      business_profile: parsed.business_profile || 'invoice',
       is_profile_complete: Boolean(parsed.is_profile_complete),
       expiresAt: parsed.exp ? new Date(parsed.exp * 1000).toISOString() : null,
     };
@@ -76,7 +77,7 @@ export const getStoredUser = () => {
   }
 };
 
-export const registerUser = async ({ username, email, password, mobile_number }) => {
+export const registerUser = async ({ username, email, password, mobile_number, business_profile }) => {
   const response = await fetchApi(`${API_BASE}/auth/register`, {
     method: 'POST',
     headers: {
@@ -87,6 +88,7 @@ export const registerUser = async ({ username, email, password, mobile_number })
       email,
       password,
       mobile_number,
+      business_profile,
     }),
   });
 

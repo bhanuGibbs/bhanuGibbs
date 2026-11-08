@@ -58,7 +58,7 @@ const ResetPassword = () => {
         .reset-password-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .reset-password-page ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
       `}</style>
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200/60 bg-white p-8">
+      <div className="mx-auto w-full max-w-md rounded-xl border border-slate-200/60 bg-white p-8">
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Reset your password</h1>
         <p className="mt-2 text-sm text-slate-500">Enter a new password to regain access to your account.</p>
 
@@ -67,7 +67,7 @@ const ResetPassword = () => {
             New password
             <input
               type="password"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={password}
               onChange={(event) => {
                 setPassword(event.target.value);
@@ -85,7 +85,7 @@ const ResetPassword = () => {
             Confirm password
             <input
               type="password"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
               placeholder="Confirm password"
@@ -100,7 +100,7 @@ const ResetPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {loading ? 'Resetting...' : 'Reset password'}
           </button>

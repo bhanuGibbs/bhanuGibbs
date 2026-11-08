@@ -113,10 +113,10 @@ const Customers = () => {
       <Header onLogout={logout} user={user} />
       <main className="customers-page mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 xl:grid-cols-[700px_minmax(0,1fr)]">
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-6">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">Customer management</p>
+                <p className="text-xs font-semibold text-emerald-700">Customer management</p>
                 <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-900">Customer list</h2>
                 <p className="mt-1 text-sm text-slate-500">Manage customers for your company.</p>
               </div>
@@ -148,14 +148,14 @@ const Customers = () => {
                           <button
                               type="button"
                               onClick={() => handleEdit(customer)}
-                              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+                              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
                           >
                             Edit
                           </button>
                           <button
                               type="button"
                               onClick={() => handleDelete(customer.id)}
-                              className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+                              className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
                           >
                             Delete
                           </button>
@@ -174,7 +174,7 @@ const Customers = () => {
               </table>
             </div>
           </section>
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-6">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-6">
             <h2 className="text-lg font-semibold tracking-tight text-slate-900">{editingId ? 'Update Customer' : 'New Customer'}</h2>
             <p className="mt-1 text-sm text-slate-500">Enter the information for this customer.</p>
 
@@ -182,7 +182,7 @@ const Customers = () => {
               <label className="block text-sm font-medium text-slate-700">
                 Customer name
                 <input
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.name}
                   onChange={(event) => setField('name', nameOnly(event.target.value))}
                   placeholder="Customer name"
@@ -196,7 +196,7 @@ const Customers = () => {
                 Email address
                 <input
                   type="email"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.email}
                   onChange={(event) => setField('email', event.target.value)}
                   placeholder="customer@example.com"
@@ -213,7 +213,7 @@ const Customers = () => {
                   maxLength={10}
                   pattern="[0-9]{10}"
                   title="Please provide valid data: enter a 10-digit mobile number."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.phone_number}
                   onChange={(event) => setField('phone_number', digitsOnly(event.target.value, 10))}
                   onPaste={preventPaste}
@@ -224,7 +224,7 @@ const Customers = () => {
               <label className="block text-sm font-medium text-slate-700">
                 Company name
                 <input
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.company_name}
                   onChange={(event) => setField('company_name', nameOnly(event.target.value))}
                   placeholder="Company name"
@@ -237,7 +237,7 @@ const Customers = () => {
                 Address
                 <textarea
                   rows="3"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
                   value={form.address}
                   onChange={(event) => setField('address', event.target.value)}
                   placeholder="Customer address"
@@ -250,14 +250,14 @@ const Customers = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {editingId ? 'Save changes' : 'Save'}
                 </button>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
                 >
                   Cancel
                 </button>

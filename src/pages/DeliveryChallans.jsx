@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowDownToLine,
-  ArrowRight,
   FileText,
   Search,
   Trash2,
@@ -166,7 +165,7 @@ const DeliveryChallans = () => {
       <main className="documents-page mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+            <p className="text-xs font-semibold text-emerald-700">
               Delivery management
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
@@ -178,14 +177,14 @@ const DeliveryChallans = () => {
           </div>
           <Link
             to="/delivery-challan/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
+            className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
           >
             <FileText size={16} />
             Create challan
           </Link>
         </div>
 
-        <section className="mb-4 rounded-2xl border border-slate-200/60 bg-white p-5" aria-label="Filter delivery challans by issue date">
+        <section className="mb-4 rounded-lg border border-slate-200/60 bg-white p-5" aria-label="Filter delivery challans by issue date">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <h2 className="text-sm font-semibold tracking-tight text-slate-900">Challan date range</h2>
             <button
@@ -207,24 +206,24 @@ const DeliveryChallans = () => {
         </section>
 
         <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Delivery challan payment totals">
-          <article className="rounded-2xl border border-slate-200/60 bg-white p-5">
+          <article className="rounded-lg border border-slate-200/60 bg-white p-5">
             <p className="text-sm font-medium text-slate-700">Total amount shown</p>
             <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.total)}</p>
             <p className="mt-1 text-xs text-slate-500">Matches the challans shown below</p>
           </article>
-          <article className="rounded-2xl border border-emerald-200/60 bg-white p-5">
+          <article className="rounded-lg border border-emerald-200/60 bg-white p-5">
             <p className="text-sm font-medium text-emerald-700">Paid challans</p>
             <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid)}</p>
             <p className="mt-1 text-xs text-slate-500">Paid challans matching the current filters</p>
           </article>
-          <article className="rounded-2xl border border-amber-200/60 bg-white p-5">
+          <article className="rounded-lg border border-amber-200/60 bg-white p-5">
             <p className="text-sm font-medium text-amber-700">Unpaid challans</p>
             <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.unpaid)}</p>
             <p className="mt-1 text-xs text-slate-500">Unpaid challans matching the current filters</p>
           </article>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white">
+        <section className="overflow-hidden rounded-lg border border-slate-200/60 bg-white">
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
             <div>
               <h2 className="text-sm font-semibold text-slate-900">All challans</h2>
@@ -232,7 +231,7 @@ const DeliveryChallans = () => {
                 {loading ? 'Loading your challans…' : `${documents.length} challan${documents.length === 1 ? '' : 's'}`}
               </p>
             </div>
-            <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1" role="group" aria-label="Filter delivery challans by payment status">
+            <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1" role="group" aria-label="Filter delivery challans by payment status">
               {[
                 { value: 'all', label: 'All' },
                 { value: 'unpaid', label: 'Unpaid' },
@@ -253,7 +252,7 @@ const DeliveryChallans = () => {
                 </button>
               ))}
             </div>
-            <label className="flex w-full max-w-xs items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-400 focus-within:border-emerald-400">
+            <label className="flex w-full max-w-xs items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-400 focus-within:border-emerald-400">
               <Search size={15} />
               <input
                 value={search}
@@ -362,7 +361,7 @@ const DeliveryChallans = () => {
           </div>
           {!loading && documents.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                 <FileText size={21} />
               </span>
               <h3 className="mt-4 text-sm font-semibold text-slate-900">
@@ -384,8 +383,8 @@ const DeliveryChallans = () => {
                   : 'Create your first delivery challan to get started.'}
               </p>
               {!search && paymentFilter === 'all' ? (
-                <Link to="/delivery-challan/new" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700">
-                  Create challan <ArrowRight size={14} />
+                <Link to="/delivery-challan/new" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 underline">
+                  Create challan
                 </Link>
               ) : null}
             </div>

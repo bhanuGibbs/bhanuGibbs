@@ -11,7 +11,7 @@ import { decimalOnly, digitsOnly, nameOnly, NAME_REGEX, PHONE_NUMBER_REGEX, GSTI
 import { Plus, Trash2 } from 'lucide-react';
 
 const inputClass =
-  'block min-w-0 w-full max-w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
+  'block min-w-0 w-full max-w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
 const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
 
 const defaultChallanValues = {
@@ -338,9 +338,9 @@ const DeliveryChallanForm = () => {
         <form onSubmit={handleSubmit(handleDownload)} className="space-y-6">
 
           {/* Consignor Details */}
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><path d="M2 10h20"/><path d="M2 18h20"/></svg>
               </div>
               <div>
@@ -381,9 +381,9 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Consignee Details */}
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
               <div>
@@ -433,9 +433,9 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Challan Header Details */}
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               </div>
               <div>
@@ -485,7 +485,7 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Item Table */}
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold tracking-tight text-slate-900">Items</h2>
@@ -494,7 +494,7 @@ const DeliveryChallanForm = () => {
               <button
                 type="button"
                 onClick={addItem}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
               >
                 <Plus size={16} />
                 Add Item
@@ -522,7 +522,7 @@ const DeliveryChallanForm = () => {
                   {items.map((item, index) => {
                     const amount = calculateItemValue(item);
                     return (
-                      <tr key={item.id} className="item-entry-row rounded-2xl bg-slate-50/70">
+                      <tr key={item.id} className="item-entry-row rounded-lg bg-slate-50/70">
                         <td data-label="Crop" className="rounded-l-2xl px-2 py-3 align-top">
                           <input className={inputClass} placeholder="e.g. Rice" {...register(`items.${index}.crop`)} />
                         </td>
@@ -551,7 +551,7 @@ const DeliveryChallanForm = () => {
                           <input type="number" min="0" step="0.01" inputMode="decimal" className={inputClass} {...register(`items.${index}.value`, { valueAsNumber: true, min: 0 })} />
                         </td>
                         <td data-label="Amount" className="px-2 py-3 align-top">
-                          <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700">
+                          <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700">
                             ₹{amount.toFixed(2)}
                           </div>
                         </td>
@@ -560,7 +560,7 @@ const DeliveryChallanForm = () => {
                             type="button"
                             onClick={() => removeItem(index)}
                             aria-label={`Remove item ${index + 1}`}
-                            className="rounded-2xl border border-rose-200 bg-rose-50 p-2.5 text-rose-600 transition hover:bg-rose-100"
+                            className="rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-rose-600 transition hover:bg-rose-100"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -574,9 +574,9 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Summary */}
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l16-10z"/></svg>
               </div>
               <div>
@@ -612,7 +612,7 @@ const DeliveryChallanForm = () => {
                   min="0"
                   step="0.01"
                   inputMode="decimal"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                   {...register('shipping', { min: 0 })}
                   onChange={(event) => {
                     event.target.value = decimalOnly(event.target.value, 12);
@@ -624,9 +624,9 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Notes */}
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               </div>
               <div>
@@ -636,18 +636,18 @@ const DeliveryChallanForm = () => {
             </div>
             <textarea
               rows="3"
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
               {...register('challan.notes')}
               placeholder="Any additional notes or instructions..."
             />
           </section>
 
           {/* Mobile submit button */}
-          <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
+          <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? 'Saving & preparing…' : 'Download Delivery Challan'}
             </button>
@@ -656,13 +656,13 @@ const DeliveryChallanForm = () => {
 
         {/* PDF Preview */}
         {showPdfPreview && pdfData ? (
-          <section className="rounded-2xl border border-slate-200/60 bg-white p-4 sm:p-6">
+          <section className="rounded-lg border border-slate-200/60 bg-white p-4 sm:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold tracking-tight text-slate-900">Downloaded document preview</h2>
               <p className="text-sm text-slate-500">This preview is the same PDF file that was downloaded.</p>
             </div>
             {pdfUrl ? (
-              <iframe src={pdfUrl} title="Delivery Challan PDF Preview" className="h-[900px] w-full rounded-xl border border-slate-200" />
+              <iframe src={pdfUrl} title="Delivery Challan PDF Preview" className="h-[900px] w-full rounded-lg border border-slate-200" />
             ) : null}
           </section>
         ) : null}
