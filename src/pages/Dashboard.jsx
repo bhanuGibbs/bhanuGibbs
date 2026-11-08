@@ -17,7 +17,7 @@ import { useAuth } from '../context/useAuth';
 import { getCustomers, getProducts, getQuotations } from '../integration/backend/api';
 import { fetchExchangeRates } from '../integration/backend/exchangeRates';
 import { convertToINR } from '../utils/calculations';
-import { isInvoiceDocument } from '../utils/documentTypes';
+import { getDeliveryChallanPaymentStatus, isInvoiceDocument } from '../utils/documentTypes';
 import { formatAppDate } from '../utils/dateFormat';
 
 const formatMoney = (value, currency = 'INR') =>
@@ -28,12 +28,19 @@ const formatMoney = (value, currency = 'INR') =>
     maximumFractionDigits: 2,
   }).format(Number(value) || 0);
 
+const isDeliveryChallanDocument = (document) =>
+  String(document?.title || '').trim().toLowerCase() === 'delivery challan';
+
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const isDeliveryChallanProfile = user?.business_profile === 'delivery_challan';
 
   // Redirect POS users to POS dashboard
   if (user?.business_profile === 'pos') {
     return <Navigate to="/pos" replace />;
+  }
+  if (user?.business_profile === 'sales_inventory') {
+    return <Navigate to="/sales-inventory" replace />;
   }
 
   const [data, setData] = useState({ quotations: [], customers: [], products: [] });
@@ -71,6 +78,10 @@ const Dashboard = () => {
       ),
     [data.quotations],
   );
+  const deliveryChallans = useMemo(
+    () => documents.filter(isDeliveryChallanDocument),
+    [documents],
+  );
   const invoices = data.quotations.filter(isInvoiceDocument);
   const outstanding = invoices
     .filter((invoice) => !['paid', 'cancelled', 'void'].includes((invoice.status || '').toLowerCase()))
@@ -78,31 +89,67 @@ const Dashboard = () => {
   const activeQuotations = data.quotations.filter(
     (document) =>
       !isInvoiceDocument(document) &&
+      !isDeliveryChallanDocument(document) &&
       ['draft', 'final'].includes((document.status || '').toLowerCase()),
   ).length;
 
-  const stats = [
-    {
-      label: 'Invoices issued',
-      value: invoices.length,
-      detail: invoices.length ? 'Documents saved to your workspace' : 'No invoices issued yet',
-      icon: FileText,
-    },
-    {
-      label: 'Outstanding',
-      value: formatMoney(outstanding),
-      detail: invoices.length ? 'Issued invoices awaiting payment' : 'Create an invoice to track payments',
-      icon: IndianRupee,
-      accent: 'emerald',
-    },
-    {
-      label: 'Open quotations',
-      value: activeQuotations,
-      detail: 'Draft and finalized quotes awaiting response',
-      icon: FileCheck2,
-    },
-    { label: 'Customers', value: data.customers.length, detail: 'In your customer directory', icon: Users },
-  ];
+  const challanOutstanding = deliveryChallans
+    .filter((challan) => getDeliveryChallanPaymentStatus(challan) === 'Unpaid')
+    .reduce(
+      (sum, challan) => sum + convertToINR(challan.total_amount, challan.currency, exchangeRates),
+      0,
+    );
+  const draftChallans = deliveryChallans.filter(
+    (challan) => getDeliveryChallanPaymentStatus(challan).toLowerCase() === 'draft',
+  ).length;
+
+  const stats = isDeliveryChallanProfile
+    ? [
+        {
+          label: 'Delivery challans',
+          value: deliveryChallans.length,
+          detail: `${draftChallans} draft${draftChallans === 1 ? '' : 's'} in your workspace`,
+          icon: FileText,
+        },
+        {
+          label: 'Outstanding',
+          value: formatMoney(challanOutstanding),
+          detail: 'Finalized challans awaiting payment',
+          icon: IndianRupee,
+          accent: 'emerald',
+        },
+        {
+          label: 'Unpaid challans',
+          value: deliveryChallans.filter(
+            (challan) => getDeliveryChallanPaymentStatus(challan) === 'Unpaid',
+          ).length,
+          detail: 'Finalized challans awaiting payment',
+          icon: FileCheck2,
+        },
+        { label: 'Customers', value: data.customers.length, detail: 'In your customer directory', icon: Users },
+      ]
+    : [
+        {
+          label: 'Invoices issued',
+          value: invoices.length,
+          detail: invoices.length ? 'Documents saved to your workspace' : 'No invoices issued yet',
+          icon: FileText,
+        },
+        {
+          label: 'Outstanding',
+          value: formatMoney(outstanding),
+          detail: invoices.length ? 'Issued invoices awaiting payment' : 'Create an invoice to track payments',
+          icon: IndianRupee,
+          accent: 'emerald',
+        },
+        {
+          label: 'Open quotations',
+          value: activeQuotations,
+          detail: 'Draft and finalized quotes awaiting response',
+          icon: FileCheck2,
+        },
+        { label: 'Customers', value: data.customers.length, detail: 'In your customer directory', icon: Users },
+      ];
 
   const statusChipClasses = (status) => {
     const s = (status || '').toLowerCase();
@@ -111,6 +158,7 @@ const Dashboard = () => {
     if (s === 'cancelled' || s === 'void') return 'bg-rose-50 text-rose-700';
     return 'bg-slate-100 text-slate-700';
   };
+  const recentDocuments = isDeliveryChallanProfile ? deliveryChallans : documents;
 
   return (
     <div className="min-h-screen bg-[#f7f8fa] text-slate-900">
@@ -179,8 +227,14 @@ const Dashboard = () => {
           <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
               <div>
-                <h2 className="text-base font-semibold text-slate-900">Recent documents</h2>
-                <p className="mt-1 text-xs text-slate-500">Your latest invoices and quotations.</p>
+                <h2 className="text-base font-semibold text-slate-900">
+                  {isDeliveryChallanProfile ? 'Recent delivery challans' : 'Recent documents'}
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  {isDeliveryChallanProfile
+                    ? 'Your latest delivery challans.'
+                    : 'Your latest invoices and quotations.'}
+                </p>
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -195,8 +249,12 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {documents.slice(0, 6).map((document) => {
+                  {recentDocuments.slice(0, 6).map((document) => {
                     const isInvoice = isInvoiceDocument(document);
+                    const isDeliveryChallan = isDeliveryChallanDocument(document);
+                    const displayStatus = isDeliveryChallan
+                      ? getDeliveryChallanPaymentStatus(document)
+                      : document.status || 'Draft';
                     return (
                       <tr key={document.id} className="transition hover:bg-slate-50/70">
                         <td className="px-6 py-4">
@@ -211,15 +269,17 @@ const Dashboard = () => {
                                     ? 'Draft'
                                     : document.reference_number)}
                               </span>
-                              <span className="mt-0.5 block text-xs text-slate-500">{isInvoice ? 'Invoice' : 'Quotation'}</span>
+                              <span className="mt-0.5 block text-xs text-slate-500">
+                                {isDeliveryChallan ? 'Delivery Challan' : isInvoice ? 'Invoice' : 'Quotation'}
+                              </span>
                             </span>
                           </div>
                         </td>
                         <td className="px-4 py-4 text-slate-600">{document.customer_name || '—'}</td>
                         <td className="px-4 py-4 text-slate-500">{formatAppDate(document.issued_at)}</td>
                         <td className="px-4 py-4">
-                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusChipClasses(document.status)}`}>
-                            {document.status || 'Draft'}
+                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusChipClasses(displayStatus)}`}>
+                            {displayStatus}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right font-semibold text-slate-800">
@@ -228,14 +288,23 @@ const Dashboard = () => {
                       </tr>
                     );
                   })}
-                  {!loading && documents.length === 0 ? (
+                  {!loading && recentDocuments.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="px-6 py-12 text-center">
                         <FileText size={25} className="mx-auto text-slate-300" />
-                        <p className="mt-3 text-sm font-medium text-slate-700">No documents yet</p>
-                        <p className="mt-1 text-xs text-slate-500">Create a quotation or invoice to see it here.</p>
-                        <Link to="/new" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700">
-                          Create your first document <ArrowRight size={14} />
+                        <p className="mt-3 text-sm font-medium text-slate-700">
+                          {isDeliveryChallanProfile ? 'No delivery challans yet' : 'No documents yet'}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {isDeliveryChallanProfile
+                            ? 'Create a delivery challan to see it here.'
+                            : 'Create a quotation or invoice to see it here.'}
+                        </p>
+                        <Link
+                          to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'}
+                          className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700"
+                        >
+                          {isDeliveryChallanProfile ? 'Create your first challan' : 'Create your first document'} <ArrowRight size={14} />
                         </Link>
                       </td>
                     </tr>
@@ -249,9 +318,9 @@ const Dashboard = () => {
             <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-slate-900">Quick actions</h2>
               <div className="mt-4 space-y-2">
-                <Link to="/new" className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
+                <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><FilePlus2 size={17} /></span>
-                  <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800">New document</span><span className="mt-0.5 block text-xs text-slate-500">Prepare an invoice or quote</span></span>
+                  <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800">{isDeliveryChallanProfile ? 'Create challan' : 'New document'}</span><span className="mt-0.5 block text-xs text-slate-500">{isDeliveryChallanProfile ? 'Prepare a delivery challan' : 'Prepare an invoice or quote'}</span></span>
                   <ArrowUpRight size={15} className="text-slate-400 transition group-hover:text-emerald-700" />
                 </Link>
                 <Link to="/customers" className="group flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
@@ -271,10 +340,12 @@ const Dashboard = () => {
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10"><Clock3 size={17} /></span>
               <h2 className="mt-4 text-sm font-semibold tracking-tight">Keep everything up to date</h2>
               <p className="mt-2 text-xs leading-5 text-slate-300">
-                Add customer and company details once, then reuse them across your billing documents.
+                {isDeliveryChallanProfile
+                  ? 'Add customer and company details once, then reuse them on your delivery challans.'
+                  : 'Add customer and company details once, then reuse them across your billing documents.'}
               </p>
-              <Link to="/new" className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300">
-                Create your first document <ArrowRight size={13} />
+              <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300">
+                {isDeliveryChallanProfile ? 'Create your first challan' : 'Create your first document'} <ArrowRight size={13} />
               </Link>
             </section>
           </aside>

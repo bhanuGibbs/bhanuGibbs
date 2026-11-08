@@ -9,7 +9,13 @@ import { digitsOnly, preventPaste, getPasswordError } from '../utils/numericInpu
 const Register = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const [form, setForm] = useState({ username: '', email: '', password: '', mobile_number: '' });
+  const [form, setForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    mobile_number: '',
+    business_profile: '',
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -34,6 +40,7 @@ const Register = () => {
         email: form.email.trim(),
         password: form.password,
         mobile_number: form.mobile_number.trim() || undefined,
+        business_profile: form.business_profile,
       });
       toast.success('Account created! Please check your email to verify your account.');
       navigate('/verify-email');
@@ -48,7 +55,7 @@ const Register = () => {
     <AuthLayout
       eyebrow="Create your workspace"
       title="Good business starts here."
-      description="Set up your account and bring your billing workflow together."
+      description="Choose the workspace that fits your business, then set up your account."
       variant="auth"
     >
         <form className="space-y-4" onSubmit={handleSubmit} aria-busy={loading}>
@@ -108,6 +115,41 @@ const Register = () => {
               />
             </span>
           </label>
+
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-semibold text-slate-800">
+              Choose your workspace <span className="text-rose-700">Required</span>
+            </legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {[
+                ['invoice', 'Invoice / Quotation', 'Create invoices and quotations for customers'],
+                ['pos', 'POS Billing', 'Point-of-sale billing and stock tools'],
+                ['delivery_challan', 'Delivery Challan', 'Prepare agricultural-seed delivery challans'],
+                ['sales_inventory', 'Sales & Inventory Management', 'Manage organization sales, orders, and inventory'],
+              ].map(([value, title, description]) => (
+                <label
+                  key={value}
+                  className={`cursor-pointer rounded-xl border p-3 transition focus-within:ring-2 focus-within:ring-emerald-700 focus-within:ring-offset-2 ${
+                    form.business_profile === value
+                      ? 'border-emerald-700 bg-emerald-50'
+                      : 'border-slate-300 bg-white hover:border-slate-400'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="business_profile"
+                    value={value}
+                    checked={form.business_profile === value}
+                    onChange={() => setForm({ ...form, business_profile: value })}
+                    required
+                    className="sr-only"
+                  />
+                  <span className="block text-sm font-semibold text-slate-900">{title}</span>
+                  <span className="mt-1 block text-xs leading-5 text-slate-600">{description}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
           <label htmlFor="register-password" className="block text-sm font-semibold text-slate-800">
             Password

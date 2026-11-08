@@ -90,14 +90,15 @@ const DeliveryChallans = () => {
   }, [dateFilteredChallans, paymentFilter, search]);
 
   const paymentTotals = useMemo(() => {
-    return dateFilteredChallans.reduce((totals, challan) => {
+    return documents.reduce((totals, challan) => {
       const status = getDeliveryChallanPaymentStatus(challan);
       const amount = Number(challan.total_amount) || 0;
+      totals.total += amount;
       if (status === 'Paid') totals.paid += amount;
       if (status === 'Unpaid') totals.unpaid += amount;
       return totals;
-    }, { paid: 0, unpaid: 0 });
-  }, [dateFilteredChallans]);
+    }, { total: 0, paid: 0, unpaid: 0 });
+  }, [documents]);
 
   const handlePaymentStatusChange = async (challan) => {
     const currentStatus = getDeliveryChallanPaymentStatus(challan);
@@ -207,19 +208,19 @@ const DeliveryChallans = () => {
 
         <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Delivery challan payment totals">
           <article className="rounded-2xl border border-slate-200/60 bg-white p-5">
-            <p className="text-sm font-medium text-slate-700">Total challan amount</p>
-            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid + paymentTotals.unpaid)}</p>
-            <p className="mt-1 text-xs text-slate-500">Paid and unpaid finalized challans in this date range</p>
+            <p className="text-sm font-medium text-slate-700">Total amount shown</p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.total)}</p>
+            <p className="mt-1 text-xs text-slate-500">Matches the challans shown below</p>
           </article>
           <article className="rounded-2xl border border-emerald-200/60 bg-white p-5">
             <p className="text-sm font-medium text-emerald-700">Paid challans</p>
             <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid)}</p>
-            <p className="mt-1 text-xs text-slate-500">Total amount recorded as paid</p>
+            <p className="mt-1 text-xs text-slate-500">Paid challans matching the current filters</p>
           </article>
           <article className="rounded-2xl border border-amber-200/60 bg-white p-5">
             <p className="text-sm font-medium text-amber-700">Unpaid challans</p>
             <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.unpaid)}</p>
-            <p className="mt-1 text-xs text-slate-500">Total amount still awaiting payment</p>
+            <p className="mt-1 text-xs text-slate-500">Unpaid challans matching the current filters</p>
           </article>
         </section>
 
