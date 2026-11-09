@@ -1,31 +1,35 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Home from './pages/Home';
-import Billing from './pages/Billing';
-import Dashboard from './pages/Dashboard';
-import Customers from './pages/Customers';
-import Products from './pages/Products';
-import Quotations from './pages/Quotations';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import VerifyEmail from './pages/VerifyEmail';
-import SetupCompany from './pages/SetupCompany';
-import Profile from './pages/Profile';
-import AdminUsers from './pages/AdminUsers';
-import Info from './pages/Info';
-import LandingPage from './pages/LandingPage';
-import POSDashboard from './pages/pos/POSDashboard';
-import POSTerminal from './pages/pos/POSTerminal';
-import POSProducts from './pages/pos/POSProducts';
-import POSTransactions from './pages/pos/POSTransactions';
-import POSInventory from './pages/pos/POSInventory';
-import DeliveryChallans from './pages/DeliveryChallans';
-import DeliveryChallanForm from './components/DeliveryChallanForm';
-import SalesInventoryDashboard from './pages/SalesInventoryDashboard';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/useAuth';
+
+// Lazy-loaded page components for code splitting
+const Home = lazy(() => import('./pages/Home'));
+const Billing = lazy(() => import('./pages/Billing'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Customers = lazy(() => import('./pages/Customers'));
+const Products = lazy(() => import('./pages/Products'));
+const Quotations = lazy(() => import('./pages/Quotations'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const SetupCompany = lazy(() => import('./pages/SetupCompany'));
+const Profile = lazy(() => import('./pages/Profile'));
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const Info = lazy(() => import('./pages/Info'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const POSDashboard = lazy(() => import('./pages/pos/POSDashboard'));
+const POSTerminal = lazy(() => import('./pages/pos/POSTerminal'));
+const POSProducts = lazy(() => import('./pages/pos/POSProducts'));
+const POSTransactions = lazy(() => import('./pages/pos/POSTransactions'));
+const POSInventory = lazy(() => import('./pages/pos/POSInventory'));
+const DeliveryChallans = lazy(() => import('./pages/DeliveryChallans'));
+const DeliveryChallanForm = lazy(() => import('./components/DeliveryChallanForm'));
+const ChallanProducts = lazy(() => import('./pages/ChallanProducts'));
+const SalesInventoryDashboard = lazy(() => import('./pages/SalesInventoryDashboard'));
 
 const RequireAuth = ({ children }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -92,8 +96,17 @@ function App() {
   return (
     <AuthProvider>
       <Toaster position="top-right" />
-      <Routes>
-        <Route path="/" element={<RootRedirect />} />
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="rounded-3xl border border-slate-200 bg-white px-6 py-8 shadow-soft">
+              <p className="text-sm text-slate-600">Loading...</p>
+            </div>
+          </div>
+        }
+      >
+        <Routes>
+          <Route path="/" element={<RootRedirect />} />
         <Route
           path="/dashboard"
           element={
@@ -260,6 +273,16 @@ function App() {
           }
         />
         <Route
+          path="/challan-products"
+          element={
+            <RequireAuth>
+              <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
+                <ChallanProducts />
+              </RequireBusinessProfile>
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/sales-inventory"
           element={
             <RequireAuth>
@@ -275,7 +298,8 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </AuthProvider>
   );
 }

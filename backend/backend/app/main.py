@@ -29,6 +29,8 @@ from app.api.user_router import router as user_router
 from app.api.pos_router import router as pos_router
 from app.api.contact_router import router as contact_router
 from app.api.exchange_rates_router import router as exchange_rates_router
+from app.api.sales_inventory_router import router as sales_inventory_router
+from app.api.challan_product_router import router as challan_product_router
 
 settings = get_settings()
 cors_origins = [
@@ -111,6 +113,8 @@ app.include_router(user_router)
 app.include_router(pos_router)
 app.include_router(contact_router)
 app.include_router(exchange_rates_router)
+app.include_router(sales_inventory_router)
+app.include_router(challan_product_router)
 
 
 @app.on_event("startup")

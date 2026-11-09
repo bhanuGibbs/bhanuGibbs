@@ -175,13 +175,21 @@ const DeliveryChallans = () => {
               Track, manage and download delivery challans.
             </p>
           </div>
-          <Link
-            to="/delivery-challan/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
-          >
-            <FileText size={16} />
-            Create challan
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              to="/challan-products"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+            >
+              Manage challan products
+            </Link>
+            <Link
+              to="/delivery-challan/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
+            >
+              <FileText size={16} />
+              Create challan
+            </Link>
+          </div>
         </div>
 
         <section className="mb-4 rounded-lg border border-slate-200/60 bg-white p-5" aria-label="Filter delivery challans by issue date">

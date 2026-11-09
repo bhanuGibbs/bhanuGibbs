@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
 import Header from './Header';
 import { useAuth } from '../context/useAuth';
-import { buildBackendQuotationPayload, submitQuotationToBackend } from '../integration/backend/api';
+import { buildBackendQuotationPayload, createChallanProduct, getChallanProducts, submitQuotationToBackend } from '../integration/backend/api';
 import { calculateSummary } from '../utils/calculations';
 import { decimalOnly, digitsOnly, nameOnly, NAME_REGEX, PHONE_NUMBER_REGEX, GSTIN_REGEX, preventPaste } from '../utils/numericInput';
 import { Plus, Trash2 } from 'lucide-react';
@@ -66,6 +66,51 @@ const DeliveryChallanForm = () => {
   const [pdfUrl, setPdfUrl] = useState('');
   const downloadInProgress = useRef(false);
 
+  // Challan product catalog state
+  const [challanProducts, setChallanProducts] = useState([]);
+  const [challanProductsLoading, setChallanProductsLoading] = useState(false);
+  const [challanProductsError, setChallanProductsError] = useState('');
+  const [savingChallanProductId, setSavingChallanProductId] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeSearchIndex, setActiveSearchIndex] = useState(null);
+
+  // Fetch challan products on mount
+  useEffect(() => {
+    let cancelled = false;
+    const loadChallanProducts = async () => {
+      setChallanProductsLoading(true);
+      setChallanProductsError('');
+      try {
+        const data = await getChallanProducts();
+        if (!cancelled) {
+          setChallanProducts(data || []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error(err);
+          setChallanProductsError(err.message || 'Unable to load challan products');
+        }
+      } finally {
+        if (!cancelled) {
+          setChallanProductsLoading(false);
+        }
+      }
+    };
+    loadChallanProducts();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Filter challan products by search query
+  const filteredChallanProducts = useMemo(() => {
+    if (!searchQuery.trim()) return challanProducts;
+    const q = searchQuery.trim().toLowerCase();
+    return challanProducts.filter((p) =>
+      p.crop?.toLowerCase().includes(q) ||
+      p.variety?.toLowerCase().includes(q) ||
+      p.lot_no?.toLowerCase().includes(q)
+    );
+  }, [challanProducts, searchQuery]);
+
   const {
     register,
     handleSubmit,
@@ -102,6 +147,7 @@ const DeliveryChallanForm = () => {
   const addItem = () => {
     const newItem = {
       id: uuidv4(),
+      catalogProductId: null,
       crop: '',
       variety: '',
       seedClass: '',
@@ -113,6 +159,59 @@ const DeliveryChallanForm = () => {
       value: 0,
     };
     setValue('items', [...(items || []), newItem]);
+  };
+
+  // Select a challan product and auto-fill the item fields
+  const selectChallanProduct = (index, product) => {
+    const updatedItems = [...items];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      catalogProductId: product.id,
+      crop: product.crop || '',
+      variety: product.variety || '',
+      seedClass: product.seed_class || '',
+      lotNo: product.lot_no || '',
+      unitSize: product.unit_size || '',
+      unitPerSackBox: product.unit_per_sack_box || '',
+      sackBox: product.sack_box || '',
+      value: Number(product.value) || 0,
+    };
+    setValue('items', updatedItems);
+    setSearchQuery('');
+    setActiveSearchIndex(null);
+  };
+
+  // Save a manually entered item to the challan product catalog
+  const saveChallanProduct = async (index, item) => {
+    setSavingChallanProductId(item.id);
+    try {
+      const payload = {
+        crop: item.crop || '',
+        variety: item.variety || null,
+        seed_class: item.seedClass || null,
+        lot_no: item.lotNo || null,
+        unit_size: item.unitSize || null,
+        unit_per_sack_box: item.unitPerSackBox ? Number(item.unitPerSackBox) : null,
+        sack_box: item.sackBox ? Number(item.sackBox) : null,
+        value: Number(item.value) || 0,
+      };
+      const created = await createChallanProduct(payload);
+      const updatedItems = [...items];
+      updatedItems[index] = { ...updatedItems[index], catalogProductId: created.id };
+      setValue('items', updatedItems);
+      setChallanProducts((current) => [created, ...current]);
+      toast.success('Item saved to challan product catalog');
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || 'Unable to save to product catalog');
+    } finally {
+      setSavingChallanProductId('');
+    }
+  };
+
+  const openProductSearch = (index) => {
+    setActiveSearchIndex(index);
+    setSearchQuery('');
   };
 
   const removeItem = (index) => {
@@ -501,10 +600,16 @@ const DeliveryChallanForm = () => {
               </button>
             </div>
 
+            {challanProductsError && (
+              <div role="alert" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {challanProductsError}
+              </div>
+            )}
             <div className="relative min-w-0 overflow-visible">
-              <table className="item-entry-table min-w-0 w-full border-separate border-spacing-y-3 xl:min-w-[1120px]">
+              <table className="item-entry-table min-w-0 w-full border-separate border-spacing-y-3 xl:min-w-[1280px]">
                 <thead>
                   <tr className="text-left text-sm font-semibold text-slate-600">
+                    <th className="px-2 py-2">Product</th>
                     <th className="px-2 py-2">Crop</th>
                     <th className="px-2 py-2">Variety</th>
                     <th className="px-2 py-2">Seed Class</th>
@@ -521,9 +626,70 @@ const DeliveryChallanForm = () => {
                 <tbody>
                   {items.map((item, index) => {
                     const amount = calculateItemValue(item);
+                    const isActive = activeSearchIndex === index;
+                    const selectedProduct = challanProducts.find((p) => p.id === item.catalogProductId);
                     return (
                       <tr key={item.id} className="item-entry-row rounded-lg bg-slate-50/70">
-                        <td data-label="Crop" className="rounded-l-2xl px-2 py-3 align-top">
+                        {/* Product Search Column */}
+                        <td data-label="Product" className="rounded-l-2xl px-2 py-3 align-top">
+                          <div className="relative">
+                            {item.catalogProductId ? (
+                              <div className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-sm">
+                                <span className="truncate font-medium text-emerald-800">{selectedProduct?.crop || item.crop}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => openProductSearch(index)}
+                                  className="shrink-0 text-emerald-600 hover:text-emerald-800"
+                                  title="Change product"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => openProductSearch(index)}
+                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm text-slate-400 transition hover:border-emerald-400"
+                              >
+                                {challanProductsLoading ? 'Loading...' : 'Select product...'}
+                              </button>
+                            )}
+                            {isActive && (
+                              <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+                                <input
+                                  type="text"
+                                  className="mb-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                                  placeholder="Search by crop, variety, lot no..."
+                                  value={searchQuery}
+                                  onChange={(e) => setSearchQuery(e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  autoFocus
+                                />
+                                <div className="max-h-48 overflow-y-auto">
+                                  {filteredChallanProducts.length === 0 ? (
+                                    <p className="px-3 py-2 text-xs text-slate-400">No matching products</p>
+                                  ) : (
+                                    filteredChallanProducts.map((product) => (
+                                      <button
+                                        key={product.id}
+                                        type="button"
+                                        onClick={() => selectChallanProduct(index, product)}
+                                        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-emerald-50"
+                                      >
+                                        <div>
+                                          <span className="font-medium text-slate-800">{product.crop}</span>
+                                          {product.variety && <span className="ml-1 text-slate-500">({product.variety})</span>}
+                                        </div>
+                                        <span className="text-xs text-slate-500">₹{Number(product.value).toFixed(2)}/kg</span>
+                                      </button>
+                                    ))
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td data-label="Crop" className="px-2 py-3 align-top">
                           <input className={inputClass} placeholder="e.g. Rice" {...register(`items.${index}.crop`)} />
                         </td>
                         <td data-label="Variety" className="px-2 py-3 align-top">
@@ -556,14 +722,27 @@ const DeliveryChallanForm = () => {
                           </div>
                         </td>
                         <td data-label="Actions" className="rounded-r-2xl px-2 py-3 align-top">
-                          <button
-                            type="button"
-                            onClick={() => removeItem(index)}
-                            aria-label={`Remove item ${index + 1}`}
-                            className="rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-rose-600 transition hover:bg-rose-100"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <div className="flex flex-col gap-2">
+                            {!item.catalogProductId && (
+                              <button
+                                type="button"
+                                onClick={() => saveChallanProduct(index, item)}
+                                disabled={savingChallanProductId === item.id || !item.crop?.trim()}
+                                className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                title="Save to product catalog"
+                              >
+                                {savingChallanProductId === item.id ? 'Saving...' : 'Save to catalog'}
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeItem(index)}
+                              aria-label={`Remove item ${index + 1}`}
+                              className="rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-rose-600 transition hover:bg-rose-100"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

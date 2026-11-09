@@ -39,7 +39,7 @@ const challanNavigation = [
   { to: '/delivery-challans', label: 'Challan List', icon: FileText, end: true },
   { to: '/delivery-challan/new', label: 'Create Challan', icon: Plus },
   { to: '/customers', label: 'Customers', icon: Users },
-  { to: '/products', label: 'Products', icon: Package },
+  { to: '/challan-products', label: 'Products', icon: Package },
 ];
 
 const salesInventoryNavigation = [

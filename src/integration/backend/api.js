@@ -430,3 +430,68 @@ export const downloadQuotationPdf = async (quotationId, filename) => {
   window.setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
 };
 
+// --- Challan Products ---
+
+export const getChallanProducts = async () => {
+  const response = await authenticatedFetch(`${API_BASE}/challan-products/`, {
+    headers: {
+      ...getAuthorizedHeaders(),
+    },
+  });
+
+  if (!response.ok) {
+    throw await readApiError(response, 'Unable to load challan products. Please try again.');
+  }
+
+  return response.json();
+};
+
+export const createChallanProduct = async (payload) => {
+  const response = await authenticatedFetch(`${API_BASE}/challan-products/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthorizedHeaders(),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw await readApiError(response, 'Unable to create challan product. Please try again.');
+  }
+
+  return response.json();
+};
+
+export const updateChallanProduct = async (productId, payload) => {
+  const response = await authenticatedFetch(`${API_BASE}/challan-products/${productId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthorizedHeaders(),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw await readApiError(response, 'Unable to update challan product. Please try again.');
+  }
+
+  return response.json();
+};
+
+export const deleteChallanProduct = async (productId) => {
+  const response = await authenticatedFetch(`${API_BASE}/challan-products/${productId}`, {
+    method: 'DELETE',
+    headers: {
+      ...getAuthorizedHeaders(),
+    },
+  });
+
+  if (!response.ok) {
+    throw await readApiError(response, 'Unable to delete challan product. Please try again.');
+  }
+
+  return true;
+};
+
