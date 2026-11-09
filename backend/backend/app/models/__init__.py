@@ -12,5 +12,6 @@ from app.models import (
     quotation_item,
     quotation_sequence,
     role,
+    sales_inventory,
     user,
 )

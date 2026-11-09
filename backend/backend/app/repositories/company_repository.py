@@ -13,9 +13,13 @@ class CompanyRepository(BaseRepository[Company]):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, Company)
 
-    async def get_by_name(self, name: str) -> Company | None:
-        """Return a company by its name."""
+    async def get_by_name(
+        self, name: str, business_profile: str | None = None
+    ) -> Company | None:
+        """Return a company by name, optionally scoped to its business profile."""
         statement = select(Company).where(Company.name == name)
+        if business_profile is not None:
+            statement = statement.where(Company.business_profile == business_profile)
         result = await self.session.execute(statement)
         return result.scalars().first()
 

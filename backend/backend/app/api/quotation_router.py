@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_current_user, get_db_session
+from app.dependencies import get_current_user, get_db_session, require_business_profile
 from app.repositories.audit_event_repository import AuditEventRepository
 from app.schemas.quotation import (
     InvoicePaymentStatusUpdate,
@@ -22,7 +22,11 @@ from app.services.product_service import ProductService
 from app.services.quotation_service import QuotationService
 from app.utils.pdf_generator import generate_pdf_from_data, render_template
 
-router = APIRouter(prefix="/quotations", tags=["Quotations"])
+router = APIRouter(
+    prefix="/quotations",
+    tags=["Quotations"],
+    dependencies=[Depends(require_business_profile("invoice", "pos", "delivery_challan"))],
+)
 
 
 async def _resolve_quotation_product(item_data, product_service, company_id, current_user):

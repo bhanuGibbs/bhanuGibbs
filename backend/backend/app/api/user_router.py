@@ -34,7 +34,7 @@ async def _to_user_read(user, session: AsyncSession) -> UserRead:
         "company_email": company.email if company else None,
         "company_website": company.website if company else None,
         "company_gstin": company.gstin if company else None,
-        "business_profile": company.business_profile if company else None,
+        "business_profile": company.business_profile if company else user.business_profile,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
     })
@@ -63,6 +63,7 @@ async def create_user(
         role_name="Sales",
         is_superuser=False,
         company_id=company_id,
+        business_profile=current_user.get("business_profile", "invoice"),
     )
     return await _to_user_read(user, session)
 
@@ -140,9 +141,25 @@ async def update_user_role(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient privileges.",
         )
-    # Admin is restricted to same company; Super Admin has no restriction
     company_id = None if current_user["role"] == "Super Admin" else current_user["company_id"]
-    user = await UserService(session).update_user_role(
+    service = UserService(session)
+    target_user = await service.get_user_by_id(user_id)
+    if not target_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    target_company = (
+        await session.get(Company, target_user.company_id)
+        if target_user.company_id
+        else None
+    )
+    if company_id and str(target_user.company_id) != company_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    target_profile = target_company.business_profile if target_company else target_user.business_profile
+    if target_profile == "sales_inventory" and payload.role_name not in {"Sales", "Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Sales & Inventory users can only have the Sales or Admin role.",
+        )
+    user = await service.update_user_role(
         user_id, payload.role_name, company_id=company_id
     )
     return await _to_user_read(user, session)

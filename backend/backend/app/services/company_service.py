@@ -32,7 +32,7 @@ class CompanyService:
     ) -> Company:
         """Create a new company in the system."""
         existing = await self.repository.get_by_name(name)
-        if existing:
+        if existing and business_profile != "sales_inventory":
             raise ConflictError("Company with this name already exists.")
 
         # pydantic's HttpUrl/Url types may be passed in from request payloads;
@@ -65,6 +65,8 @@ class CompanyService:
         """Return a company by its UUID."""
         return await self.repository.get(company_id)
 
-    async def get_company_by_name(self, name: str) -> Company | None:
-        """Return a company by its name."""
-        return await self.repository.get_by_name(name)
+    async def get_company_by_name(
+        self, name: str, business_profile: str | None = None
+    ) -> Company | None:
+        """Return a company by name, optionally scoped to its business profile."""
+        return await self.repository.get_by_name(name, business_profile=business_profile)

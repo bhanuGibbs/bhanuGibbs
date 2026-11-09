@@ -12,6 +12,7 @@ from app.dependencies import get_current_user, get_db_session
 from app.core.rate_limit import limiter
 from app.models.company import Company
 from app.models.role import Role
+from app.repositories.role_repository import RoleRepository
 from app.security import create_access_token, create_refresh_token, decode_token
 from app.schemas.company import CompanyCreate, CompanyRead
 from app.schemas.user import (
@@ -49,6 +50,7 @@ async def register(
         mobile_number=payload.mobile_number,
         role_name="Sales",
         is_superuser=False,
+        business_profile=payload.business_profile,
     )
 
     # Collect all response data before email sending to avoid session issues
@@ -72,6 +74,7 @@ async def register(
         "company_email": company.email if company else None,
         "company_website": company.website if company else None,
         "company_gstin": company.gstin if company else None,
+        "business_profile": user.business_profile,
         "is_email_verified": user.is_email_verified,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
@@ -131,6 +134,7 @@ async def login(
         "email": user.email,
         "role": role_name,
         "company_id": str(user.company_id) if user.company_id else None,
+        "business_profile": user.business_profile,
         "is_profile_complete": user.is_profile_complete,
         "refresh_token_id": token_id,
     }
@@ -193,17 +197,20 @@ async def refresh_token(request: Request, payload: TokenRefreshRequest, session:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token is not valid.",
         )
+    role = await session.get(Role, user.role_id)
+    company = await session.get(Company, user.company_id) if user.company_id else None
 
     await auth_session_service.revoke_session(token_id, commit=False)
 
     new_token_id = secrets.token_urlsafe(32)
     new_payload = {
         "sub": token_payload["sub"],
-        "username": token_payload["username"],
-        "email": token_payload.get("email", ""),
-        "role": token_payload["role"],
-        "company_id": token_payload.get("company_id"),
-        "is_profile_complete": token_payload.get("is_profile_complete", False),
+        "username": user.username,
+        "email": user.email,
+        "role": role.name if role else "Viewer",
+        "company_id": str(user.company_id) if user.company_id else None,
+        "business_profile": company.business_profile if company else user.business_profile,
+        "is_profile_complete": user.is_profile_complete,
         "refresh_token_id": new_token_id,
     }
     new_refresh_token = create_refresh_token(new_payload)
@@ -292,7 +299,7 @@ async def setup_company(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> CompanyRead:
-    """Create or join a company for a newly registered user."""
+    """Create an organization; only legacy profiles retain name-based company joining."""
     user_service = UserService(session)
     company_service = CompanyService(session)
 
@@ -309,16 +316,53 @@ async def setup_company(
             detail="Company details are already completed.",
         )
 
+    if user.business_profile == "sales_inventory" and payload.business_profile != "sales_inventory":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Your Sales & Inventory workspace selection cannot be changed during organization setup.",
+        )
+    if payload.business_profile == "sales_inventory":
+        role = await session.get(Role, user.role_id)
+        if not role or role.name not in {"Sales", "Admin"}:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Sales & Inventory users can only use the Sales or Admin role.",
+            )
+    if user.business_profile != "sales_inventory":
+        user.business_profile = payload.business_profile
+
     # Check if a company with this name already exists
-    existing_company = await company_service.get_company_by_name(payload.name)
+    existing_company = (
+        None
+        if payload.business_profile == "sales_inventory"
+        else await company_service.get_company_by_name(
+            payload.name, business_profile=payload.business_profile
+        )
+    )
+    if not existing_company and payload.business_profile != "sales_inventory":
+        other_company = await company_service.get_company_by_name(payload.name)
+        if other_company:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="A company with this name already exists under a different business profile.",
+            )
     if existing_company:
         # Join the existing company
         user.company_id = existing_company.id
+        user.business_profile = existing_company.business_profile
         user.is_profile_complete = True
         await session.commit()
         company = existing_company
     else:
         # Create a new company
+        if payload.business_profile == "sales_inventory":
+            admin_role = await RoleRepository(session).get_by_name("Admin")
+            if not admin_role:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="The Sales & Inventory Admin role is not configured.",
+                )
+            user.role_id = admin_role.id
         company = await company_service.create_company(
             name=payload.name,
             address=payload.address,
@@ -415,7 +459,11 @@ async def read_current_user(
         "company_email": company.email if company else None,
         "company_website": company.website if company else None,
         "company_gstin": company.gstin if company else None,
-        "business_profile": company.business_profile if company else "invoice",
+        "business_profile": (
+            company.business_profile
+            if company
+            else getattr(user, "business_profile", "invoice")
+        ),
         "company_logo_data": company.logo_data if company else None,
         "company_seal_data": company.seal_data if company else None,
         "is_email_verified": user.is_email_verified,

@@ -5,11 +5,15 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_current_user, get_db_session
+from app.dependencies import get_current_user, get_db_session, require_business_profile
 from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
 from app.services.product_service import ProductService
 
-router = APIRouter(prefix="/products", tags=["Products"])
+router = APIRouter(
+    prefix="/products",
+    tags=["Products"],
+    dependencies=[Depends(require_business_profile("invoice", "pos", "delivery_challan"))],
+)
 
 
 @router.post("/", response_model=ProductRead, status_code=status.HTTP_201_CREATED)

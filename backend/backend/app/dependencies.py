@@ -59,7 +59,7 @@ async def get_optional_current_user(
         "username": user.username,
         "role": role.name if role else "Viewer",
         "company_id": str(user.company_id) if user.company_id else None,
-        "business_profile": company.business_profile if company else "invoice",
+        "business_profile": company.business_profile if company else user.business_profile,
     }
 
 
@@ -75,3 +75,18 @@ async def get_current_user(
             detail="Invalid authentication credentials.",
         )
     return current_user
+
+
+def require_business_profile(*allowed_profiles: str):
+    """Prevent accounts from using APIs belonging to another workspace profile."""
+
+    async def verify_profile(
+        current_user: dict[str, str] = Depends(get_current_user),
+    ) -> None:
+        if current_user.get("business_profile") not in allowed_profiles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="This feature is not available in your business profile.",
+            )
+
+    return verify_profile

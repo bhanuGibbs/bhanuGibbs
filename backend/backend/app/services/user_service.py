@@ -36,6 +36,7 @@ class UserService:
         mobile_number: str | None = None,
         is_superuser: bool = False,
         company_id: str | None = None,
+        business_profile: str = "invoice",
     ) -> User:
         """Create a new user with a role assignment.
 
@@ -62,6 +63,7 @@ class UserService:
             role_id=role.id,
             is_superuser=is_superuser,
             company_id=company_id,
+            business_profile=business_profile,
         )
         await self.repository.add(user)
         await self.repository.commit()

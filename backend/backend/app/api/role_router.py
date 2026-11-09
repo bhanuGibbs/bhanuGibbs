@@ -40,4 +40,6 @@ async def list_roles(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient privileges.")
     service = RoleService(session)
     roles = await service.list_roles()
+    if current_user.get("business_profile") == "sales_inventory":
+        roles = [role for role in roles if role.name in {"Admin", "Sales"}]
     return [RoleRead.from_orm(role) for role in roles]

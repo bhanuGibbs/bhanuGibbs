@@ -30,7 +30,7 @@ class CompanyBase(BaseModel):
     state: NameField = None
     city: NameField = None
     pincode: Pincode = None
-    business_profile: str = Field(default="invoice", pattern="^(invoice|pos|delivery_challan)$")
+    business_profile: str = Field(default="invoice", pattern="^(invoice|pos|delivery_challan|sales_inventory)$")
 
 
 class CompanyCreate(CompanyBase):

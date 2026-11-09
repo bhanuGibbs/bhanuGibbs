@@ -53,6 +53,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
     mobile_number: PhoneNumber = None
+    business_profile: Literal["invoice", "pos", "delivery_challan", "sales_inventory"] = "invoice"
 
     @field_validator("password")
     @classmethod

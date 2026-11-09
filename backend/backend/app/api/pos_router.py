@@ -6,7 +6,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_current_user, get_db_session
+from app.dependencies import get_current_user, get_db_session, require_business_profile
 from app.schemas.pos_product import (
     POSCategoryCreate,
     POSCategoryRead,
@@ -29,7 +29,11 @@ from app.services.pos_inventory_service import POSInventoryService
 from app.services.pos_dashboard_service import POSDashboardService
 from app.services.exceptions import ConflictError, NotFoundError, BadRequestError
 
-router = APIRouter(prefix="/pos", tags=["POS"])
+router = APIRouter(
+    prefix="/pos",
+    tags=["POS"],
+    dependencies=[Depends(require_business_profile("invoice", "pos", "delivery_challan"))],
+)
 
 
 def _check_admin_role(current_user: dict[str, str]) -> None:

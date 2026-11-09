@@ -28,6 +28,9 @@ class User(BaseModel):
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     role_id: Mapped[str] = mapped_column(ForeignKey("roles.id"), nullable=False)
     company_id: Mapped[str | None] = mapped_column(ForeignKey("companies.id"), nullable=True)
+    business_profile: Mapped[str] = mapped_column(
+        String(20), default="invoice", server_default="invoice", nullable=False
+    )
     is_profile_complete: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     subscription_plan: Mapped[str] = mapped_column(
         String(20), default="free", server_default="free", nullable=False

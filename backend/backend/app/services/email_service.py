@@ -104,6 +104,49 @@ class EmailService:
         if not all(required):
             raise EmailConfigurationError("Contact alert email is not configured.")
 
+    def ensure_smtp_configured(self) -> None:
+        required = (
+            self.settings.smtp_host,
+            self.settings.smtp_username,
+            self.settings.smtp_password,
+            self.settings.smtp_from_email,
+        )
+        if not all(required):
+            raise EmailConfigurationError("SMTP email is not configured.")
+
+    async def send_sales_order_alert_email(
+        self,
+        recipient: str,
+        order_number: str,
+        dealer_name: str,
+        sales_rep_name: str,
+        total_amount: str,
+        items: list[dict[str, str]],
+    ) -> None:
+        """Notify an organization admin that a sales order needs approval."""
+        self.ensure_smtp_configured()
+        item_lines = "\n".join(
+            f"- {item['product_name']}: {item['quantity']} {item['unit']}"
+            for item in items
+        )
+        message = EmailMessage()
+        message["Subject"] = f"Order {order_number} needs approval"
+        message["From"] = self.settings.smtp_from_email
+        message["To"] = recipient
+        message.set_content(
+            "A sales order is waiting for approval in your KeelBill Ledger workspace.\n\n"
+            f"Order: {order_number}\n"
+            f"Dealer: {dealer_name}\n"
+            f"Submitted by: {sales_rep_name}\n"
+            f"Order total: {total_amount}\n\n"
+            f"Items:\n{item_lines}\n"
+        )
+
+        try:
+            await asyncio.to_thread(self._send_message, message)
+        except (OSError, ValueError, smtplib.SMTPException) as error:
+            raise EmailDeliveryError("Sales order alert email could not be sent.") from error
+
     async def send_contact_alert_email(
         self, sender_name: str, sender_email: str, sender_mobile: str, message_text: str
     ) -> None:
