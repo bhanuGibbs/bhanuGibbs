@@ -1,4 +1,4 @@
-import invoicePreview from '../assets/images/invoice.png';
+const invoicePreview = '/images/invoice.png';
 
 const LandingProductPreview = () => (
   <figure className="mx-auto w-full min-w-0 overflow-hidden rounded-lg border border-[#e7dfd8] bg-white">

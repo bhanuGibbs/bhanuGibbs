@@ -5,9 +5,9 @@ import { useAuth } from '../context/useAuth';
 import LandingNavbar from '../components/LandingNavbar';
 import LandingProductPreview from '../components/LandingProductPreview';
 import ContactForm from '../components/ContactForm';
-import quotationPreview from '../assets/images/quotation.png';
-import posPreview from '../assets/images/pos-preview.jpg';
-import challanPreview from '../assets/images/delivery-challan-preview.jpg';
+const quotationPreview = '/images/quotation.png';
+const posPreview = '/images/pos-preview.jpg';
+const challanPreview = '/images/delivery-challan-preview.jpg';
 
 const services = [
   {

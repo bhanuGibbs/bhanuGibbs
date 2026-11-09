@@ -6,6 +6,20 @@ export default defineConfig({
   build: {
     // The PDF renderer is lazy-loaded; its minified chunk is 1.3 MB (about 436 KB gzipped).
     chunkSizeWarningLimit: 1400,
+    // Split CSS per chunk for better code splitting
+    cssCodeSplit: true,
+    // Prevent large images from being inlined as base64 (0 = never inline)
+    assetsInlineLimit: 0,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Shared vendor chunk for React ecosystem — cached across page visits
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-router': ['react-router-dom'],
+          'vendor-form': ['react-hook-form'],
+        },
+      },
+    },
   },
   server: {
     host: '0.0.0.0',
