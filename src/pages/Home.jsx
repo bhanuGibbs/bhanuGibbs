@@ -341,8 +341,13 @@ const Home = () => {
                             <p className="text-sm text-slate-500">This preview is the same PDF file that was downloaded.</p>
                         </div>
                         {pdfUrl ? (
-                            <iframe src={pdfUrl} title="Quotation PDF Preview"
-                                    className="h-[900px] w-full rounded-xl border border-slate-200"/>
+                            <iframe
+                                src={pdfUrl}
+                                title="Quotation PDF Preview"
+                                className="h-[900px] w-full rounded-xl border border-slate-200"
+                                type="application/pdf"
+                                sandbox="allow-same-origin"
+                            />
                         ) : null}
                     </section>
                 ) : null}

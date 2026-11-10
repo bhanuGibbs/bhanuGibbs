@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   },
   companyName: {
     width: '100%',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#0f172a',
     marginBottom: 3,
