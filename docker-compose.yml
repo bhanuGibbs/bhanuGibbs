@@ -9,6 +9,13 @@ services:
       APP_NAME: ${APP_NAME:-KeelBill Ledger API}
       ENVIRONMENT: ${ENVIRONMENT:-production}
       DEBUG: ${DEBUG:-False}
+      # Key Vault is used only when KEY_VAULT_URL and all three AZURE_* variables are set on the host.
+      # When not set, the backend falls back to secrets from the .env file.
+      KEY_VAULT_URL: ${KEY_VAULT_URL:-}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
+      # Fallback secrets from .env file when Key Vault is not configured
       DATABASE_URL: ${DATABASE_URL_DOCKER:-postgresql+asyncpg://postgres:Kbprakash%4078935@db:5432/quotation_db}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-gibbs_Production_Secret_Key_2026_SuperSecure!@#}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}

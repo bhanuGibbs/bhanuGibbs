@@ -55,13 +55,12 @@ def get_settings() -> Settings:
         environment = os.getenv("ENVIRONMENT", "development")
         is_production = environment.lower() in {"production", "prod"}
         jwt_secret_key = os.getenv("JWT_SECRET_KEY", "changeme")
-        if is_production and (
-            jwt_secret_key == "changeme" or len(jwt_secret_key.encode("utf-8")) < 32
-        ):
-            raise RuntimeError("Production requires a JWT_SECRET_KEY of at least 32 bytes")
 
         key_vault_url = os.environ.get("KEY_VAULT_URL")
+        secret_sources = {}  # tracks where each secret came from
+
         if is_production and key_vault_url:
+            logger.info("Loading secrets from Azure Key Vault: %s", key_vault_url)
             client = SecretClient(
                 vault_url=key_vault_url,
                 credential=DefaultAzureCredential(),
@@ -71,22 +70,16 @@ def get_settings() -> Settings:
                 value = client.get_secret(name).value
                 if not value:
                     raise RuntimeError(f"Required Key Vault secret is empty: {name}")
+                secret_sources[name] = "Azure Key Vault"
                 return value
 
             database_url = get_secret("DATABASE-URL")
+            jwt_secret_key = get_secret("JWT-SECRET-KEY")
             smtp_username = get_secret("SMTP-USERNAME")
             smtp_password = get_secret("SMTP-PASSWORD")
             smtp_from_email = get_secret("SMTP-FROM-EMAIL")
             smtp_to_email = get_secret("SMTP-TO-EMAIL")
-            print("details from Azure")
-            credential_source = "Azure Key Vault"
         else:
-            database_url = os.getenv("DATABASE_URL")
-            smtp_username = os.getenv("SMTP_USERNAME", "")
-            smtp_password = os.getenv("SMTP_PASSWORD", "")
-            smtp_from_email = os.getenv("SMTP_FROM_EMAIL", "")
-            smtp_to_email = os.getenv("SMTP_TO_EMAIL", "")
-
             def local_source(key: str) -> str:
                 if key in process_environment_keys:
                     return "process environment"
@@ -94,19 +87,35 @@ def get_settings() -> Settings:
                     return ".env file"
                 return "not set"
 
-            credential_sources = {
-                local_source("DATABASE_URL"),
-                local_source("SMTP_USERNAME"),
-                local_source("SMTP_PASSWORD"),
-                local_source("SMTP_FROM_EMAIL"),
-                local_source("SMTP_TO_EMAIL"),
-            } - {"not set"}
-            credential_source = ", ".join(sorted(credential_sources)) or "no configured source"
+            database_url = os.getenv("DATABASE_URL")
+            secret_sources["DATABASE_URL"] = local_source("DATABASE_URL")
+
+            jwt_source = local_source("JWT_SECRET_KEY")
+            secret_sources["JWT_SECRET_KEY"] = jwt_source
+
+            smtp_username = os.getenv("SMTP_USERNAME", "")
+            secret_sources["SMTP_USERNAME"] = local_source("SMTP_USERNAME")
+
+            smtp_password = os.getenv("SMTP_PASSWORD", "")
+            secret_sources["SMTP_PASSWORD"] = local_source("SMTP_PASSWORD")
+
+            smtp_from_email = os.getenv("SMTP_FROM_EMAIL", "")
+            secret_sources["SMTP_FROM_EMAIL"] = local_source("SMTP_FROM_EMAIL")
+
+            smtp_to_email = os.getenv("SMTP_TO_EMAIL", "")
+            secret_sources["SMTP_TO_EMAIL"] = local_source("SMTP_TO_EMAIL")
 
         if not database_url:
             raise RuntimeError("Database URL is missing or empty")
 
-        logger.info("Database and SMTP credentials loaded from %s.", credential_source)
+        if is_production and (
+            jwt_secret_key == "changeme" or len(jwt_secret_key.encode("utf-8")) < 32
+        ):
+            raise RuntimeError("Production requires a JWT_SECRET_KEY of at least 32 bytes")
+
+        # Log the source of each secret for debugging
+        for secret_name, source in secret_sources.items():
+            logger.info("Secret %s → loaded from %s", secret_name, source)
 
         _SETTINGS = Settings(
             app_name=os.getenv("APP_NAME", "KeelBill Ledger API"),
