@@ -46,7 +46,7 @@ const RequireAuth = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/landing" replace />;
   }
 
   if (user && !user.is_profile_complete && location.pathname !== '/setup-company') {
@@ -98,9 +98,9 @@ function App() {
       <Toaster position="top-right" />
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="rounded-3xl border border-slate-200 bg-white px-6 py-8 shadow-soft">
-              <p className="text-sm text-slate-600">Loading...</p>
+          <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+            <div className="rounded-3xl border border-[#1E3A5F]/10 bg-white px-6 py-8 shadow-card-sm">
+              <p className="text-sm text-[#1E3A5F]">Loading...</p>
             </div>
           </div>
         }
