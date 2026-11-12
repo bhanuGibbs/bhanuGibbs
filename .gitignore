@@ -1,14 +1,43 @@
-/backend/backend/quotation.local.db
-/backend/backend/quotation.local.db-shm
-/backend/backend/quotation.local.db-wal
-/backend/backend/quotation.local.db-journal
-/backend/backend/.env
-/.venv/
-/backend/backend/.venv/
+# Dependencies
+node_modules/
 
-/out/
-/.pytest_cache/
-/dist/assets/
-/node_modules/.vite/
+# Build output
+dist/
+out/
+coverage/
+
+# Python virtual environments
+**/.venv/
+**/.venv-run/
+**/venv/
+
+# Python caches and test artifacts
 **/__pycache__/
 *.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.tox/
+.coverage
+htmlcov/
+
+# Local environment files; keep example templates versioned
+.env
+.env.*
+!.env.example
+
+# Local databases and SQLite sidecar files
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+
+# Logs and temporary files
+*.log
+logs/
+*.tmp
+
+# Operating system files
+.DS_Store
+Thumbs.db
