@@ -309,7 +309,7 @@ const Dashboard = () => {
 
             <section className="rounded-xl bg-[#1E3A5F] p-5 text-white shadow-card-md">
               <h2 className="text-sm font-semibold tracking-tight">Keep everything up to date</h2>
-              <p className="mt-2 text-xs leading-5 text-[#2D3748]/60">
+              <p className="mt-2 text-xs leading-5 text-white/70">
                 {isDeliveryChallanProfile
                   ? 'Add customer and company details once, then reuse them on your delivery challans.'
                   : 'Add customer and company details once, then reuse them across your billing documents.'}

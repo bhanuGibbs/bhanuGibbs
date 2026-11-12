@@ -213,7 +213,7 @@ const getCurrencyFormat = (currencyCode = 'INR') => {
         case 'EUR':
             return {label: '€', locale: 'de-DE', code: 'EUR'};
         default:
-            return {label: '₹', locale: 'en-IN', code: 'INR'};
+            return {label: 'Rs.', locale: 'en-IN', code: 'INR'};
     }
 };
 
