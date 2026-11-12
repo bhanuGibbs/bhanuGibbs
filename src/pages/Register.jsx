@@ -59,14 +59,14 @@ const Register = () => {
       variant="auth"
     >
         <form className="space-y-4" onSubmit={handleSubmit} aria-busy={loading}>
-          <label htmlFor="register-username" className="block text-sm font-semibold text-slate-800">
+          <label htmlFor="register-username" className="block text-sm font-semibold text-[#1E3A5F]">
             Username
             <span className="relative mt-2 block">
-              <UserRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+              <UserRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#2D3748]/40" aria-hidden="true" />
               <input
                 id="register-username"
                 name="username"
-                className="min-h-12 w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-4 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
+                className="min-h-12 w-full rounded-lg border border-[#2D3748]/20 bg-white py-3 pl-11 pr-4 text-base font-normal text-[#1E3A5F] shadow-sm outline-none transition placeholder:text-[#2D3748]/40 focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                 value={form.username}
                 onChange={(event) => setForm({ ...form, username: event.target.value })}
                 placeholder="Choose a username"
@@ -76,15 +76,15 @@ const Register = () => {
             </span>
           </label>
 
-          <label htmlFor="register-email" className="block text-sm font-semibold text-slate-800">
+          <label htmlFor="register-email" className="block text-sm font-semibold text-[#1E3A5F]">
             Email
             <span className="relative mt-2 block">
-              <AtSign size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+              <AtSign size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#2D3748]/40" aria-hidden="true" />
               <input
                 id="register-email"
                 name="email"
                 type="email"
-                className="min-h-12 w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-4 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
+                className="min-h-12 w-full rounded-lg border border-[#2D3748]/20 bg-white py-3 pl-11 pr-4 text-base font-normal text-[#1E3A5F] shadow-sm outline-none transition placeholder:text-[#2D3748]/40 focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                 value={form.email}
                 onChange={(event) => setForm({ ...form, email: event.target.value })}
                 placeholder="Enter your email"
@@ -94,10 +94,10 @@ const Register = () => {
             </span>
           </label>
 
-          <label htmlFor="register-mobile" className="block text-sm font-semibold text-slate-800">
+          <label htmlFor="register-mobile" className="block text-sm font-semibold text-[#1E3A5F]">
             Mobile number
             <span className="relative mt-2 block">
-              <Phone size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+              <Phone size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#2D3748]/40" aria-hidden="true" />
               <input
                 id="register-mobile"
                 name="mobile_number"
@@ -106,7 +106,7 @@ const Register = () => {
                 maxLength={10}
                 pattern="[0-9]{10}"
                 title="Please provide valid data: enter a 10-digit mobile number."
-                className="min-h-12 w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-4 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
+                className="min-h-12 w-full rounded-lg border border-[#2D3748]/20 bg-white py-3 pl-11 pr-4 text-base font-normal text-[#1E3A5F] shadow-sm outline-none transition placeholder:text-[#2D3748]/40 focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                 value={form.mobile_number}
                 onChange={(event) => setForm({ ...form, mobile_number: digitsOnly(event.target.value, 10) })}
                 onPaste={preventPaste}
@@ -117,7 +117,7 @@ const Register = () => {
           </label>
 
           <fieldset className="space-y-2">
-            <legend className="text-sm font-semibold text-slate-800">
+            <legend className="text-sm font-semibold text-[#1E3A5F]">
               Choose your workspace <span className="text-rose-700">Required</span>
             </legend>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -129,10 +129,10 @@ const Register = () => {
               ].map(([value, title, description]) => (
                 <label
                   key={value}
-                  className={`cursor-pointer rounded-lg border p-3 transition focus-within:ring-2 focus-within:ring-emerald-700 focus-within:ring-offset-2 ${
+                  className={`cursor-pointer rounded-lg border p-3 transition focus-within:ring-2 focus-within:ring-[#FF6B35] focus-within:ring-offset-2 ${
                     form.business_profile === value
-                      ? 'border-emerald-700 bg-emerald-50'
-                      : 'border-slate-300 bg-white hover:border-slate-400'
+                      ? 'border-[#FF6B35] bg-orange-50'
+                      : 'border-[#2D3748]/20 bg-white hover:border-[#2D3748]/40'
                   }`}
                 >
                   <input
@@ -144,23 +144,23 @@ const Register = () => {
                     required
                     className="sr-only"
                   />
-                  <span className="block text-sm font-semibold text-slate-900">{title}</span>
-                  <span className="mt-1 block text-xs leading-5 text-slate-600">{description}</span>
+                  <span className="block text-sm font-semibold text-[#1E3A5F]">{title}</span>
+                  <span className="mt-1 block text-xs leading-5 text-[#2D3748]/60">{description}</span>
                 </label>
               ))}
             </div>
           </fieldset>
 
-          <label htmlFor="register-password" className="block text-sm font-semibold text-slate-800">
+          <label htmlFor="register-password" className="block text-sm font-semibold text-[#1E3A5F]">
             Password
             <span className="relative mt-2 block">
-              <KeyRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+              <KeyRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#2D3748]/40" aria-hidden="true" />
               <input
                 id="register-password"
                 name="password"
                 type={passwordVisible ? 'text' : 'password'}
                 minLength={8}
-                className="password-visibility-toggle min-h-12 w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-12 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
+                className="password-visibility-toggle min-h-12 w-full rounded-lg border border-[#2D3748]/20 bg-white py-3 pl-11 pr-12 text-base font-normal text-[#1E3A5F] shadow-sm outline-none transition placeholder:text-[#2D3748]/40 focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                 value={form.password}
                 onChange={(event) => {
                   setForm({ ...form, password: event.target.value });
@@ -173,14 +173,14 @@ const Register = () => {
               <button
                 type="button"
                 onClick={() => setPasswordVisible((visible) => !visible)}
-                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-950"
+                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[#2D3748]/60 transition hover:bg-[#1E3A5F]/5 hover:text-[#1E3A5F]"
                 aria-label={passwordVisible ? 'Hide password' : 'Show password'}
                 aria-pressed={passwordVisible}
               >
                 {passwordVisible ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
               </button>
             </span>
-            <span className="mt-1 block text-xs font-normal leading-5 text-slate-600">
+            <span className="mt-1 block text-xs font-normal leading-5 text-[#2D3748]/60">
               At least 8 characters with uppercase, lowercase, a number, and a special character.
             </span>
           </label>
@@ -191,7 +191,7 @@ const Register = () => {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:scale-[1.01] hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#1E3A5F] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:scale-[1.01] hover:bg-[#162d4a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B35] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
           >
             {loading ? (
               <>
@@ -202,9 +202,9 @@ const Register = () => {
           </button>
         </form>
 
-        <p className="mt-5 text-center text-sm text-slate-700">
+        <p className="mt-5 text-center text-sm text-[#2D3748]/60">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-emerald-800 underline-offset-4 transition hover:text-emerald-950 hover:underline">
+          <Link to="/login" className="font-semibold text-[#FF6B35] underline-offset-4 transition hover:text-[#e55a28] hover:underline">
             Sign in
           </Link>
         </p>

@@ -11,8 +11,8 @@ import { decimalOnly, digitsOnly, nameOnly, NAME_REGEX, PHONE_NUMBER_REGEX, GSTI
 import { Plus, Trash2 } from 'lucide-react';
 
 const inputClass =
-  'block min-w-0 w-full max-w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
-const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
+  'block min-w-0 w-full max-w-full rounded-lg border border-[#2D3748]/20 bg-white px-3 py-2.5 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25';
+const labelClass = 'mb-2 block text-sm font-medium text-[#1E3A5F]';
 
 const defaultChallanValues = {
   company: {
@@ -416,10 +416,10 @@ const DeliveryChallanForm = () => {
   );
 
   return (
-    <div className="create-doc-page min-h-screen bg-[#f7f8fa] text-slate-900">
+    <div className="create-doc-page min-h-screen bg-[#F8F9FA] text-[#2D3748]">
       <style>{`
-        .create-doc-page ::selection { background: #d1fae5; color: #065f46; }
-        .create-doc-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .create-doc-page ::selection { background: #fed7aa; color: #9a3412; }
+        .create-doc-page ::-moz-selection { background: #fed7aa; color: #9a3412; }
         .create-doc-page ::-webkit-scrollbar { width: 8px; height: 8px; }
         .create-doc-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .create-doc-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -437,14 +437,14 @@ const DeliveryChallanForm = () => {
         <form onSubmit={handleSubmit(handleDownload)} className="space-y-6">
 
           {/* Consignor Details */}
-          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-[#1E3A5F]/10 p-3 text-[#1E3A5F]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><path d="M2 10h20"/><path d="M2 18h20"/></svg>
               </div>
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-slate-900">Consignor Details</h2>
-                <p className="mt-1 text-sm text-slate-500">Sender information — auto-filled from your company profile.</p>
+                <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Consignor Details</h2>
+                <p className="mt-1 text-sm text-[#2D3748]/60">Sender information — auto-filled from your company profile.</p>
               </div>
             </div>
             <div className="grid gap-5 md:grid-cols-2">
@@ -480,14 +480,14 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Consignee Details */}
-          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-[#1E3A5F]/10 p-3 text-[#1E3A5F]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-slate-900">Consignee Details</h2>
-                <p className="mt-1 text-sm text-slate-500">Recipient information for the delivery.</p>
+                <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Consignee Details</h2>
+                <p className="mt-1 text-sm text-[#2D3748]/60">Recipient information for the delivery.</p>
               </div>
             </div>
             <div className="grid gap-5 md:grid-cols-2">
@@ -532,21 +532,21 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Challan Header Details */}
-          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-[#1E3A5F]/10 p-3 text-[#1E3A5F]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
               </div>
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-slate-900">Challan Details</h2>
-                <p className="mt-1 text-sm text-slate-500">DC number, date, and transport information.</p>
+                <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Challan Details</h2>
+                <p className="mt-1 text-sm text-[#2D3748]/60">DC number, date, and transport information.</p>
               </div>
             </div>
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className={labelClass}>DC Number</label>
                 <input className={inputClass} readOnly value="Auto generated" />
-                <p className="mt-2 text-xs text-slate-500">Assigned when finalized, for example DC-09082026-001</p>
+                <p className="mt-2 text-xs text-[#2D3748]/60">Assigned when finalized, for example DC-09082026-001</p>
               </div>
               <div>
                 <label className={labelClass}>Date</label>
@@ -584,16 +584,16 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Item Table */}
-          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-slate-900">Items</h2>
-                <p className="text-sm text-slate-500">Agriculture-specific item details for the delivery challan.</p>
+                <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Items</h2>
+                <p className="text-sm text-[#2D3748]/60">Agriculture-specific item details for the delivery challan.</p>
               </div>
               <button
                 type="button"
                 onClick={addItem}
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                className="inline-flex items-center gap-2 rounded-lg bg-[#FF6B35] px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28]"
               >
                 <Plus size={16} />
                 Add Item
@@ -608,7 +608,7 @@ const DeliveryChallanForm = () => {
             <div className="relative min-w-0 overflow-visible">
               <table className="item-entry-table min-w-0 w-full border-separate border-spacing-y-3 xl:min-w-[1280px]">
                 <thead>
-                  <tr className="text-left text-sm font-semibold text-slate-600">
+                  <tr className="text-left text-sm font-semibold text-[#1E3A5F]">
                     <th className="px-2 py-2">Product</th>
                     <th className="px-2 py-2">Crop</th>
                     <th className="px-2 py-2">Variety</th>
@@ -629,17 +629,17 @@ const DeliveryChallanForm = () => {
                     const isActive = activeSearchIndex === index;
                     const selectedProduct = challanProducts.find((p) => p.id === item.catalogProductId);
                     return (
-                      <tr key={item.id} className="item-entry-row rounded-lg bg-slate-50/70">
+                      <tr key={item.id} className="item-entry-row rounded-lg bg-[#1E3A5F]/5">
                         {/* Product Search Column */}
                         <td data-label="Product" className="rounded-l-2xl px-2 py-3 align-top">
                           <div className="relative">
                             {item.catalogProductId ? (
-                              <div className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2.5 text-sm">
-                                <span className="truncate font-medium text-emerald-800">{selectedProduct?.crop || item.crop}</span>
+                              <div className="flex items-center gap-2 rounded-lg border border-[#FF6B35]/40 bg-orange-50 px-3 py-2.5 text-sm">
+                                <span className="truncate font-medium text-[#FF6B35]">{selectedProduct?.crop || item.crop}</span>
                                 <button
                                   type="button"
                                   onClick={() => openProductSearch(index)}
-                                  className="shrink-0 text-emerald-600 hover:text-emerald-800"
+                                  className="shrink-0 text-[#FF6B35] hover:text-[#e55a28]"
                                   title="Change product"
                                 >
                                   ✕
@@ -649,16 +649,16 @@ const DeliveryChallanForm = () => {
                               <button
                                 type="button"
                                 onClick={() => openProductSearch(index)}
-                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm text-slate-400 transition hover:border-emerald-400"
+                                className="w-full rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2.5 text-left text-sm text-[#2D3748]/40 transition hover:border-[#FF6B35]"
                               >
                                 {challanProductsLoading ? 'Loading...' : 'Select product...'}
                               </button>
                             )}
                             {isActive && (
-                              <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+                              <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-xl border border-[#1E3A5F]/10 bg-white p-2 shadow-card-md">
                                 <input
                                   type="text"
-                                  className="mb-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                                  className="mb-2 w-full rounded-md border border-[#1E3A5F]/10 px-3 py-2 text-sm outline-none focus:border-[#FF6B35]"
                                   placeholder="Search by crop, variety, lot no..."
                                   value={searchQuery}
                                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -667,20 +667,20 @@ const DeliveryChallanForm = () => {
                                 />
                                 <div className="max-h-48 overflow-y-auto">
                                   {filteredChallanProducts.length === 0 ? (
-                                    <p className="px-3 py-2 text-xs text-slate-400">No matching products</p>
+                                    <p className="px-3 py-2 text-xs text-[#2D3748]/40">No matching products</p>
                                   ) : (
                                     filteredChallanProducts.map((product) => (
                                       <button
                                         key={product.id}
                                         type="button"
                                         onClick={() => selectChallanProduct(index, product)}
-                                        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-emerald-50"
+                                        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-orange-50"
                                       >
                                         <div>
-                                          <span className="font-medium text-slate-800">{product.crop}</span>
-                                          {product.variety && <span className="ml-1 text-slate-500">({product.variety})</span>}
+                                          <span className="font-medium text-[#1E3A5F]">{product.crop}</span>
+                                          {product.variety && <span className="ml-1 text-[#2D3748]/60">({product.variety})</span>}
                                         </div>
-                                        <span className="text-xs text-slate-500">₹{Number(product.value).toFixed(2)}/kg</span>
+                                        <span className="text-xs text-[#2D3748]/60">₹{Number(product.value).toFixed(2)}/kg</span>
                                       </button>
                                     ))
                                   )}
@@ -717,7 +717,7 @@ const DeliveryChallanForm = () => {
                           <input type="number" min="0" step="0.01" inputMode="decimal" className={inputClass} {...register(`items.${index}.value`, { valueAsNumber: true, min: 0 })} />
                         </td>
                         <td data-label="Amount" className="px-2 py-3 align-top">
-                          <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700">
+                          <div className="rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2.5 text-sm font-semibold text-[#1E3A5F]">
                             ₹{amount.toFixed(2)}
                           </div>
                         </td>
@@ -728,7 +728,7 @@ const DeliveryChallanForm = () => {
                                 type="button"
                                 onClick={() => saveChallanProduct(index, item)}
                                 disabled={savingChallanProductId === item.id || !item.crop?.trim()}
-                                className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="rounded-lg border border-[#FF6B35]/30 bg-orange-50 px-2 py-1.5 text-xs font-semibold text-[#FF6B35] transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
                                 title="Save to product catalog"
                               >
                                 {savingChallanProductId === item.id ? 'Saving...' : 'Save to catalog'}
@@ -753,45 +753,45 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Summary */}
-          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-[#1E3A5F]/10 p-3 text-[#1E3A5F]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l16-10z"/></svg>
               </div>
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-slate-900">Summary</h2>
-                <p className="mt-1 text-sm text-slate-500">Subtotals and the final amount.</p>
+                <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Summary</h2>
+                <p className="mt-1 text-sm text-[#2D3748]/60">Subtotals and the final amount.</p>
               </div>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
-                <div className="flex items-center justify-between text-sm text-slate-600">
+              <div className="space-y-4 rounded-3xl border border-[#1E3A5F]/10 bg-[#1E3A5F]/5 p-5">
+                <div className="flex items-center justify-between text-sm text-[#2D3748]">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-slate-900">₹{summary.subtotal.toFixed(2)}</span>
+                  <span className="font-semibold text-[#1E3A5F]">₹{summary.subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm text-slate-600">
+                <div className="flex items-center justify-between text-sm text-[#2D3748]">
                   <span>Shipping Charges</span>
-                  <span className="font-semibold text-slate-900">₹{summary.shipping.toFixed(2)}</span>
+                  <span className="font-semibold text-[#1E3A5F]">₹{summary.shipping.toFixed(2)}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm text-slate-600">
+                <div className="flex items-center justify-between text-sm text-[#2D3748]">
                   <span>Freight Amount</span>
-                  <span className="font-semibold text-slate-900">₹{Number(watch('challan.freightAmount') || 0).toFixed(2)}</span>
+                  <span className="font-semibold text-[#1E3A5F]">₹{Number(watch('challan.freightAmount') || 0).toFixed(2)}</span>
                 </div>
-                <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-base font-semibold text-slate-900">
+                <div className="flex items-center justify-between border-t border-[#1E3A5F]/10 pt-4 text-base font-semibold text-[#1E3A5F]">
                   <span>Grand Total</span>
-                  <span className="text-emerald-700">₹{(summary.grandTotal + Number(watch('challan.freightAmount') || 0)).toFixed(2)}</span>
+                  <span className="text-[#FF6B35]">₹{(summary.grandTotal + Number(watch('challan.freightAmount') || 0)).toFixed(2)}</span>
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-slate-200 bg-white p-5">
-                <label className="mb-2 block text-sm font-medium text-slate-700">Shipping Charges</label>
+              <div className="rounded-3xl border border-[#1E3A5F]/10 bg-white p-5">
+                <label className="mb-2 block text-sm font-medium text-[#1E3A5F]">Shipping Charges</label>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
                   inputMode="decimal"
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-lg border border-[#1E3A5F]/10 bg-[#1E3A5F]/5 px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                   {...register('shipping', { min: 0 })}
                   onChange={(event) => {
                     event.target.value = decimalOnly(event.target.value, 12);
@@ -803,30 +803,30 @@ const DeliveryChallanForm = () => {
           </section>
 
           {/* Notes */}
-          <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
+          <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-50 p-3 text-emerald-700">
+              <div className="rounded-lg bg-[#1E3A5F]/10 p-3 text-[#1E3A5F]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               </div>
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-slate-900">Notes</h2>
-                <p className="mt-1 text-sm text-slate-500">Additional notes for the delivery challan.</p>
+                <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Notes</h2>
+                <p className="mt-1 text-sm text-[#2D3748]/60">Additional notes for the delivery challan.</p>
               </div>
             </div>
             <textarea
               rows="3"
-              className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-[#1E3A5F]/10 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
               {...register('challan.notes')}
               placeholder="Any additional notes or instructions..."
             />
           </section>
 
           {/* Mobile submit button */}
-          <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
+          <div className="space-y-3 rounded-xl border border-[#1E3A5F]/10 bg-white p-4 shadow-card-sm lg:hidden">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#FF6B35] px-4 py-3 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? 'Saving & preparing…' : 'Download Delivery Challan'}
             </button>
@@ -835,19 +835,35 @@ const DeliveryChallanForm = () => {
 
         {/* PDF Preview */}
         {showPdfPreview && pdfData ? (
-          <section className="rounded-lg border border-slate-200/60 bg-white p-4 sm:p-6">
+          <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-4 sm:p-6 shadow-card-sm">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold tracking-tight text-slate-900">Downloaded document preview</h2>
-              <p className="text-sm text-slate-500">This preview is the same PDF file that was downloaded.</p>
+              <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Downloaded document preview</h2>
+              <p className="text-sm text-[#2D3748]/60">This preview is the same PDF file that was downloaded.</p>
             </div>
             {pdfUrl ? (
-              <iframe
-                src={pdfUrl}
-                title="Delivery Challan PDF Preview"
-                className="h-[900px] w-full rounded-lg border border-slate-200"
-                type="application/pdf"
-                sandbox="allow-same-origin"
-              />
+              <>
+                {/* Desktop: Use iframe for inline preview */}
+                <iframe
+                  src={pdfUrl}
+                  title="Delivery Challan PDF Preview"
+                  className="h-[900px] w-full rounded-lg border border-[#1E3A5F]/10 hidden sm:block"
+                  type="application/pdf"
+                />
+                {/* Mobile: Show fallback with open button since mobile browsers block blob URLs in iframes */}
+                <div className="sm:hidden flex flex-col items-center justify-center h-[400px] rounded-lg border-2 border-dashed border-[#1E3A5F]/20 bg-[#1E3A5F]/5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#1E3A5F]/40 mb-4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  <p className="text-sm text-[#2D3748] mb-2 text-center px-4">PDF preview is not supported on mobile browsers</p>
+                  <p className="text-xs text-[#2D3748]/60 mb-4 text-center px-4">The file has been downloaded successfully</p>
+                  <a
+                    href={pdfUrl}
+                    download={`${pdfData.challan?.dcNumber || 'Delivery_Challan'}.pdf`}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#FF6B35] px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28]"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Open PDF
+                  </a>
+                </div>
+              </>
             ) : null}
           </section>
         ) : null}

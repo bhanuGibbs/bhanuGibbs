@@ -76,7 +76,7 @@ const Header = ({
 
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-medium transition ${
-      isActive ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+      isActive ? 'bg-[#1E3A5F]/10 text-[#1E3A5F] border-b-2 border-[#FF6B35]' : 'text-[#2D3748]/60 hover:bg-[#1E3A5F]/5 hover:text-[#1E3A5F]'
     }`;
 
   const renderNavigation = (onNavigate) => (
@@ -107,17 +107,17 @@ const Header = ({
   );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+    <header className="sticky top-0 z-30 border-b border-[#1E3A5F]/15 bg-white shadow-card-sm">
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-3" aria-label={isSalesInventory ? 'Sales and Inventory workspace' : 'Ledger home'}>
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-white">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1E3A5F] text-white shadow-card-sm">
             {isSalesInventory ? <Package size={20} strokeWidth={1.8} /> : <FileText size={20} strokeWidth={2} />}
           </span>
           <span>
-            <span className="block text-[15px] font-bold tracking-tight text-slate-950">
+            <span className="block text-[15px] font-bold tracking-tight text-[#1E3A5F]">
               {isSalesInventory ? 'Sales & Inventory' : 'Ledger'}
             </span>
-            <span className="hidden text-[11px] text-slate-500 sm:block">
+            <span className="hidden text-[11px] text-[#2D3748]/60 sm:block">
               {isSalesInventory ? (effectiveUser?.company_name || 'Organization workspace') : 'Billing workspace'}
             </span>
           </span>
@@ -129,14 +129,14 @@ const Header = ({
 
         {onSetDocumentMode && !isPOS && !isChallan ? (
           <div className="hidden items-center gap-2 lg:flex">
-            <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+            <div className="flex rounded-xl border border-[#1E3A5F]/10 bg-[#1E3A5F]/5 p-1">
               {['quotation', 'billing'].map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => onSetDocumentMode(mode)}
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition ${
-                    documentMode === mode ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                    documentMode === mode ? 'bg-white text-[#1E3A5F] shadow-card-sm' : 'text-[#2D3748]/60 hover:text-[#1E3A5F]'
                   }`}
                 >
                   {mode === 'billing' ? 'Invoice' : 'Quotation'}
@@ -147,7 +147,7 @@ const Header = ({
               type="button"
               onClick={onDownloadPdf}
               disabled={isSubmitting}
-              className="flex items-center gap-2 rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex items-center gap-2 rounded-xl bg-[#FF6B35] px-3.5 py-2 text-xs font-semibold text-white shadow-cta transition hover:bg-[#e55a28] hover:shadow-cta-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               <ArrowDownToLine size={14} />
               {isSubmitting ? 'Saving & preparing…' : `Download ${documentMode === 'billing' ? 'Invoice' : 'Quotation'}`}
@@ -156,7 +156,7 @@ const Header = ({
               type="button"
               onClick={onReset}
               aria-label="Clear document"
-              className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+              className="rounded-xl border border-[#1E3A5F]/10 p-2 text-[#2D3748]/60 transition hover:bg-[#1E3A5F]/5 hover:text-[#1E3A5F]"
             >
               <RotateCcw size={15} />
             </button>
@@ -167,7 +167,7 @@ const Header = ({
               type="button"
               onClick={onDownloadPdf}
               disabled={isSubmitting}
-              className="flex items-center gap-2 rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex items-center gap-2 rounded-xl bg-[#FF6B35] px-3.5 py-2 text-xs font-semibold text-white shadow-cta transition hover:bg-[#e55a28] hover:shadow-cta-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               <ArrowDownToLine size={14} />
               {isSubmitting ? 'Saving & preparing…' : 'Download Delivery Challan'}
@@ -176,7 +176,7 @@ const Header = ({
               type="button"
               onClick={onReset}
               aria-label="Clear document"
-              className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+              className="rounded-xl border border-[#1E3A5F]/10 p-2 text-[#2D3748]/60 transition hover:bg-[#1E3A5F]/5 hover:text-[#1E3A5F]"
             >
               <RotateCcw size={15} />
             </button>
@@ -184,7 +184,7 @@ const Header = ({
         ) : null}
 
         <div className="flex shrink-0 items-center gap-2">
-          <span className="hidden h-9 w-9 items-center justify-center rounded-full bg-slate-50 text-slate-500 sm:flex">
+          <span className="hidden h-9 w-9 items-center justify-center rounded-full bg-[#1E3A5F]/5 text-[#2D3748]/60 sm:flex">
             <Bell size={17} strokeWidth={1.7} />
           </span>
           <div className="relative">
@@ -192,29 +192,29 @@ const Header = ({
               type="button"
               aria-expanded={accountOpen}
               onClick={() => setAccountOpen((open) => !open)}
-              className="flex items-center gap-2 rounded-xl p-1.5 text-left transition hover:bg-slate-50"
+              className="flex items-center gap-2 rounded-xl p-1.5 text-left transition hover:bg-[#1E3A5F]/5"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-100 text-xs font-bold text-orange-800">
                 {initials || 'AC'}
               </span>
               <span className="hidden max-w-[125px] sm:block">
-                <span className="block truncate text-xs font-semibold text-slate-800">{displayName}</span>
-                <span className="block truncate text-[11px] text-slate-500">{effectiveUser?.email || 'Signed in'}</span>
+                <span className="block truncate text-xs font-semibold text-[#1E3A5F]">{displayName}</span>
+                <span className="block truncate text-[11px] text-[#2D3748]/60">{effectiveUser?.email || 'Signed in'}</span>
               </span>
-              <ChevronDown size={14} className="hidden text-slate-400 sm:block" />
+              <ChevronDown size={14} className="hidden text-[#2D3748]/40 sm:block" />
             </button>
             {accountOpen ? (
-              <div className="absolute right-0 top-12 z-40 w-60 rounded-lg border border-slate-200 bg-white p-2 shadow-xl">
-                <div className="border-b border-slate-100 px-3 py-2">
-                  <p className="truncate text-sm font-semibold text-slate-900">{displayName}</p>
-                  <p className="truncate text-xs text-slate-500">{effectiveUser?.email || ''}</p>
-                  {effectiveUser?.role ? <p className="mt-1 text-xs text-emerald-700">{effectiveUser.role}</p> : null}
-                  {effectiveUser?.mobile_number ? <p className="mt-1 text-xs text-slate-500">{effectiveUser.mobile_number}</p> : null}
+              <div className="absolute right-0 top-12 z-40 w-60 rounded-xl border border-[#1E3A5F]/10 bg-white p-2 shadow-card-md">
+                <div className="border-b border-[#1E3A5F]/10 px-3 py-2">
+                  <p className="truncate text-sm font-semibold text-[#1E3A5F]">{displayName}</p>
+                  <p className="truncate text-xs text-[#2D3748]/60">{effectiveUser?.email || ''}</p>
+                  {effectiveUser?.role ? <p className="mt-1 text-xs text-[#FF6B35]">{effectiveUser.role}</p> : null}
+                  {effectiveUser?.mobile_number ? <p className="mt-1 text-xs text-[#2D3748]/60">{effectiveUser.mobile_number}</p> : null}
                 </div>
                 <Link
                   to="/profile"
                   onClick={() => setAccountOpen(false)}
-                  className="mt-1 block w-full rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  className="mt-1 block w-full rounded-xl px-3 py-2 text-sm font-medium text-[#1E3A5F] transition hover:bg-[#1E3A5F]/5"
                 >
                   My profile
                 </Link>
@@ -236,14 +236,14 @@ const Header = ({
             aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 xl:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#1E3A5F]/10 text-[#1E3A5F] xl:hidden"
           >
             {menuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </div>
       {menuOpen ? (
-        <nav className="grid grid-cols-2 gap-1 border-t border-slate-100 px-4 py-3 xl:hidden" aria-label="Mobile navigation">
+        <nav className="grid grid-cols-2 gap-1 border-t border-[#1E3A5F]/10 px-4 py-3 xl:hidden" aria-label="Mobile navigation">
           {renderNavigation(() => setMenuOpen(false))}
           {(onSetDocumentMode && !isPOS && !isChallan) || (isChallan && onDownloadPdf) ? (
             <div className="col-span-2 flex gap-2 pt-2">
@@ -251,7 +251,7 @@ const Header = ({
                 type="button"
                 onClick={onDownloadPdf}
                 disabled={isSubmitting}
-                className="flex-1 rounded-xl bg-emerald-700 px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                className="flex-1 rounded-xl bg-[#FF6B35] px-3 py-2.5 text-sm font-semibold text-white shadow-cta disabled:opacity-60"
               >
                 {isSubmitting ? 'Saving & preparing…' : (isChallan ? 'Download Delivery Challan' : `Download ${documentMode === 'billing' ? 'Invoice' : 'Quotation'}`)}
               </button>

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { digitsOnly, PHONE_NUMBER_REGEX, PINCODE_REGEX } from './numericInput.js';
+import { digitsOnly, NAME_REGEX, PHONE_NUMBER_REGEX, PINCODE_REGEX } from './numericInput.js';
 
 test('phone input keeps at most 10 digits and ignores non-digits', () => {
   assert.equal(digitsOnly('98a765-43210', 10), '9876543210');
@@ -18,4 +18,10 @@ test('phone and pincode validation require exactly 10 and 6 digits', () => {
   assert.equal(PINCODE_REGEX.test('123456'), true);
   assert.equal(PINCODE_REGEX.test('12345'), false);
   assert.equal(PINCODE_REGEX.test('12345a'), false);
+});
+
+test('company-name pattern is valid in browser HTML pattern v-mode', () => {
+  assert.doesNotThrow(() => new RegExp(NAME_REGEX.source, 'v'));
+  assert.equal(NAME_REGEX.test("Adam's Seeds & Supply"), false);
+  assert.equal(NAME_REGEX.test('Adam-Seeds'), true);
 });

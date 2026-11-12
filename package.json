@@ -12,6 +12,7 @@
     "@react-pdf/renderer": "^3.0.0",
     "axios": "^1.7.6",
     "dayjs": "^1.10.0",
+    "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

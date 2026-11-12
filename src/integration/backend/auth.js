@@ -301,3 +301,20 @@ export const resendVerificationEmail = async (email) => {
 
   return await response.json();
 };
+
+export const changePassword = async ({ current_password, new_password }) => {
+  const response = await authenticatedFetch(`${API_BASE}/auth/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthorizedHeaders(),
+    },
+    body: JSON.stringify({ current_password, new_password }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, 'Password change failed'));
+  }
+
+  return await response.json();
+};

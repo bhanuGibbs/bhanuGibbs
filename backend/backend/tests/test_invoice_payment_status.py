@@ -37,6 +37,19 @@ class InvoicePaymentStatusTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(unpaid.status, "Unpaid")
         self.assertEqual(self.service.repository.commit.await_count, 2)
 
+    async def test_final_delivery_challan_can_be_marked_paid_and_unpaid(self) -> None:
+        self.invoice.title = "Delivery Challan"
+        paid = await self.service.update_invoice_payment_status(
+            str(self.invoice.id), self.company_id, self.user_id, "Paid"
+        )
+        self.assertEqual(paid.status, "Paid")
+
+        unpaid = await self.service.update_invoice_payment_status(
+            str(self.invoice.id), self.company_id, self.user_id, "Unpaid"
+        )
+        self.assertEqual(unpaid.status, "Unpaid")
+        self.assertEqual(self.service.repository.commit.await_count, 2)
+
     async def test_payment_status_cannot_be_changed_for_quotation(self) -> None:
         self.invoice.title = "Quotation"
         with self.assertRaises(BadRequestError):
@@ -46,6 +59,15 @@ class InvoicePaymentStatusTests(unittest.IsolatedAsyncioTestCase):
         self.service.repository.commit.assert_not_awaited()
 
     async def test_draft_invoice_cannot_be_marked_paid(self) -> None:
+        self.invoice.status = "Draft"
+        with self.assertRaises(BadRequestError):
+            await self.service.update_invoice_payment_status(
+                str(self.invoice.id), self.company_id, self.user_id, "Paid"
+            )
+        self.service.repository.commit.assert_not_awaited()
+
+    async def test_draft_delivery_challan_cannot_be_marked_paid(self) -> None:
+        self.invoice.title = "Delivery Challan"
         self.invoice.status = "Draft"
         with self.assertRaises(BadRequestError):
             await self.service.update_invoice_payment_status(

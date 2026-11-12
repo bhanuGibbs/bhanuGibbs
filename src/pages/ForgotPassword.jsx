@@ -50,15 +50,15 @@ const ForgotPassword = () => {
       variant="auth"
     >
       <form className="space-y-5" onSubmit={handleSubmit} aria-busy={loading}>
-        <label htmlFor="forgot-password-email" className="block text-sm font-semibold text-slate-800">
+        <label htmlFor="forgot-password-email" className="block text-sm font-semibold text-[#1E3A5F]">
           Email
           <span className="relative mt-2 block">
-            <AtSign size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+            <AtSign size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#2D3748]/40" aria-hidden="true" />
             <input
               id="forgot-password-email"
               name="email"
               type="email"
-              className="min-h-12 w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-4 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
+              className="min-h-12 w-full rounded-lg border border-[#2D3748]/20 bg-white py-3 pl-11 pr-4 text-base font-normal text-[#1E3A5F] shadow-sm outline-none transition placeholder:text-[#2D3748]/40 focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="Enter your email"
@@ -69,12 +69,12 @@ const ForgotPassword = () => {
         </label>
 
         {error ? <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-sm leading-6 text-rose-800">{error}</p> : null}
-        {message ? <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-950">{message}</p> : null}
+        {message ? <p role="status" className="rounded-lg bg-green-50 px-3 py-2 text-sm leading-6 text-green-950">{message}</p> : null}
 
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:scale-[1.01] hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#1E3A5F] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:scale-[1.01] hover:bg-[#162d4a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B35] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
         >
           {loading ? (
             <>
@@ -85,9 +85,9 @@ const ForgotPassword = () => {
         </button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-slate-700">
+      <p className="mt-4 text-center text-sm text-[#2D3748]/60">
         Remembered your password?{' '}
-        <Link to="/login" className="font-semibold text-emerald-800 underline-offset-4 transition hover:text-emerald-950 hover:underline">
+        <Link to="/login" className="font-semibold text-[#FF6B35] underline-offset-4 transition hover:text-[#e55a28] hover:underline">
           Sign in
         </Link>
       </p>

@@ -34,7 +34,7 @@ typography:
     fontWeight: 400
     lineHeight: 1.5
   heading:
-    fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fontFamily: "Lora, Georgia, serif"
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: "-0.015em"
@@ -43,11 +43,9 @@ typography:
     fontSize: "0.75rem"
     fontWeight: 500
 rounded:
+  md: "6px"
   lg: "8px"
   xl: "12px"
-  "2xl": "16px"
-  "3xl": "24px"
-  section: "28px"
   full: "9999px"
 spacing:
   sm: "8px"
@@ -58,21 +56,21 @@ components:
   button-primary:
     backgroundColor: "#047857"
     textColor: "#ffffff"
-    rounded: "{rounded.xl}"
+    rounded: "{rounded.lg}"
     padding: "8px 14px"
   button-dark:
     backgroundColor: "#0f172a"
     textColor: "#ffffff"
-    rounded: "{rounded.xl}"
+    rounded: "{rounded.lg}"
     padding: "12px 16px"
   input-default:
     backgroundColor: "#ffffff"
     textColor: "#3b496b"
-    rounded: "{rounded.2xl}"
+    rounded: "{rounded.lg}"
     padding: "12px 16px"
   card-section:
     backgroundColor: "#ffffff"
-    rounded: "{rounded.section}"
+    rounded: "{rounded.lg}"
     padding: "{spacing.lg}"
 ---
 
@@ -88,11 +86,12 @@ The visual language follows a **precision over decoration** philosophy: every el
 
 **Key Characteristics:**
 - Slate-grey and white foundation with emerald green as the meaningful accent
-- Generously rounded corners (16–28px) creating a soft, approachable feel
+- Diversified border radii (6–8px) avoiding uniform rounding patterns
 - Card-based layout with subtle borders and light shadows
-- Clean Inter typeface with tight tracking on headings
+- Lora serif for headings paired with Inter sans-serif for body text
 - Status-driven color coding: emerald for success, amber for warnings, rose for errors
 - Responsive design that adapts from desktop to mobile with table-to-card transformations
+- Clean, hand-crafted UI patterns that avoid common AI-generated design tropes
 
 ## Colors
 
@@ -138,26 +137,28 @@ A neutral slate palette carries the structure; emerald green signals growth, tru
 
 ## Typography
 
-**Display Font:** Inter (with system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif fallback)
-**Body Font:** Inter (same stack)
-**Label/Mono Font:** None distinct — Inter serves all roles
+**Heading Font:** Lora (with Georgia, serif fallback) — loaded via Google Fonts
+**Body Font:** Inter (with system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif fallback)
+**Label Font:** Inter (same body stack)
 
-**Character:** Inter provides a clean, neutral voice that prioritizes readability at small sizes. Tight tracking on headings creates a refined, modern feel, while regular body text remains highly legible for data-heavy tables and forms.
+**Character:** Lora serif gives headings a distinctive, editorial voice that sets the interface apart from generic sans-serif-only designs. Inter provides a clean, neutral voice for body text that prioritizes readability at small sizes. Tight tracking on headings creates a refined, modern feel, while regular body text remains highly legible for data-heavy tables and forms.
 
 ### Hierarchy
-- **Page Title** (600, 34–36px, 1.2, tracking -0.015em): Dashboard greeting, page headings. Appears once per page at the top.
-- **Section Title** (600, 18px, 1.2): Section headers within form sections and cards.
-- **Card Heading** (600, 14px, 1.25): Card and table section titles.
-- **Body** (400, 14px, 1.5): Default text for descriptions, table cells, and form help text. Max line length ~65ch for readability.
-- **Small Body** (400, 12px, 1.5): Muted descriptions, helper text, timestamps.
-- **Label** (500, 14px, 1.5): Form labels, input placeholder text.
-- **Micro Label** (600, 11px, uppercase, tracking 0.15em): Eyebrow text, table column headers, status chip text.
+- **Page Title** (Lora, 600, 34–36px, 1.2, tracking -0.015em): Dashboard greeting, page headings. Appears once per page at the top.
+- **Section Title** (Lora, 600, 18px, 1.2): Section headers within form sections and cards.
+- **Card Heading** (Inter, 600, 14px, 1.25): Card and table section titles.
+- **Body** (Inter, 400, 14px, 1.5): Default text for descriptions, table cells, and form help text. Max line length ~65ch for readability.
+- **Small Body** (Inter, 400, 12px, 1.5): Muted descriptions, helper text, timestamps.
+- **Label** (Inter, 500, 14px, 1.5): Form labels, input placeholder text.
+- **Micro Label** (Inter, 600, 11px, sentence case): Eyebrow text, table column headers, status chip text. No uppercase tracking — uses normal sentence case for a natural feel.
 
 ### Named Rules
 
 **The Tight Heading Rule.** All headings use `tracking-tight` (letter-spacing -0.015em) for a refined, modern appearance. Body text uses default tracking for maximum readability.
 
 **The Size Discipline Rule.** Only page-level headings exceed 24px. Section and card headings stay at 14–18px to maintain visual hierarchy without shouting.
+
+**The Mixed Typeface Rule.** Headings use Lora serif for distinction; body text, labels, and UI chrome use Inter sans-serif for readability. This combination avoids the "Inter-only" pattern common in AI-generated UI.
 
 ## Layout
 
@@ -199,14 +200,12 @@ The system uses a hybrid approach: tonal layering as the primary depth mechanism
 
 ## Shapes
 
-The form language is defined by generously rounded corners, creating a soft, approachable feel that contrasts with the precision of the data it presents.
+The form language uses diversified, modest border radii that avoid uniform rounding patterns. Most elements use 8px (`rounded-lg`), with smaller radii for nested elements.
 
 **Corner Scale:**
-- **8px** (`rounded-lg`): Small interactive elements like dropdown items, small buttons within tables
-- **12px** (`rounded-xl`): Navigation items, buttons, input elements within tables, icon badges
-- **16px** (`rounded-2xl`): Primary input fields, cards, stat cards, table rows, quick action cards
-- **24px** (`rounded-3xl`): Inner containers within sections (summary breakdown panels)
-- **28px** (`rounded-[28px]`): Main form sections — the largest, most prominent containers
+- **6px** (`rounded-md`): Inner images, nested elements
+- **8px** (`rounded-lg`): Primary default — cards, inputs, buttons, section containers, stat cards
+- **12px** (`rounded-xl`): Navigation items, dropdown menus, account menu
 - **Full** (`rounded-full`): Status chips, user avatar circles
 
 **Borders:**
@@ -218,15 +217,15 @@ The form language is defined by generously rounded corners, creating a soft, app
 ## Components
 
 ### Buttons
-- **Shape:** 12px radius (`rounded-xl`)
+- **Shape:** 8px radius (`rounded-lg`)
 - **Primary (Emerald):** Background `#047857`, white text, 14px font, semibold weight. Padding `8px 14px`. Hover: `#065f46`. Used for main actions like "Download Invoice."
 - **Dark (Slate):** Background `#0f172a`, white text, semibold weight. Padding `12px 16px`. Hover: `#064e3b` (emerald-800). Used for "Create document" CTAs and login submit.
 - **Ghost:** No background, slate-500 text. Hover: slate-50 background. Used for icon-only buttons like reset.
 - **Destructive:** Rose-50 background, rose-600 icon, rose-200 border. Hover: rose-100 background. Used for delete item actions.
-- **Text Link:** Emerald-700 text, semibold, no background. Used for inline actions like "Mark paid."
+- **Text Link:** Emerald-700 text, semibold, underline style. No trailing arrow icons — uses underline for visual indication instead.
 
 ### Inputs / Fields
-- **Shape:** 16px radius (`rounded-2xl`)
+- **Shape:** 8px radius (`rounded-lg`)
 - **Style:** White background, `1px solid #e2e8f0` border, `shadow-sm`. Padding `12px 16px`. Text size 14px, color `#3b496b`.
 - **Focus:** Border changes to `#2563eb` (brand-500) with a 2px ring in `#dbeafe` (brand-100). Background transitions to white.
 - **Error:** Rose-500 text below the input for validation messages.
@@ -234,10 +233,10 @@ The form language is defined by generously rounded corners, creating a soft, app
 - **With Icon:** Icon positioned absolutely at `left-3 top-3`, input padding-left increased to `pl-10`.
 
 ### Cards / Containers
-- **Section Cards:** 28px radius, white background, `border-slate-200/80`, `shadow-soft`. Internal padding 20px mobile / 28px desktop.
-- **Stat Cards:** 16px radius, white background, `border-slate-200/80`, `shadow-sm`. Internal padding 20px.
-- **List Card:** 16px radius, white background, `border-slate-200/80`, `shadow-sm`. Contains tables with `slate-50/80` header and `slate-100` row dividers.
-- **Dark CTA Card:** 16px radius, `#0f172a` background, white text. Used for sidebar CTAs and promotional sections.
+- **Section Cards:** 8px radius (`rounded-lg`), white background, `border-slate-200/80`, `shadow-soft`. Internal padding 20px mobile / 28px desktop.
+- **Stat Cards:** 8px radius (`rounded-lg`), white background, `border-slate-200/80`, `shadow-sm`. Internal padding 20px.
+- **List Card:** 8px radius (`rounded-lg`), white background, `border-slate-200/80`, `shadow-sm`. Contains tables with `slate-50/80` header and `slate-100` row dividers.
+- **Dark CTA Card:** 8px radius (`rounded-lg`), `#0f172a` background, white text. Used for sidebar CTAs and promotional sections.
 
 ### Navigation
 - **Header:** Sticky top, 72px height, white background with 95% opacity and `backdrop-blur-xl`. Bottom border `slate-200`.
@@ -264,25 +263,32 @@ The form language is defined by generously rounded corners, creating a soft, app
 - **Item Table (form):** Uses `border-separate` with vertical gaps. Each row is a rounded card (16px) with slate-50/70 background. Transforms to grid layout on tablets.
 
 ### Empty States
-- Centered content with icon in slate-100 badge (48px), heading in 14px semibold, description in 12px muted text.
-- Action link in emerald-700 with arrow icon.
+- Centered content with heading in 14px semibold, description in 12px muted text.
+- Action link in emerald-700 with underline style — no trailing arrow icons.
 
 ## Do's and Don'ts
 
 ### Do:
 - **Do** use emerald green for primary actions and positive financial states — let its restraint give it meaning.
-- **Do** maintain 16–28px corner radius on cards and inputs for the soft, approachable character.
+- **Do** use `rounded-lg` (8px) as the default border radius for cards, inputs, and buttons.
+- **Do** use Lora serif for h1/h2/h3 headings to distinguish them from body text.
 - **Do** use `tracking-tight` on all headings for a refined, modern appearance.
 - **Do** prefer borders and background contrast over shadows for card separation.
 - **Do** keep form labels at 14px medium weight with 2px bottom margin for clear association.
 - **Do** use status chips (rounded-full) with tinted backgrounds for visual state communication.
 - **Do** ensure inputs are 16px font size on mobile to prevent iOS zoom.
+- **Do** use underline style for action links instead of trailing arrow icons.
+- **Do** use sentence case for eyebrow labels instead of ALL-CAPS with wide tracking.
 
 ### Don't:
 - **Don't** use emerald green as a background or decorative color — reserve it for action and meaning.
 - **Don't** add gradients, excessive shadows, or decorative elements that don't serve a business purpose.
-- **Don't** use sharp corners (0–4px radius) on primary UI elements — the system's character is softly rounded.
+- **Don't** use uniform `rounded-2xl` or `rounded-3xl` on all elements — diversify border radii.
+- **Don't** staple arrow icons (→ or ↗) onto buttons and links — use underline or plain text instead.
+- **Don't** use icon-in-square badges as list item prefixes — use plain text with separators.
+- **Don't** use ALL-CAPS with wide letter-spacing for eyebrow labels — use sentence case instead.
 - **Don't** exceed 34px font size except for the auth page hero — the system speaks in measured voices.
 - **Don't** use more than one accent color family per screen — emerald leads; brand blue appears only for focus states.
+- **Don't** use Inter (or system sans) as the only font — pair with Lora serif for headings.
 - **Don't** remove or alter GST-related terminology, calculations, or Indian market conventions.
 - **Don't** change the PDF document formats, numbering systems, or company branding elements during UI improvements.

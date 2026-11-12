@@ -3,7 +3,7 @@ import { Plus, Save, Trash2 } from 'lucide-react';
 import { calculateItemAmount } from '../utils/calculations';
 import { decimalOnly, percentOnly, HSN_CODE_REGEX, preventPaste } from '../utils/numericInput';
 
-const inputClass = 'block min-w-0 w-full max-w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
+const inputClass = 'block min-w-0 w-full max-w-full rounded-lg border border-[#2D3748]/20 bg-white px-3 py-2.5 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25';
 
 const ItemTable = ({
   items,
@@ -20,16 +20,16 @@ const ItemTable = ({
   const [openProductId, setOpenProductId] = useState('');
 
   return (
-  <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
+  <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-slate-900">Items</h2>
-        <p className="text-sm text-slate-500">Tap the product field to browse saved products, or type to filter. Totals update automatically.</p>
+        <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Items</h2>
+        <p className="text-sm text-[#2D3748]/60">Tap the product field to browse saved products, or type to filter. Totals update automatically.</p>
       </div>
       <button
         type="button"
         onClick={onAddItem}
-        className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+        className="inline-flex items-center gap-2 rounded-xl bg-[#FF6B35] px-4 py-2.5 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28]"
       >
         <Plus size={16} />
         Add Item
@@ -40,7 +40,7 @@ const ItemTable = ({
     <div className="relative min-w-0 overflow-visible">
       <table className="item-entry-table min-w-0 w-full border-separate border-spacing-y-3 xl:min-w-[1120px]">
         <thead>
-          <tr className="text-left text-sm font-semibold text-slate-600">
+          <tr className="text-left text-sm font-semibold text-[#1E3A5F]">
             <th className="px-2 py-2">Product</th>
             <th className="px-2 py-2">Description</th>
             <th className="px-2 py-2">Qty</th>
@@ -64,7 +64,7 @@ const ItemTable = ({
             );
             const listId = `quotation-products-${item.id}`;
             return (
-              <tr key={item.id} className="item-entry-row rounded-lg bg-slate-50/70">
+              <tr key={item.id} className="item-entry-row rounded-lg bg-[#1E3A5F]/5">
                 <td data-label="Product" className="rounded-l-2xl px-2 py-3 align-top">
                   <div className="relative">
                     <input
@@ -91,7 +91,7 @@ const ItemTable = ({
                         id={listId}
                         role="listbox"
                         aria-label="Saved products"
-                        className="absolute inset-x-0 top-full z-30 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+                        className="absolute inset-x-0 top-full z-30 mt-1 max-h-60 overflow-y-auto rounded-xl border border-[#1E3A5F]/10 bg-white p-1 shadow-card-md"
                       >
                         {matchingProducts.length ? matchingProducts.map((product) => (
                           <button
@@ -104,18 +104,18 @@ const ItemTable = ({
                               onSelectProduct(index, product);
                               setOpenProductId('');
                             }}
-                            className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-slate-50 focus:bg-slate-50 focus:outline-none"
+                            className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-[#1E3A5F]/5 focus:bg-[#1E3A5F]/5 focus:outline-none"
                           >
                             <span className="min-w-0">
-                              <span className="block truncate text-sm font-medium text-slate-800">{product.name}</span>
-                              {product.sku ? <span className="mt-0.5 block truncate text-xs text-slate-500">SKU: {product.sku}</span> : null}
+                              <span className="block truncate text-sm font-medium text-[#1E3A5F]">{product.name}</span>
+                              {product.sku ? <span className="mt-0.5 block truncate text-xs text-[#2D3748]/60">SKU: {product.sku}</span> : null}
                             </span>
-                            <span className="shrink-0 text-xs font-semibold text-slate-600">
+                            <span className="shrink-0 text-xs font-semibold text-[#1E3A5F]">
                               INR {Number(product.price || 0).toFixed(2)}{product.unit ? ` / ${product.unit}` : ''}
                             </span>
                           </button>
                         )) : (
-                          <p className="px-3 py-3 text-sm text-slate-500">No matching products. Continue entering details manually.</p>
+                          <p className="px-3 py-3 text-sm text-[#2D3748]/60">No matching products. Continue entering details manually.</p>
                         )}
                       </div>
                     ) : null}
@@ -129,7 +129,7 @@ const ItemTable = ({
                       type="button"
                       onClick={() => onSaveProduct(index, item)}
                       disabled={savingProductId === item.id || Number(item.rate) <= 0}
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-900 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#FF6B35] hover:text-[#e55a28] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Save size={13} />
                       {savingProductId === item.id ? 'Saving product…' : 'Save to product catalog'}
@@ -155,7 +155,7 @@ const ItemTable = ({
                   <input type="number" min="0" max="100" step="0.01" inputMode="decimal" className={inputClass} {...register(`items.${index}.gst`, { valueAsNumber: true, min: 0, max: 100 })} />
                 </td>
                 <td data-label="Amount" className="px-2 py-3 align-top">
-                  <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700">
+                  <div className="rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2.5 text-sm font-semibold text-[#1E3A5F]">
                     ₹{amount.toFixed(2)}
                   </div>
                 </td>

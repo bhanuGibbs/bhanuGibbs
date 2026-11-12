@@ -24,6 +24,7 @@ const json = (method, body) => ({ method, body: JSON.stringify(body) });
 
 export const salesInventoryApi = {
   summary: () => request('/summary'),
+  repStats: () => request('/rep-stats'),
   dealers: () => request('/dealers'),
   createDealer: (dealer) => request('/dealers', json('POST', dealer)),
   updateDealer: (id, dealer) => request(`/dealers/${id}`, json('PATCH', dealer)),

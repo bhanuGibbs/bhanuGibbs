@@ -142,15 +142,15 @@ const Dashboard = () => {
     if (s === 'paid') return 'bg-emerald-50 text-emerald-700';
     if (s === 'unpaid' || s === 'overdue') return 'bg-amber-50 text-amber-700';
     if (s === 'cancelled' || s === 'void') return 'bg-rose-50 text-rose-700';
-    return 'bg-slate-100 text-slate-700';
+    return 'bg-[#1E3A5F]/5 text-[#1E3A5F]';
   };
   const recentDocuments = isDeliveryChallanProfile ? deliveryChallans : documents;
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa] text-slate-900">
+    <div className="min-h-screen bg-[#F8F9FA] text-[#2D3748]">
       <style>{`
-        .dashboard-page ::selection { background: #d1fae5; color: #065f46; }
-        .dashboard-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .dashboard-page ::selection { background: #fed7aa; color: #9a3412; }
+        .dashboard-page ::-moz-selection { background: #fed7aa; color: #9a3412; }
         .dashboard-page ::-webkit-scrollbar { width: 8px; height: 8px; }
         .dashboard-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .dashboard-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -160,10 +160,10 @@ const Dashboard = () => {
       <main className="dashboard-page mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
           <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-[34px]">
+              <h1 className="text-3xl font-semibold tracking-tight text-[#1E3A5F] sm:text-[34px]">
               Good {new Date().getHours() < 12 ? 'morning' : 'afternoon'}, {user?.username || 'there'}
             </h1>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[#2D3748]/60">
               {user?.company_name
                 ? `Here’s what’s happening at ${user.company_name}.`
                 : 'Your business at a glance. Pick up where you left off.'}
@@ -187,27 +187,27 @@ const Dashboard = () => {
 
         <section aria-label="Business overview" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {stats.map(({ label, value, detail, accent }) => (
-            <article key={label} className="rounded-xl border border-slate-200/80 bg-white p-5">
+            <article key={label} className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 shadow-card-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[13px] font-medium text-slate-500">{label}</span>
-                {accent === 'emerald' ? <span className="text-xs font-medium text-emerald-700">To collect</span> : null}
+                <span className="text-[13px] font-medium text-[#2D3748]/60">{label}</span>
+                {accent === 'emerald' ? <span className="text-xs font-medium text-[#FF6B35]">To collect</span> : null}
               </div>
-              <p className="mt-4 text-[27px] font-semibold leading-none tracking-tight text-slate-950">
-                {loading ? <span className="inline-block h-7 w-20 animate-pulse rounded bg-slate-100" /> : value}
+              <p className="mt-4 text-[27px] font-semibold leading-none tracking-tight text-[#1E3A5F]">
+                {loading ? <span className="inline-block h-7 w-20 animate-pulse rounded bg-[#1E3A5F]/5" /> : value}
               </p>
-              <p className="mt-2 text-xs text-slate-500">{detail}</p>
+              <p className="mt-2 text-xs text-[#2D3748]/60">{detail}</p>
             </article>
           ))}
         </section>
 
         <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_335px]">
-          <section className="overflow-hidden rounded-xl border border-slate-200/80 bg-white">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-6">
+          <section className="overflow-hidden rounded-xl border border-[#1E3A5F]/10 bg-white shadow-card-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1E3A5F]/10 px-5 py-5 sm:px-6">
               <div>
-                <h2 className="text-base font-semibold text-slate-900">
+                <h2 className="text-base font-semibold text-[#1E3A5F]">
                   {isDeliveryChallanProfile ? 'Recent delivery challans' : 'Recent documents'}
                 </h2>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-[#2D3748]/60">
                   {isDeliveryChallanProfile
                     ? 'Your latest delivery challans.'
                     : 'Your latest invoices and quotations.'}
@@ -216,7 +216,7 @@ const Dashboard = () => {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[620px] text-left text-sm">
-                <thead className="bg-slate-50/80 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <thead className="bg-[#1E3A5F]/5 text-[11px] font-semibold uppercase tracking-wide text-[#2D3748]/60">
                   <tr>
                     <th className="px-6 py-3">Document</th>
                     <th className="px-4 py-3">Customer</th>
@@ -225,7 +225,7 @@ const Dashboard = () => {
                     <th className="px-6 py-3 text-right">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#1E3A5F]/5">
                   {recentDocuments.slice(0, 6).map((document) => {
                     const isInvoice = isInvoiceDocument(document);
                     const isDeliveryChallan = isDeliveryChallanDocument(document);
@@ -233,33 +233,33 @@ const Dashboard = () => {
                       ? getDeliveryChallanPaymentStatus(document)
                       : document.status || 'Draft';
                     return (
-                      <tr key={document.id} className="transition hover:bg-slate-50/70">
+                      <tr key={document.id} className="transition hover:bg-[#1E3A5F]/[0.03]">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${isInvoice ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                            <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${isInvoice ? 'bg-orange-50 text-[#FF6B35]' : 'bg-[#1E3A5F]/5 text-[#2D3748]/60'}`}>
                               <FileText size={16} />
                             </span>
                             <span>
-                              <span className="block font-semibold text-slate-800">
+                              <span className="block font-semibold text-[#1E3A5F]">
                                 {document.quotation_number ||
                                   ((document.status || '').toLowerCase() === 'draft'
                                     ? 'Draft'
                                     : document.reference_number)}
                               </span>
-                              <span className="mt-0.5 block text-xs text-slate-500">
+                              <span className="mt-0.5 block text-xs text-[#2D3748]/60">
                                 {isDeliveryChallan ? 'Delivery Challan' : isInvoice ? 'Invoice' : 'Quotation'}
                               </span>
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-slate-600">{document.customer_name || '—'}</td>
-                        <td className="px-4 py-4 text-slate-500">{formatAppDate(document.issued_at)}</td>
+                        <td className="px-4 py-4 text-[#2D3748]/60">{document.customer_name || '—'}</td>
+                        <td className="px-4 py-4 text-[#2D3748]/60">{formatAppDate(document.issued_at)}</td>
                         <td className="px-4 py-4">
                           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusChipClasses(displayStatus)}`}>
                             {displayStatus}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right font-semibold text-slate-800">
+                        <td className="px-6 py-4 text-right font-semibold text-[#1E3A5F]">
                           {formatMoney(document.total_amount, document.currency)}
                         </td>
                       </tr>
@@ -268,18 +268,18 @@ const Dashboard = () => {
                   {!loading && recentDocuments.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="px-6 py-12 text-center">
-                        <FileText size={25} className="mx-auto text-slate-300" />
-                        <p className="mt-3 text-sm font-medium text-slate-700">
+                        <FileText size={25} className="mx-auto text-[#2D3748]/20" />
+                        <p className="mt-3 text-sm font-medium text-[#1E3A5F]">
                           {isDeliveryChallanProfile ? 'No delivery challans yet' : 'No documents yet'}
                         </p>
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 text-xs text-[#2D3748]/60">
                           {isDeliveryChallanProfile
                             ? 'Create a delivery challan to see it here.'
                             : 'Create a quotation or invoice to see it here.'}
                         </p>
                         <Link
                           to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'}
-                          className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 underline"
+                          className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#FF6B35] underline"
                         >
                           {isDeliveryChallanProfile ? 'Create your first challan' : 'Create your first document'}
                         </Link>
@@ -292,29 +292,29 @@ const Dashboard = () => {
           </section>
 
           <aside className="space-y-6">
-            <section className="rounded-xl border border-slate-200/80 bg-white p-5">
-              <h2 className="text-sm font-semibold text-slate-900">Quick actions</h2>
+            <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 shadow-card-sm">
+              <h2 className="text-sm font-semibold text-[#1E3A5F]">Quick actions</h2>
               <div className="mt-4 space-y-2">
-                <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="group flex items-center gap-3 rounded-lg border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
-                  <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800">{isDeliveryChallanProfile ? 'Create challan' : 'New document'}</span><span className="mt-0.5 block text-xs text-slate-500">{isDeliveryChallanProfile ? 'Prepare a delivery challan' : 'Prepare an invoice or quote'}</span></span>
+                <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="group flex items-center gap-3 rounded-lg border border-[#1E3A5F]/10 p-3 transition hover:border-[#FF6B35]/30 hover:bg-orange-50/50">
+                  <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[#1E3A5F]">{isDeliveryChallanProfile ? 'Create challan' : 'New document'}</span><span className="mt-0.5 block text-xs text-[#2D3748]/60">{isDeliveryChallanProfile ? 'Prepare a delivery challan' : 'Prepare an invoice or quote'}</span></span>
                 </Link>
-                <Link to="/customers" className="group flex items-center gap-3 rounded-lg border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
-                  <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800">Add a customer</span><span className="mt-0.5 block text-xs text-slate-500">{loading ? 'Loading directory…' : `${data.customers.length} in your directory`}</span></span>
+                <Link to="/customers" className="group flex items-center gap-3 rounded-lg border border-[#1E3A5F]/10 p-3 transition hover:border-[#FF6B35]/30 hover:bg-orange-50/50">
+                  <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[#1E3A5F]">Add a customer</span><span className="mt-0.5 block text-xs text-[#2D3748]/60">{loading ? 'Loading directory…' : `${data.customers.length} in your directory`}</span></span>
                 </Link>
-                <Link to="/products" className="group flex items-center gap-3 rounded-lg border border-slate-200 p-3 transition hover:border-emerald-200 hover:bg-emerald-50/50">
-                  <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-800">Manage products</span><span className="mt-0.5 block text-xs text-slate-500">{loading ? 'Loading catalog…' : `${data.products.length} in your catalog`}</span></span>
+                <Link to="/products" className="group flex items-center gap-3 rounded-lg border border-[#1E3A5F]/10 p-3 transition hover:border-[#FF6B35]/30 hover:bg-orange-50/50">
+                  <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[#1E3A5F]">Manage products</span><span className="mt-0.5 block text-xs text-[#2D3748]/60">{loading ? 'Loading catalog…' : `${data.products.length} in your catalog`}</span></span>
                 </Link>
               </div>
             </section>
 
-            <section className="rounded-lg bg-slate-950 p-5 text-white">
+            <section className="rounded-xl bg-[#1E3A5F] p-5 text-white shadow-card-md">
               <h2 className="text-sm font-semibold tracking-tight">Keep everything up to date</h2>
-              <p className="mt-2 text-xs leading-5 text-slate-300">
+              <p className="mt-2 text-xs leading-5 text-[#2D3748]/60">
                 {isDeliveryChallanProfile
                   ? 'Add customer and company details once, then reuse them on your delivery challans.'
                   : 'Add customer and company details once, then reuse them across your billing documents.'}
               </p>
-              <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 underline hover:text-emerald-300">
+              <Link to={isDeliveryChallanProfile ? '/delivery-challan/new' : '/new'} className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#FF6B35] underline hover:text-[#e55a28]">
                 {isDeliveryChallanProfile ? 'Create your first challan' : 'Create your first document'}
               </Link>
             </section>

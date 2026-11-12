@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db_session, require_business_profile
+from app.models.user import User
 from app.schemas.pos_product import (
     POSCategoryCreate,
     POSCategoryRead,
@@ -446,10 +447,15 @@ async def list_transactions(
     result = []
     for t in transactions:
         items = await service.transaction_repo.get_items(str(t.id))
+        cashier_name = None
+        if t.created_by_id:
+            cashier = await session.get(User, t.created_by_id)
+            cashier_name = cashier.username if cashier else None
         result.append(POSTransactionRead.model_validate({
             "id": str(t.id), "company_id": str(t.company_id),
             "transaction_number": t.transaction_number,
             "created_by_id": str(t.created_by_id) if t.created_by_id else None,
+            "created_by_name": cashier_name,
             "subtotal": t.subtotal, "discount": t.discount,
             "tax_amount": t.tax_amount, "grand_total": t.grand_total,
             "payment_method": t.payment_method, "payment_amount": t.payment_amount,
@@ -475,10 +481,15 @@ async def get_transaction(
     except NotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found.")
     items = await service.transaction_repo.get_items(str(transaction.id))
+    cashier_name = None
+    if transaction.created_by_id:
+        cashier = await session.get(User, transaction.created_by_id)
+        cashier_name = cashier.username if cashier else None
     return POSTransactionRead.model_validate({
         "id": str(transaction.id), "company_id": str(transaction.company_id),
         "transaction_number": transaction.transaction_number,
         "created_by_id": str(transaction.created_by_id) if transaction.created_by_id else None,
+        "created_by_name": cashier_name,
         "subtotal": transaction.subtotal, "discount": transaction.discount,
         "tax_amount": transaction.tax_amount, "grand_total": transaction.grand_total,
         "payment_method": transaction.payment_method, "payment_amount": transaction.payment_amount,
@@ -507,10 +518,15 @@ async def cancel_transaction(
         status_code = status.HTTP_404_NOT_FOUND if isinstance(e, NotFoundError) else status.HTTP_400_BAD_REQUEST
         raise HTTPException(status_code=status_code, detail=str(e))
     items = await service.transaction_repo.get_items(str(transaction.id))
+    cashier_name = None
+    if transaction.created_by_id:
+        cashier = await session.get(User, transaction.created_by_id)
+        cashier_name = cashier.username if cashier else None
     return POSTransactionRead.model_validate({
         "id": str(transaction.id), "company_id": str(transaction.company_id),
         "transaction_number": transaction.transaction_number,
         "created_by_id": str(transaction.created_by_id) if transaction.created_by_id else None,
+        "created_by_name": cashier_name,
         "subtotal": transaction.subtotal, "discount": transaction.discount,
         "tax_amount": transaction.tax_amount, "grand_total": transaction.grand_total,
         "payment_method": transaction.payment_method, "payment_amount": transaction.payment_amount,
@@ -521,6 +537,102 @@ async def cancel_transaction(
             "discount": i.discount, "tax_amount": i.tax_amount, "line_total": i.line_total,
         } for i in items],
     })
+
+
+# ---- Cashier Performance Report (Admin only) ----
+
+@router.get("/cashier-performance")
+async def get_cashier_performance(
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> list[dict]:
+    """Per-cashier performance summary for Admin to see all cashiers."""
+    _check_admin_role(current_user)
+    from decimal import ROUND_HALF_UP, Decimal as DEC
+
+    from sqlalchemy import func, select
+
+    from app.models.pos_transaction import POSTransaction
+    from app.models.pos_return import POSReturn
+
+    company_id = current_user["company_id"]
+
+    # Aggregate by cashier (created_by_id)
+    cashier_rows = (
+        await session.execute(
+            select(
+                POSTransaction.created_by_id,
+                func.count(POSTransaction.id).label("total"),
+                func.sum(func.case((POSTransaction.status == "completed", 1), else_=0)).label("completed"),
+                func.sum(func.case((POSTransaction.status == "cancelled", 1), else_=0)).label("cancelled"),
+                func.coalesce(func.sum(func.case((POSTransaction.status == "completed", POSTransaction.grand_total), else_=DEC("0"))), DEC("0")).label("revenue"),
+            )
+            .where(
+                POSTransaction.company_id == company_id,
+            )
+            .group_by(POSTransaction.created_by_id)
+        )
+    ).all()
+
+    result = []
+    for cashier_id, total, completed, cancelled, revenue in cashier_rows:
+        if cashier_id is None:
+            continue
+        completed = completed or 0
+        cancelled = cancelled or 0
+        total = total or (completed + cancelled)
+
+        # Get cashier username
+        cashier = await session.get(User, cashier_id)
+        cashier_name = cashier.username if cashier else "Unknown"
+
+        # Cancel rate
+        cancel_rate = 0.0
+        if total > 0:
+            cancel_rate = round((cancelled / total) * 100, 1)
+
+        # Returns by this cashier
+        return_row = (
+            await session.execute(
+                select(
+                    func.count(POSReturn.id),
+                    func.coalesce(func.sum(POSReturn.refund_amount), DEC("0")),
+                ).where(
+                    POSReturn.company_id == company_id,
+                    POSReturn.created_by_id == cashier_id,
+                )
+            )
+        ).one()
+        return_count = return_row[0] or 0
+        total_refund = return_row[1]
+
+        # Return rate
+        return_rate = 0.0
+        if completed > 0:
+            return_rate = round((return_count / completed) * 100, 1)
+
+        # Avg transaction value
+        avg_value = "0"
+        if completed > 0:
+            avg_value = str((revenue / completed).quantize(DEC("0.01"), rounding=ROUND_HALF_UP))
+
+        result.append({
+            "cashier_id": str(cashier_id),
+            "cashier_name": cashier_name,
+            "completed_count": completed,
+            "cancelled_count": cancelled,
+            "total_count": total,
+            "completed_revenue": str(revenue),
+            "avg_transaction_value": avg_value,
+            "cancel_rate": cancel_rate,
+            "return_count": return_count,
+            "total_refund_amount": str(total_refund),
+            "return_rate": return_rate,
+        })
+
+    # Sort by revenue descending
+    result.sort(key=lambda x: float(x["completed_revenue"]), reverse=True)
+    return result
 
 
 # ---- Returns ----
@@ -657,3 +769,229 @@ async def get_dashboard(
 ):
     service = POSDashboardService(session)
     return await service.get_dashboard_data(current_user["company_id"])
+
+
+# ---- Cashier Stats ----
+
+@router.get("/cashier-stats")
+async def get_cashier_stats(
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Personal KPI stats for the current POS cashier."""
+    from decimal import ROUND_HALF_UP, Decimal as DEC
+
+    from sqlalchemy import func, select
+
+    from app.models.pos_transaction import POSTransaction
+    from app.models.pos_return import POSReturn
+    from app.models.pos_transaction_item import POSTransactionItem
+    from app.models.pos_product import POSProduct
+
+    company_id = current_user["company_id"]
+    cashier_id = current_user["id"]
+
+    # Total completed transactions by this cashier
+    completed_count_scalar = (
+        await session.execute(
+            select(func.count(POSTransaction.id)).where(
+                POSTransaction.company_id == company_id,
+                POSTransaction.created_by_id == cashier_id,
+                POSTransaction.status == "completed",
+            )
+        )
+    ).scalar_one()
+    completed_count = completed_count_scalar or 0
+
+    # Total revenue from completed transactions
+    completed_revenue_scalar = (
+        await session.execute(
+            select(func.coalesce(func.sum(POSTransaction.grand_total), DEC("0"))).where(
+                POSTransaction.company_id == company_id,
+                POSTransaction.created_by_id == cashier_id,
+                POSTransaction.status == "completed",
+            )
+        )
+    ).scalar_one()
+    completed_revenue = completed_revenue_scalar
+
+    # Cancelled transactions
+    cancelled_count_scalar = (
+        await session.execute(
+            select(func.count(POSTransaction.id)).where(
+                POSTransaction.company_id == company_id,
+                POSTransaction.created_by_id == cashier_id,
+                POSTransaction.status == "cancelled",
+            )
+        )
+    ).scalar_one()
+    cancelled_count = cancelled_count_scalar or 0
+
+    # Total transactions (completed + cancelled)
+    total_count = completed_count + cancelled_count
+
+    # Average transaction value (completed only)
+    avg_transaction_value = "0"
+    if completed_count > 0:
+        avg_transaction_value = str((completed_revenue / completed_count).quantize(DEC("0.01"), rounding=ROUND_HALF_UP))
+
+    # Cancel rate
+    cancel_rate = 0.0
+    if total_count > 0:
+        cancel_rate = round((cancelled_count / total_count) * 100, 1)
+
+    # Returns initiated by this cashier
+    return_count_scalar = (
+        await session.execute(
+            select(func.count(POSReturn.id)).where(
+                POSReturn.company_id == company_id,
+                POSReturn.created_by_id == cashier_id,
+            )
+        )
+    ).scalar_one()
+    return_count = return_count_scalar or 0
+
+    total_refund_amount_scalar = (
+        await session.execute(
+            select(func.coalesce(func.sum(POSReturn.refund_amount), DEC("0"))).where(
+                POSReturn.company_id == company_id,
+                POSReturn.created_by_id == cashier_id,
+            )
+        )
+    ).scalar_one()
+    total_refund_amount = total_refund_amount_scalar
+
+    # Return rate (returns / completed transactions)
+    return_rate = 0.0
+    if completed_count > 0:
+        return_rate = round((return_count / completed_count) * 100, 1)
+
+    # Payment method breakdown
+    payment_rows = (
+        await session.execute(
+            select(
+                POSTransaction.payment_method,
+                func.count(POSTransaction.id),
+                func.coalesce(func.sum(POSTransaction.grand_total), DEC("0")),
+            )
+            .where(
+                POSTransaction.company_id == company_id,
+                POSTransaction.created_by_id == cashier_id,
+                POSTransaction.status == "completed",
+            )
+            .group_by(POSTransaction.payment_method)
+            .order_by(func.count(POSTransaction.id).desc())
+        )
+    ).all()
+    payment_breakdown = [
+        {
+            "method": row[0],
+            "count": row[1],
+            "total": str(row[2]),
+        }
+        for row in payment_rows
+    ]
+
+    # Top products sold by this cashier
+    top_product_rows = (
+        await session.execute(
+            select(
+                POSTransactionItem.product_id,
+                func.count(POSTransactionItem.id).label("item_count"),
+                func.coalesce(func.sum(POSTransactionItem.quantity), DEC("0")).label("total_qty"),
+                func.coalesce(func.sum(POSTransactionItem.line_total), DEC("0")).label("total_value"),
+            )
+            .join(
+                POSTransaction,
+                POSTransaction.id == POSTransactionItem.transaction_id,
+            )
+            .where(
+                POSTransaction.company_id == company_id,
+                POSTransaction.created_by_id == cashier_id,
+                POSTransaction.status == "completed",
+            )
+            .group_by(POSTransactionItem.product_id)
+            .order_by(func.sum(POSTransactionItem.line_total).desc())
+            .limit(5)
+        )
+    ).all()
+
+    top_products = []
+    for product_id, item_count, total_qty, total_value in top_product_rows:
+        product = await session.get(POSProduct, product_id)
+        if product:
+            top_products.append({
+                "product_id": str(product_id),
+                "product_name": product.name,
+                "item_count": item_count,
+                "total_quantity": int(total_qty),
+                "total_value": str(total_value),
+            })
+
+    # Today's transactions (PostgreSQL: use DATE() cast and CURRENT_DATE)
+    today_count_scalar = (
+        await session.execute(
+            select(func.count(POSTransaction.id)).where(
+                POSTransaction.company_id == company_id,
+                POSTransaction.created_by_id == cashier_id,
+                POSTransaction.status == "completed",
+                func.date(POSTransaction.created_at) == func.current_date(),
+            )
+        )
+    ).scalar_one()
+    today_count = today_count_scalar or 0
+
+    today_revenue_scalar = (
+        await session.execute(
+            select(func.coalesce(func.sum(POSTransaction.grand_total), DEC("0"))).where(
+                POSTransaction.company_id == company_id,
+                POSTransaction.created_by_id == cashier_id,
+                POSTransaction.status == "completed",
+                func.date(POSTransaction.created_at) == func.current_date(),
+            )
+        )
+    ).scalar_one()
+    today_revenue = today_revenue_scalar
+
+    # Monthly sales (last 6 months) — PostgreSQL: use TO_CHAR instead of strftime
+    monthly_rows = (
+        await session.execute(
+            select(
+                func.to_char(POSTransaction.created_at, 'YYYY-MM').label("month"),
+                func.count(POSTransaction.id),
+                func.coalesce(func.sum(POSTransaction.grand_total), DEC("0")),
+            )
+            .where(
+                POSTransaction.company_id == company_id,
+                POSTransaction.created_by_id == cashier_id,
+                POSTransaction.status == "completed",
+            )
+            .group_by(func.to_char(POSTransaction.created_at, 'YYYY-MM'))
+            .order_by(func.to_char(POSTransaction.created_at, 'YYYY-MM'))
+        )
+    ).all()
+    monthly_sales = [
+        {
+            "month": row[0],
+            "transaction_count": row[1],
+            "sales_total": str(row[2]),
+        }
+        for row in monthly_rows
+    ][-6:]
+
+    return {
+        "completed_count": completed_count,
+        "completed_revenue": str(completed_revenue),
+        "cancelled_count": cancelled_count,
+        "total_count": total_count,
+        "avg_transaction_value": avg_transaction_value,
+        "cancel_rate": cancel_rate,
+        "return_count": return_count,
+        "total_refund_amount": str(total_refund_amount),
+        "return_rate": return_rate,
+        "payment_breakdown": payment_breakdown,
+        "top_products": top_products,
+        "today_count": today_count,
+        "today_revenue": str(today_revenue),
+        "monthly_sales": monthly_sales,
+    }

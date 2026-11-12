@@ -263,10 +263,10 @@ const Home = () => {
     );
 
     return (
-        <div className="create-doc-page min-h-screen bg-[#f7f8fa] text-slate-900">
+        <div className="create-doc-page min-h-screen bg-[#F8F9FA] text-[#2D3748]">
             <style>{`
-                .create-doc-page ::selection { background: #d1fae5; color: #065f46; }
-                .create-doc-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+                .create-doc-page ::selection { background: #fed7aa; color: #9a3412; }
+                .create-doc-page ::-moz-selection { background: #fed7aa; color: #9a3412; }
                 .create-doc-page ::-webkit-scrollbar { width: 8px; height: 8px; }
                 .create-doc-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
                 .create-doc-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -307,9 +307,9 @@ const Home = () => {
                     <TermsConditions register={register}/>
                     <SignatureUpload register={register} watch={watch} setValue={setValue}/>
                     <Footer/>
-                    <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm lg:hidden">
-                        <p className="text-sm font-semibold text-slate-900">Choose document type</p>
-                        <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
+                    <div className="space-y-3 rounded-lg border border-[#1E3A5F]/10 bg-white p-4 shadow-card-sm lg:hidden">
+                        <p className="text-sm font-semibold text-[#1E3A5F]">Choose document type</p>
+                        <div className="grid grid-cols-2 rounded-xl border border-[#1E3A5F]/10 bg-[#1E3A5F]/5 p-1">
                             {['quotation', 'billing'].map((mode) => (
                                 <button
                                     key={mode}
@@ -317,7 +317,7 @@ const Home = () => {
                                     onClick={() => setDocumentMode(mode)}
                                     aria-pressed={documentMode === mode}
                                     className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                                        documentMode === mode ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'
+                                        documentMode === mode ? 'bg-white text-[#1E3A5F] shadow-card-sm' : 'text-[#2D3748]/60'
                                     }`}
                                 >
                                     {mode === 'billing' ? 'Invoice' : 'Quotation'}
@@ -327,7 +327,7 @@ const Home = () => {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FF6B35] px-4 py-3 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {isSubmitting ? 'Saving & preparing…' : `Download ${documentMode === 'billing' ? 'Invoice' : 'Quotation'}`}
                         </button>
@@ -335,19 +335,35 @@ const Home = () => {
                 </form>
 
                 {showPdfPreview && pdfData ? (
-                    <section className="rounded-lg border border-slate-200/60 bg-white p-4 sm:p-6">
+                    <section className="rounded-lg border border-[#1E3A5F]/10 bg-white p-4 sm:p-6 shadow-card-sm">
                         <div className="mb-4">
-                            <h2 className="text-lg font-semibold tracking-tight text-slate-900">Downloaded document preview</h2>
-                            <p className="text-sm text-slate-500">This preview is the same PDF file that was downloaded.</p>
+                            <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Downloaded document preview</h2>
+                            <p className="text-sm text-[#2D3748]/60">This preview is the same PDF file that was downloaded.</p>
                         </div>
                         {pdfUrl ? (
-                            <iframe
-                                src={pdfUrl}
-                                title="Quotation PDF Preview"
-                                className="h-[900px] w-full rounded-xl border border-slate-200"
-                                type="application/pdf"
-                                sandbox="allow-same-origin"
-                            />
+                            <>
+                                {/* Desktop: Use iframe for inline preview */}
+                                <iframe
+                                    src={pdfUrl}
+                                    title="Quotation PDF Preview"
+                                    className="h-[900px] w-full rounded-xl border border-[#1E3A5F]/10 hidden sm:block"
+                                    type="application/pdf"
+                                />
+                                {/* Mobile: Show fallback with open button since mobile browsers block blob URLs in iframes */}
+                                <div className="sm:hidden flex flex-col items-center justify-center h-[400px] rounded-xl border-2 border-dashed border-[#2D3748]/20 bg-[#1E3A5F]/5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#2D3748]/40 mb-4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                    <p className="text-sm text-[#2D3748]/60 mb-2 text-center px-4">PDF preview is not supported on mobile browsers</p>
+                                    <p className="text-xs text-[#2D3748]/40 mb-4 text-center px-4">The file has been downloaded successfully</p>
+                                    <a
+                                        href={pdfUrl}
+                                        download={`${pdfData.quotation?.quotationNumber || 'Document'}.pdf`}
+                                        className="inline-flex items-center gap-2 rounded-lg bg-[#FF6B35] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#e55a28]"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        Open PDF
+                                    </a>
+                                </div>
+                            </>
                         ) : null}
                     </section>
                 ) : null}

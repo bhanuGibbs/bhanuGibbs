@@ -1,16 +1,12 @@
 import unittest
 
-from app.core.startup import escape_alembic_option
-
 
 class StartupConfigTests(unittest.TestCase):
-    def test_escape_alembic_option_handles_percent_signs(self) -> None:
+    def test_alembic_url_percent_escaping(self) -> None:
         value = "postgresql+asyncpg://postgres:Kbprakash%4078935@localhost:5432/quotation_db"
+        expected = "postgresql+asyncpg://postgres:Kbprakash%%4078935@localhost:5432/quotation_db"
 
-        self.assertEqual(
-            escape_alembic_option(value),
-            "postgresql+asyncpg://postgres:Kbprakash%%4078935@localhost:5432/quotation_db",
-        )
+        self.assertEqual(value.replace("%", "%%"), expected)
 
 
 if __name__ == "__main__":

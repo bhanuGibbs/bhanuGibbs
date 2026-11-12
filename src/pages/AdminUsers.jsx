@@ -150,10 +150,10 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="admin-users-page min-h-screen bg-[#f7f8fa]">
+    <div className="admin-users-page min-h-screen bg-[#F8F9FA]">
       <style>{`
-        .admin-users-page ::selection { background: #d1fae5; color: #065f46; }
-        .admin-users-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .admin-users-page ::selection { background: #ffedd5; color: #9a3412; }
+        .admin-users-page ::-moz-selection { background: #ffedd5; color: #9a3412; }
         .admin-users-page ::-webkit-scrollbar { width: 8px; height: 8px; }
         .admin-users-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .admin-users-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -162,13 +162,13 @@ const AdminUsers = () => {
       <Header user={user} onLogout={logout} />
       <main className="admin-users-page mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-7">
-          <p className="text-xs font-semibold text-emerald-700">
+          <p className="text-xs font-semibold text-[#FF6B35]">
             Administration
           </p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1E3A5F]">
             {isSalesInventory ? 'Team access' : 'Users and subscription plans'}
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-[#2D3748]">
             {isSalesInventory
               ? 'Sales & Inventory users can have the Sales or Admin role.'
               : "Assign a plan after confirming the user's payment. New accounts start on Free."}
@@ -179,14 +179,14 @@ const AdminUsers = () => {
           <div className="mb-4 flex flex-wrap items-center gap-4">
             {companies.length > 0 && (
               <div className="flex items-center gap-3">
-                <label htmlFor="company-filter" className="text-sm font-medium text-slate-700">
+                <label htmlFor="company-filter" className="text-sm font-medium text-[#1E3A5F]">
                   Filter by company
                 </label>
                 <select
                   id="company-filter"
                   value={selectedCompany}
                   onChange={(e) => handleCompanyChange(e.target.value)}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  className="rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-100"
                 >
                   <option value="">All companies</option>
                   {companies.map((company) => (
@@ -198,14 +198,14 @@ const AdminUsers = () => {
               </div>
             )}
             <div className="flex items-center gap-3">
-              <label htmlFor="business-profile-filter" className="text-sm font-medium text-slate-700">
+              <label htmlFor="business-profile-filter" className="text-sm font-medium text-[#1E3A5F]">
                 Filter by profile
               </label>
               <select
                 id="business-profile-filter"
                 value={selectedBusinessProfile}
                 onChange={(e) => handleBusinessProfileChange(e.target.value)}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                className="rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-100"
               >
                 <option value="">All profiles</option>
                 <option value="invoice">Quotations</option>
@@ -219,14 +219,14 @@ const AdminUsers = () => {
 
         {/* Add Team Member Button */}
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[#2D3748]">
             {users.length} user{users.length !== 1 ? 's' : ''} in
             {user?.company_name ? ` ${user.company_name}` : ' your company'}
           </p>
           <button
             type="button"
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            className="flex items-center gap-1.5 rounded-lg bg-[#FF6B35] px-4 py-2 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28]"
           >
             {showAddForm ? <X size={16} /> : <Plus size={16} />}
             {showAddForm ? 'Cancel' : 'Add Team Member'}
@@ -237,10 +237,10 @@ const AdminUsers = () => {
         {showAddForm && (
           <form
             onSubmit={handleCreateUser}
-            className="mb-4 rounded-lg border border-slate-200/60 bg-white p-5 shadow-sm"
+            className="mb-4 rounded-xl border border-[#1E3A5F]/10 bg-white p-5 shadow-card-sm"
           >
-            <h3 className="mb-4 text-lg font-semibold text-slate-900">Add Team Member</h3>
-            <p className="mb-4 text-sm text-slate-500">
+            <h3 className="mb-4 text-lg font-semibold text-[#1E3A5F]">Add Team Member</h3>
+            <p className="mb-4 text-sm text-[#2D3748]">
               New members will be added to your company with the Sales role. You can change their
               role after creating the account.
             </p>
@@ -248,7 +248,7 @@ const AdminUsers = () => {
               <div>
                 <label
                   htmlFor="new-username"
-                  className="mb-1 block text-sm font-medium text-slate-700"
+                  className="mb-1 block text-sm font-medium text-[#1E3A5F]"
                 >
                   Username
                 </label>
@@ -258,14 +258,14 @@ const AdminUsers = () => {
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-lg border border-[#1E3A5F]/10 px-3 py-2 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-100"
                   placeholder="johndoe"
                 />
               </div>
               <div>
                 <label
                   htmlFor="new-email"
-                  className="mb-1 block text-sm font-medium text-slate-700"
+                  className="mb-1 block text-sm font-medium text-[#1E3A5F]"
                 >
                   Email
                 </label>
@@ -275,14 +275,14 @@ const AdminUsers = () => {
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-lg border border-[#1E3A5F]/10 px-3 py-2 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-100"
                   placeholder="john@company.com"
                 />
               </div>
               <div>
                 <label
                   htmlFor="new-password"
-                  className="mb-1 block text-sm font-medium text-slate-700"
+                  className="mb-1 block text-sm font-medium text-[#1E3A5F]"
                 >
                   Password
                 </label>
@@ -293,7 +293,7 @@ const AdminUsers = () => {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={8}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  className="w-full rounded-lg border border-[#1E3A5F]/10 px-3 py-2 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-100"
                   placeholder="Min 8 characters"
                 />
               </div>
@@ -302,14 +302,14 @@ const AdminUsers = () => {
               <button
                 type="button"
                 onClick={resetAddForm}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                className="rounded-lg border border-[#1E3A5F]/10 px-4 py-2 text-sm font-semibold text-[#1E3A5F] transition hover:bg-[#1E3A5F]/5"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={creating}
-                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                className="rounded-lg bg-[#FF6B35] px-4 py-2 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28] disabled:opacity-60"
               >
                 {creating ? 'Creating...' : 'Create User'}
               </button>
@@ -317,37 +317,37 @@ const AdminUsers = () => {
           </form>
         )}
 
-        <div className="overflow-hidden rounded-lg border border-slate-200/60 bg-white">
+        <div className="overflow-hidden rounded-xl border border-[#1E3A5F]/10 bg-white shadow-card-sm">
           {loading ? (
-            <p className="px-6 py-10 text-center text-sm text-slate-500">Loading users…</p>
+            <p className="px-6 py-10 text-center text-sm text-[#2D3748]">Loading users…</p>
           ) : users.length === 0 ? (
-            <p className="px-6 py-10 text-center text-sm text-slate-500">No users found.</p>
+            <p className="px-6 py-10 text-center text-sm text-[#2D3748]">No users found.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[680px] text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <thead className="bg-[#1E3A5F]/5 text-xs uppercase tracking-wide text-[#2D3748]">
                   <tr>
-                    <th className="px-5 py-3 font-semibold">User</th>
-                    <th className="px-5 py-3 font-semibold">Role</th>
+                    <th className="px-5 py-3 font-semibold text-[#1E3A5F]">User</th>
+                    <th className="px-5 py-3 font-semibold text-[#1E3A5F]">Role</th>
                     {isSuperAdmin(user) && !isSalesInventory && (
                       <>
-                        <th className="px-5 py-3 font-semibold">Plan</th>
-                        <th className="px-5 py-3 font-semibold">Plan limits</th>
+                        <th className="px-5 py-3 font-semibold text-[#1E3A5F]">Plan</th>
+                        <th className="px-5 py-3 font-semibold text-[#1E3A5F]">Plan limits</th>
                       </>
                     )}
-                    <th className="px-5 py-3 font-semibold">Actions</th>
+                    <th className="px-5 py-3 font-semibold text-[#1E3A5F]">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#1E3A5F]/5">
                   {users.map((item) => (
                     <tr key={item.id}>
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-900">{item.username}</p>
-                        <p className="mt-0.5 text-xs text-slate-500">{item.email}</p>
+                        <p className="font-semibold text-[#1E3A5F]">{item.username}</p>
+                        <p className="mt-0.5 text-xs text-[#2D3748]">{item.email}</p>
                       </td>
                       <td className="px-5 py-4">
                         {item.role === 'Super Admin' ? (
-                          <span className="inline-flex items-center rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
+                          <span className="inline-flex items-center rounded-lg bg-orange-50 px-3 py-2 text-sm font-semibold text-[#FF6B35]">
                             Super Admin
                           </span>
                         ) : (
@@ -357,7 +357,7 @@ const AdminUsers = () => {
                             value={item.role || 'Sales'}
                             disabled={updatingId === item.id}
                             onChange={(event) => handleRoleChange(item.id, event.target.value)}
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 disabled:opacity-60"
+                            className="rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-100 disabled:opacity-60"
                           >
                             {roleOptions.map((role) => (
                               <option key={role} value={role}>
@@ -376,7 +376,7 @@ const AdminUsers = () => {
                               value={item.subscription_plan}
                               disabled={updatingId === item.id}
                               onChange={(event) => handlePlanChange(item.id, event.target.value)}
-                              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 disabled:opacity-60"
+                              className="rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-100 disabled:opacity-60"
                             >
                               {planOptions.map((plan) => (
                                 <option key={plan.value} value={plan.value}>
@@ -385,7 +385,7 @@ const AdminUsers = () => {
                               ))}
                             </select>
                           </td>
-                          <td className="px-5 py-4 text-slate-600">
+                          <td className="px-5 py-4 text-[#2D3748]">
                             {item.subscription_plan === 'premium'
                               ? 'Unlimited per month'
                               : item.subscription_plan === 'basic'
@@ -400,7 +400,7 @@ const AdminUsers = () => {
                           onClick={() => handleDelete(item.id, item.username)}
                           disabled={updatingId === item.id}
                           aria-label={`Delete ${item.username}`}
-                          className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-500 transition hover:border-rose-200 hover:text-rose-700 disabled:opacity-60"
+                          className="flex h-9 items-center gap-1.5 rounded-lg border border-[#1E3A5F]/10 px-2.5 text-xs font-semibold text-[#2D3748] transition hover:border-rose-200 hover:text-rose-700 disabled:opacity-60"
                         >
                           <Trash2 size={14} />
                           <span>Delete</span>

@@ -42,14 +42,14 @@ const Login = () => {
           </p>
         ) : null}
         <form className="space-y-5" onSubmit={handleSubmit} aria-busy={loading}>
-          <label htmlFor="login-username" className="block text-sm font-semibold text-slate-800">
+          <label htmlFor="login-username" className="block text-sm font-semibold text-[#1E3A5F]">
             Username
             <span className="relative mt-2 block">
-              <UserRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+              <UserRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#2D3748]/40" aria-hidden="true" />
               <input
                 id="login-username"
                 name="username"
-                className="min-h-12 w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-4 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
+                className="min-h-12 w-full rounded-lg border border-[#2D3748]/20 bg-white py-3 pl-11 pr-4 text-base font-normal text-[#1E3A5F] shadow-sm outline-none transition placeholder:text-[#2D3748]/40 focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                 value={form.username}
                 onChange={(event) => setForm({ ...form, username: event.target.value })}
                 placeholder="Enter your username"
@@ -59,15 +59,15 @@ const Login = () => {
             </span>
           </label>
 
-          <label htmlFor="login-password" className="block text-sm font-semibold text-slate-800">
+          <label htmlFor="login-password" className="block text-sm font-semibold text-[#1E3A5F]">
             Password
             <span className="relative mt-2 block">
-              <KeyRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+              <KeyRound size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#2D3748]/40" aria-hidden="true" />
               <input
                 id="login-password"
                 name="password"
                 type={passwordVisible ? 'text' : 'password'}
-                className="password-visibility-toggle min-h-12 w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-12 text-base font-normal text-slate-950 shadow-sm outline-none transition placeholder:text-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/25"
+                className="password-visibility-toggle min-h-12 w-full rounded-lg border border-[#2D3748]/20 bg-white py-3 pl-11 pr-12 text-base font-normal text-[#1E3A5F] shadow-sm outline-none transition placeholder:text-[#2D3748]/40 focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                 value={form.password}
                 onChange={(event) => setForm({ ...form, password: event.target.value })}
                 placeholder="Enter your password"
@@ -77,7 +77,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setPasswordVisible((visible) => !visible)}
-                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-950"
+                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[#2D3748]/60 transition hover:bg-[#1E3A5F]/5 hover:text-[#1E3A5F]"
                 aria-label={passwordVisible ? 'Hide password' : 'Show password'}
                 aria-pressed={passwordVisible}
               >
@@ -91,7 +91,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:scale-[1.01] hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#1E3A5F] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:scale-[1.01] hover:bg-[#162d4a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B35] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
           >
             {loading ? (
               <>
@@ -103,10 +103,10 @@ const Login = () => {
         </form>
 
         <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-          <Link to="/forgot-password" className="inline-flex min-h-11 items-center rounded-lg font-semibold text-emerald-800 underline-offset-4 transition hover:text-emerald-950 hover:underline">
+          <Link to="/forgot-password" className="inline-flex min-h-11 items-center rounded-lg font-semibold text-[#FF6B35] underline-offset-4 transition hover:text-[#e55a28] hover:underline">
             Forgot password?
           </Link>
-          <Link to="/register" className="inline-flex min-h-11 items-center justify-end rounded-lg text-right font-semibold text-emerald-800 underline-offset-4 transition hover:text-emerald-950 hover:underline">
+          <Link to="/register" className="inline-flex min-h-11 items-center justify-end rounded-lg text-right font-semibold text-[#FF6B35] underline-offset-4 transition hover:text-[#e55a28] hover:underline">
             Create account
           </Link>
         </div>
@@ -114,7 +114,7 @@ const Login = () => {
         <div className="mt-4 text-center">
           <Link
             to="/landing"
-            className="text-xs text-slate-400 underline transition hover:text-slate-600"
+            className="text-xs text-[#2D3748]/40 underline transition hover:text-[#2D3748]/60"
           >
             Back to landing
           </Link>

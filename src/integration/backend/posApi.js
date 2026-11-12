@@ -232,3 +232,17 @@ export const getPOSDashboard = async () => {
   if (!response.ok) throw await readApiError(response, 'Unable to load dashboard.');
   return response.json();
 };
+
+// ---- Cashier Stats ----
+
+export const getPOSCashierStats = async () => {
+  const response = await authenticatedFetch(`${API_BASE}/pos/cashier-stats`);
+  if (!response.ok) throw await readApiError(response, 'Unable to load cashier stats.');
+  return response.json();
+};
+
+export const getPOSCashierPerformance = async () => {
+  const response = await authenticatedFetch(`${API_BASE}/pos/cashier-performance`);
+  if (!response.ok) throw await readApiError(response, 'Unable to load cashier performance.');
+  return response.json();
+};

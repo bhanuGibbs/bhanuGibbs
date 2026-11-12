@@ -3,23 +3,23 @@ import { UserRound, Mail, Phone } from 'lucide-react';
 import { digitsOnly, nameOnly, NAME_REGEX, PHONE_NUMBER_REGEX, PINCODE_REGEX, GSTIN_REGEX, preventPaste } from '../utils/numericInput';
 import { indianStates, getCitiesForState } from '../utils/indianStates';
 
-const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
-const selectClass = 'w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60';
-const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
+const inputClass = 'w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25';
+const selectClass = 'w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25 disabled:cursor-not-allowed disabled:opacity-60';
+const labelClass = 'mb-2 block text-sm font-medium text-[#1E3A5F]';
 
 const CustomerDetailsForm = ({ register, errors, watch, setValue }) => {
   const [country, setCountry] = useState('India');
   const [selectedState, setSelectedState] = useState('');
   const cities = useMemo(() => getCitiesForState(selectedState), [selectedState]);
   return (
-    <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
+    <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
       <div className="mb-6 flex items-center gap-3">
-        <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
+        <div className="rounded-xl bg-[#1E3A5F]/10 p-3 text-[#1E3A5F]">
           <UserRound size={18} />
         </div>
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900">Customer Details</h2>
-          <p className="mt-1 text-sm text-slate-500">Information about the customer receiving this document.</p>
+          <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Customer Details</h2>
+          <p className="mt-1 text-sm text-[#2D3748]/60">Information about the customer receiving this document.</p>
         </div>
       </div>
 
@@ -91,7 +91,7 @@ const CustomerDetailsForm = ({ register, errors, watch, setValue }) => {
         <div>
           <label className={labelClass}>Phone Number</label>
           <div className="relative">
-            <Phone className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
+            <Phone className="pointer-events-none absolute left-3 top-3 text-[#2D3748]/40" size={16} />
             <input className={`${inputClass} pl-10`} type="tel" inputMode="numeric" maxLength={10} onPaste={preventPaste} {...register('customer.phone', { pattern: { value: PHONE_NUMBER_REGEX, message: 'Please provide valid data: enter a 10-digit mobile number.' }, onChange: (event) => { event.target.value = digitsOnly(event.target.value, 10); } })} />
           </div>
           {errors.customer?.phone ? <p className="mt-1 text-sm text-rose-500">Please provide valid data: enter a 10-digit mobile number.</p> : null}
@@ -100,7 +100,7 @@ const CustomerDetailsForm = ({ register, errors, watch, setValue }) => {
         <div>
           <label className={labelClass}>Email</label>
           <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
+            <Mail className="pointer-events-none absolute left-3 top-3 text-[#2D3748]/40" size={16} />
             <input className={`${inputClass} pl-10`} {...register('customer.email', { pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email' } })} />
           </div>
           {errors.customer?.email ? <p className="mt-1 text-sm text-rose-500">{errors.customer.email.message}</p> : null}

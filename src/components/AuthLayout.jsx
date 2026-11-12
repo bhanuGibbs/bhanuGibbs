@@ -7,13 +7,13 @@ const AuthLayout = ({ eyebrow, title, description, children, variant = 'default'
   return (
     <main className={`auth-layout min-h-screen ${isAuth ? 'bg-[#f8fafc] xl:min-h-0 xl:grid xl:grid-cols-2 xl:gap-5 xl:p-5 2xl:gap-7 2xl:p-7' : 'bg-white lg:grid lg:grid-cols-[1.05fr_0.95fr]'}`}>
       <style>{`
-        .auth-layout ::selection { background: #d1fae5; color: #065f46; }
-        .auth-layout ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .auth-layout ::selection { background: #fed7aa; color: #9a3412; }
+        .auth-layout ::-moz-selection { background: #fed7aa; color: #9a3412; }
         .auth-layout ::-webkit-scrollbar { width: 8px; height: 8px; }
         .auth-layout ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .auth-layout ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .auth-layout ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .auth-layout :focus-visible { outline: 3px solid #10b981; outline-offset: 3px; }
+        .auth-layout :focus-visible { outline: 3px solid #FF6B35; outline-offset: 3px; }
         @media (prefers-reduced-motion: reduce) {
           .auth-layout *, .auth-layout *::before, .auth-layout *::after {
             scroll-behavior: auto !important;
@@ -22,16 +22,16 @@ const AuthLayout = ({ eyebrow, title, description, children, variant = 'default'
           }
         }
       `}</style>
-      <aside className={`relative hidden overflow-hidden px-12 py-10 text-white ${isAuth ? 'min-h-[calc(100vh-2.5rem)] rounded-xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 xl:flex xl:flex-col 2xl:px-16' : 'min-h-screen bg-slate-950 lg:flex lg:flex-col xl:px-16'}`}>
+      <aside className={`relative hidden overflow-hidden px-12 py-10 text-white ${isAuth ? 'min-h-[calc(100vh-2.5rem)] rounded-xl bg-gradient-to-br from-[#1E3A5F] to-[#0f2440] xl:flex xl:flex-col 2xl:px-16' : 'min-h-screen bg-[#1E3A5F] lg:flex lg:flex-col xl:px-16'}`}>
         {!isAuth ? (
           <>
             <div className="absolute -right-32 -top-24 h-96 w-96 rounded-full border border-white/10" />
             <div className="absolute -right-10 -top-2 h-96 w-96 rounded-full border border-white/10" />
-            <div className="absolute -bottom-52 -left-28 h-[480px] w-[480px] rounded-full bg-emerald-500/10 blur-3xl" />
+            <div className="absolute -bottom-52 -left-28 h-[480px] w-[480px] rounded-full bg-[#FF6B35]/10 blur-3xl" />
           </>
         ) : null}
         <Link to="/landing" className="relative flex w-fit items-center gap-3">
-          <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${isAuth ? 'bg-emerald-500 text-white' : 'bg-emerald-600'}`}>
+          <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${isAuth ? 'bg-[#FF6B35] text-white' : 'bg-[#FF6B35]'}`}>
             <FileText size={17} />
           </span>
           <span className="text-base font-semibold tracking-tight">KeelBill Ledger</span>
@@ -102,16 +102,16 @@ const AuthLayout = ({ eyebrow, title, description, children, variant = 'default'
 
       <section className={`flex min-h-screen flex-col px-4 py-6 sm:px-8 lg:px-12 lg:py-12 ${isAuth ? 'items-center justify-center bg-[#f8fafc] sm:py-10 xl:min-h-0 xl:bg-transparent xl:px-5 xl:py-0 2xl:px-12' : 'bg-[#f8f9fb] lg:items-center lg:justify-center lg:bg-white'}`}>
         <div className={`mb-8 flex items-center gap-3 ${isAuth ? 'xl:hidden' : 'mb-10 lg:hidden'}`}>
-          <span className={`flex h-9 w-9 items-center justify-center rounded-lg text-white ${isAuth ? 'bg-emerald-700' : 'bg-slate-950'}`}>
+          <span className={`flex h-9 w-9 items-center justify-center rounded-lg text-white ${isAuth ? 'bg-[#FF6B35]' : 'bg-[#1E3A5F]'}`}>
             <FileText size={17} />
           </span>
-          <span className="text-base font-bold tracking-tight text-slate-950">KeelBill Ledger</span>
+          <span className="text-base font-bold tracking-tight text-[#1E3A5F]">KeelBill Ledger</span>
         </div>
         <div className={`mx-auto w-full max-w-[440px] ${isAuth ? 'rounded-xl border border-slate-200/80 bg-white p-5 shadow-xl shadow-slate-900/[0.08] sm:p-8 xl:max-w-[480px] xl:p-8' : ''}`}>
           {eyebrow ? (
-            <p className="mt-1 text-xs font-semibold text-emerald-700">{eyebrow}</p>
+            <p className="mt-1 text-xs font-semibold text-[#FF6B35]">{eyebrow}</p>
           ) : null}
-          <h1 className={`${eyebrow ? 'mt-2' : 'mt-3'} text-3xl font-semibold tracking-tight text-slate-950`}>{title}</h1>
+          <h1 className={`${eyebrow ? 'mt-2' : 'mt-3'} text-3xl font-semibold tracking-tight text-[#1E3A5F]`}>{title}</h1>
           <p className={`mt-2 text-sm leading-6 ${isAuth ? 'text-slate-700' : 'text-slate-500'}`}>{description}</p>
           <div className={isAuth ? 'mt-7' : 'mt-8'}>{children}</div>
           <p className={`mt-7 text-center text-xs leading-5 ${isAuth ? 'text-slate-600' : 'text-slate-400'}`}>

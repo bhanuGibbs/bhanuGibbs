@@ -144,6 +144,7 @@ class POSTransactionRead(BaseModel):
     company_id: UUID | str
     transaction_number: str
     created_by_id: UUID | str | None = None
+    created_by_name: str | None = None
     subtotal: Decimal
     discount: Decimal
     tax_amount: Decimal

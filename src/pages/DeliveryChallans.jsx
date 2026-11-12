@@ -152,10 +152,10 @@ const DeliveryChallans = () => {
   };
 
   return (
-    <div className="documents-page min-h-screen bg-[#f7f8fa] text-slate-900">
+    <div className="documents-page min-h-screen bg-[#F8F9FA] text-[#2D3748]">
       <style>{`
-        .documents-page ::selection { background: #d1fae5; color: #065f46; }
-        .documents-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .documents-page ::selection { background: #fed7aa; color: #9a3412; }
+        .documents-page ::-moz-selection { background: #fed7aa; color: #9a3412; }
         .documents-page ::-webkit-scrollbar { width: 8px; height: 8px; }
         .documents-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .documents-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -165,26 +165,26 @@ const DeliveryChallans = () => {
       <main className="documents-page mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="text-xs font-semibold text-emerald-700">
+            <p className="text-xs font-semibold text-[#FF6B35]">
               Delivery management
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#1E3A5F]">
               Delivery Challans
             </h1>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[#2D3748]/60">
               Track, manage and download delivery challans.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/challan-products"
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#1E3A5F]/10 bg-white px-4 py-3 text-sm font-semibold text-[#1E3A5F] transition hover:border-[#FF6B35] hover:text-[#FF6B35]"
             >
               Manage challan products
             </Link>
             <Link
               to="/delivery-challan/new"
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#FF6B35] px-4 py-3 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28]"
             >
               <FileText size={16} />
               Create challan
@@ -192,14 +192,14 @@ const DeliveryChallans = () => {
           </div>
         </div>
 
-        <section className="mb-4 rounded-lg border border-slate-200/60 bg-white p-5" aria-label="Filter delivery challans by issue date">
+        <section className="mb-4 rounded-xl border border-[#1E3A5F]/10 bg-white p-5 shadow-card-sm" aria-label="Filter delivery challans by issue date">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <h2 className="text-sm font-semibold tracking-tight text-slate-900">Challan date range</h2>
+            <h2 className="text-sm font-semibold tracking-tight text-[#1E3A5F]">Challan date range</h2>
             <button
               type="button"
               onClick={() => { setDateFrom(''); setDateTo(''); }}
               disabled={!dateFrom && !dateTo}
-              className="rounded-lg px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-transparent"
+              className="rounded-lg px-3 py-2 text-sm font-semibold text-[#FF6B35] transition hover:bg-orange-50 disabled:cursor-default disabled:text-[#2D3748]/40 disabled:hover:bg-transparent"
             >
               All dates
             </button>
@@ -214,32 +214,32 @@ const DeliveryChallans = () => {
         </section>
 
         <section className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Delivery challan payment totals">
-          <article className="rounded-lg border border-slate-200/60 bg-white p-5">
-            <p className="text-sm font-medium text-slate-700">Total amount shown</p>
-            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.total)}</p>
-            <p className="mt-1 text-xs text-slate-500">Matches the challans shown below</p>
+          <article className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 shadow-card-sm">
+            <p className="text-sm font-medium text-[#2D3748]">Total amount shown</p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-[#1E3A5F]">{formatMoney(paymentTotals.total)}</p>
+            <p className="mt-1 text-xs text-[#2D3748]/60">Matches the challans shown below</p>
           </article>
-          <article className="rounded-lg border border-emerald-200/60 bg-white p-5">
-            <p className="text-sm font-medium text-emerald-700">Paid challans</p>
-            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.paid)}</p>
-            <p className="mt-1 text-xs text-slate-500">Paid challans matching the current filters</p>
+          <article className="rounded-xl border border-green-200/60 bg-white p-5 shadow-card-sm">
+            <p className="text-sm font-medium text-green-700">Paid challans</p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-[#1E3A5F]">{formatMoney(paymentTotals.paid)}</p>
+            <p className="mt-1 text-xs text-[#2D3748]/60">Paid challans matching the current filters</p>
           </article>
-          <article className="rounded-lg border border-amber-200/60 bg-white p-5">
+          <article className="rounded-xl border border-amber-200/60 bg-white p-5 shadow-card-sm">
             <p className="text-sm font-medium text-amber-700">Unpaid challans</p>
-            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{formatMoney(paymentTotals.unpaid)}</p>
-            <p className="mt-1 text-xs text-slate-500">Unpaid challans matching the current filters</p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-[#1E3A5F]">{formatMoney(paymentTotals.unpaid)}</p>
+            <p className="mt-1 text-xs text-[#2D3748]/60">Unpaid challans matching the current filters</p>
           </article>
         </section>
 
-        <section className="overflow-hidden rounded-lg border border-slate-200/60 bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
+        <section className="overflow-hidden rounded-xl border border-[#1E3A5F]/10 bg-white shadow-card-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#1E3A5F]/10 px-5 py-4 sm:px-6">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">All challans</h2>
-              <p className="mt-1 text-xs text-slate-500">
+              <h2 className="text-sm font-semibold text-[#1E3A5F]">All challans</h2>
+              <p className="mt-1 text-xs text-[#2D3748]/60">
                 {loading ? 'Loading your challans…' : `${documents.length} challan${documents.length === 1 ? '' : 's'}`}
               </p>
             </div>
-            <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1" role="group" aria-label="Filter delivery challans by payment status">
+            <div className="flex items-center gap-1 rounded-lg bg-[#1E3A5F]/5 p-1" role="group" aria-label="Filter delivery challans by payment status">
               {[
                 { value: 'all', label: 'All' },
                 { value: 'unpaid', label: 'Unpaid' },
@@ -252,22 +252,22 @@ const DeliveryChallans = () => {
                   onClick={() => setPaymentFilter(value)}
                   className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
                     paymentFilter === value
-                      ? 'bg-white text-slate-900'
-                      : 'text-slate-500 hover:text-slate-800'
+                      ? 'bg-white text-[#1E3A5F] shadow-card-sm'
+                      : 'text-[#2D3748]/60 hover:text-[#1E3A5F]'
                   }`}
                 >
                   {label}
                 </button>
               ))}
             </div>
-            <label className="flex w-full max-w-xs items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-400 focus-within:border-emerald-400">
+            <label className="flex w-full max-w-xs items-center gap-2 rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2 text-[#2D3748]/40 focus-within:border-[#FF6B35]">
               <Search size={15} />
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search DC number or consignee"
                 aria-label="Search delivery challans"
-                className="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400"
+                className="w-full bg-transparent text-xs text-[#1E3A5F] outline-none placeholder:text-[#2D3748]/40"
               />
             </label>
           </div>
@@ -283,7 +283,7 @@ const DeliveryChallans = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[730px] text-left text-sm">
-              <thead className="bg-slate-50/80 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              <thead className="bg-[#1E3A5F]/5 text-[11px] font-semibold uppercase tracking-wide text-[#1E3A5F]/60">
                 <tr>
                   <th className="px-6 py-3">DC Number</th>
                   <th className="px-4 py-3">Consignee</th>
@@ -293,28 +293,28 @@ const DeliveryChallans = () => {
                   <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#1E3A5F]/5">
                 {documents.map((doc) => {
                   const status = getDeliveryChallanPaymentStatus(doc);
                   const isPayableChallan = ['Paid', 'Unpaid'].includes(status);
                   const statusColor =
                     status.toLowerCase() === 'draft'
-                      ? 'bg-slate-100 text-slate-700'
+                      ? 'bg-[#1E3A5F]/10 text-[#1E3A5F]'
                       : status.toLowerCase() === 'paid'
-                        ? 'bg-emerald-50 text-emerald-700'
+                        ? 'bg-green-50 text-green-700'
                         : status.toLowerCase() === 'unpaid'
                           ? 'bg-amber-50 text-amber-700'
-                          : 'bg-slate-100 text-slate-700';
+                          : 'bg-[#1E3A5F]/10 text-[#1E3A5F]';
                   return (
-                    <tr key={doc.id} className="transition hover:bg-slate-50/70">
+                    <tr key={doc.id} className="transition hover:bg-[#1E3A5F]/5">
                       <td className="px-6 py-4">
-                        <span className="block font-semibold text-slate-800">
+                        <span className="block font-semibold text-[#1E3A5F]">
                           {doc.quotation_number || doc.reference_number}
                         </span>
-                        <span className="mt-0.5 block text-xs text-slate-500">{doc.title || 'Delivery Challan'}</span>
+                        <span className="mt-0.5 block text-xs text-[#2D3748]/60">{doc.title || 'Delivery Challan'}</span>
                       </td>
-                      <td className="px-4 py-4 text-slate-700">{doc.customer_name || '—'}</td>
-                      <td className="px-4 py-4 text-slate-500">{formatAppDate(doc.issued_at)}</td>
+                      <td className="px-4 py-4 text-[#2D3748]">{doc.customer_name || '—'}</td>
+                      <td className="px-4 py-4 text-[#2D3748]/60">{formatAppDate(doc.issued_at)}</td>
                       <td className="px-4 py-4">
                         <div className="flex flex-col items-start gap-2">
                           <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusColor}`}>
@@ -326,7 +326,7 @@ const DeliveryChallans = () => {
                               onClick={() => handlePaymentStatusChange(doc)}
                               disabled={updatingStatusId === doc.id}
                               aria-label={`Mark delivery challan ${doc.reference_number} ${status === 'Paid' ? 'unpaid' : 'paid'}`}
-                              className="text-xs font-semibold text-emerald-700 underline decoration-emerald-300 underline-offset-2 hover:text-emerald-900 disabled:opacity-50"
+                              className="text-xs font-semibold text-[#FF6B35] underline decoration-orange-300 underline-offset-2 hover:text-[#e55a28] disabled:opacity-50"
                             >
                               {updatingStatusId === doc.id
                                 ? 'Updating…'
@@ -335,7 +335,7 @@ const DeliveryChallans = () => {
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-right font-semibold text-slate-800">
+                      <td className="px-4 py-4 text-right font-semibold text-[#1E3A5F]">
                         {formatMoney(doc.total_amount)}
                       </td>
                       <td className="px-6 py-4">
@@ -345,7 +345,7 @@ const DeliveryChallans = () => {
                             onClick={() => handleDownload(doc)}
                             disabled={downloadingId === doc.id}
                             aria-label={`Download ${doc.reference_number} PDF`}
-                            className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-800 disabled:opacity-50"
+                            className="flex h-9 items-center gap-1.5 rounded-lg border border-[#1E3A5F]/10 px-2.5 text-xs font-semibold text-[#1E3A5F] transition hover:border-[#FF6B35] hover:text-[#FF6B35] disabled:opacity-50"
                           >
                             <ArrowDownToLine size={14} />
                             <span className="hidden sm:inline">{downloadingId === doc.id ? 'Preparing…' : 'PDF'}</span>
@@ -354,7 +354,7 @@ const DeliveryChallans = () => {
                             type="button"
                             onClick={() => handleDelete(doc)}
                             aria-label={`Delete ${doc.reference_number}`}
-                            className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-500 transition hover:border-rose-200 hover:text-rose-700"
+                            className="flex h-9 items-center gap-1.5 rounded-lg border border-[#1E3A5F]/10 px-2.5 text-xs font-semibold text-[#2D3748]/60 transition hover:border-rose-200 hover:text-rose-700"
                           >
                             <Trash2 size={14} />
                             <span className="hidden sm:inline">Delete</span>
@@ -369,10 +369,10 @@ const DeliveryChallans = () => {
           </div>
           {!loading && documents.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-[#1E3A5F]/10 text-[#1E3A5F]/60">
                 <FileText size={21} />
               </span>
-              <h3 className="mt-4 text-sm font-semibold text-slate-900">
+              <h3 className="mt-4 text-sm font-semibold text-[#1E3A5F]">
                 {search
                   ? 'No matching challans'
                   : invalidDateRange
@@ -381,7 +381,7 @@ const DeliveryChallans = () => {
                       ? `No ${paymentFilter} challans`
                   : 'No delivery challans yet'}
               </h3>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-[#2D3748]/60">
                 {search
                   ? 'Try another DC number or consignee name.'
                   : invalidDateRange
@@ -391,7 +391,7 @@ const DeliveryChallans = () => {
                   : 'Create your first delivery challan to get started.'}
               </p>
               {!search && paymentFilter === 'all' ? (
-                <Link to="/delivery-challan/new" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 underline">
+                <Link to="/delivery-challan/new" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#FF6B35] underline">
                   Create challan
                 </Link>
               ) : null}

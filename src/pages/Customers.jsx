@@ -101,10 +101,10 @@ const Customers = () => {
   };
 
   return (
-    <div className="customers-page min-h-screen bg-[#f7f8fa] text-slate-900">
+    <div className="customers-page min-h-screen bg-[#F8F9FA] text-[#2D3748]">
       <style>{`
-        .customers-page ::selection { background: #d1fae5; color: #065f46; }
-        .customers-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .customers-page ::selection { background: #fed7aa; color: #9a3412; }
+        .customers-page ::-moz-selection { background: #fed7aa; color: #9a3412; }
         .customers-page ::-webkit-scrollbar { width: 8px; height: 8px; }
         .customers-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .customers-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -113,21 +113,21 @@ const Customers = () => {
       <Header onLogout={logout} user={user} />
       <main className="customers-page mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 xl:grid-cols-[700px_minmax(0,1fr)]">
-          <section className="rounded-lg border border-slate-200/60 bg-white p-6">
+          <section className="rounded-lg border border-[#1E3A5F]/10 bg-white p-6 shadow-card-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-semibold text-emerald-700">Customer management</p>
-                <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-900">Customer list</h2>
-                <p className="mt-1 text-sm text-slate-500">Manage customers for your company.</p>
+                <p className="text-xs font-semibold text-[#FF6B35]">Customer management</p>
+                <h2 className="mt-2 text-lg font-semibold tracking-tight text-[#1E3A5F]">Customer list</h2>
+                <p className="mt-1 text-sm text-[#2D3748]/60">Manage customers for your company.</p>
               </div>
-              <div className="text-sm text-slate-500">
+              <div className="text-sm text-[#2D3748]/60">
                 {loading ? 'Loading…' : `${customers.length} customer${customers.length === 1 ? '' : 's'}`}
               </div>
             </div>
 
             <div className="mt-6 overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                <thead className="bg-slate-50 text-slate-600">
+              <table className="min-w-full divide-y divide-[#1E3A5F]/10 text-left text-sm">
+                <thead className="bg-[#1E3A5F]/5 text-[#2D3748]/60">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Name</th>
                   <th className="px-4 py-3 font-semibold">Email</th>
@@ -136,9 +136,9 @@ const Customers = () => {
                   <th className="px-4 py-3 font-semibold">Actions</th>
                 </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-[#1E3A5F]/5">
                 {customers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-slate-50">
+                    <tr key={customer.id} className="hover:bg-[#1E3A5F]/[0.03]">
                       <td className="px-4 py-3">{customer.name}</td>
                       <td className="px-4 py-3">{customer.email || '—'}</td>
                       <td className="px-4 py-3">{customer.phone_number || '—'}</td>
@@ -148,7 +148,7 @@ const Customers = () => {
                           <button
                               type="button"
                               onClick={() => handleEdit(customer)}
-                              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+                              className="rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2 text-xs font-semibold text-[#1E3A5F] transition hover:border-[#FF6B35]/30 hover:text-[#FF6B35]"
                           >
                             Edit
                           </button>
@@ -165,7 +165,7 @@ const Customers = () => {
                 ))}
                 {!loading && customers.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-4 py-8 text-center text-sm text-slate-500">
+                      <td colSpan="5" className="px-4 py-8 text-center text-sm text-[#2D3748]/60">
                         No customers found. Add one to get started.
                       </td>
                     </tr>
@@ -174,15 +174,15 @@ const Customers = () => {
               </table>
             </div>
           </section>
-          <section className="rounded-lg border border-slate-200/60 bg-white p-6">
-            <h2 className="text-lg font-semibold tracking-tight text-slate-900">{editingId ? 'Update Customer' : 'New Customer'}</h2>
-            <p className="mt-1 text-sm text-slate-500">Enter the information for this customer.</p>
+          <section className="rounded-lg border border-[#1E3A5F]/10 bg-white p-6 shadow-card-sm">
+            <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">{editingId ? 'Update Customer' : 'New Customer'}</h2>
+            <p className="mt-1 text-sm text-[#2D3748]/60">Enter the information for this customer.</p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-[#1E3A5F]">
                 Customer name
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                   value={form.name}
                   onChange={(event) => setField('name', nameOnly(event.target.value))}
                   placeholder="Customer name"
@@ -192,11 +192,11 @@ const Customers = () => {
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-[#1E3A5F]">
                 Email address
                 <input
                   type="email"
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                   value={form.email}
                   onChange={(event) => setField('email', event.target.value)}
                   placeholder="customer@example.com"
@@ -205,7 +205,7 @@ const Customers = () => {
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-[#1E3A5F]">
                 Phone number
                 <input
                   type="tel"
@@ -213,7 +213,7 @@ const Customers = () => {
                   maxLength={10}
                   pattern="[0-9]{10}"
                   title="Please provide valid data: enter a 10-digit mobile number."
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                   value={form.phone_number}
                   onChange={(event) => setField('phone_number', digitsOnly(event.target.value, 10))}
                   onPaste={preventPaste}
@@ -221,10 +221,10 @@ const Customers = () => {
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-[#1E3A5F]">
                 Company name
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                   value={form.company_name}
                   onChange={(event) => setField('company_name', nameOnly(event.target.value))}
                   placeholder="Company name"
@@ -233,11 +233,11 @@ const Customers = () => {
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-[#1E3A5F]">
                 Address
                 <textarea
                   rows="3"
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
                   value={form.address}
                   onChange={(event) => setField('address', event.target.value)}
                   placeholder="Customer address"
@@ -250,14 +250,14 @@ const Customers = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex items-center justify-center rounded-lg bg-[#FF6B35] px-4 py-3 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {editingId ? 'Save changes' : 'Save'}
                 </button>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+                  className="inline-flex items-center justify-center rounded-lg border border-[#1E3A5F]/10 bg-[#1E3A5F]/5 px-4 py-3 text-sm font-semibold text-[#1E3A5F] transition hover:border-[#FF6B35]/30 hover:text-[#FF6B35]"
                 >
                   Cancel
                 </button>

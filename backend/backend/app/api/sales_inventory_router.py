@@ -280,6 +280,150 @@ async def get_summary(
     }
 
 
+@router.get("/rep-stats")
+async def get_rep_stats(
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Personal KPI stats for the current sales representative."""
+    company_id = _tenant_id(current_user)
+    rep_id = uuid.UUID(current_user["id"])
+
+    # Count orders by status for this rep
+    status_rows = (
+        await session.execute(
+            select(SalesInventoryOrder.status, func.count(SalesInventoryOrder.id))
+            .where(
+                SalesInventoryOrder.company_id == company_id,
+                SalesInventoryOrder.sales_rep_id == rep_id,
+            )
+            .group_by(SalesInventoryOrder.status)
+        )
+    ).all()
+    orders_by_status = {row[0]: row[1] for row in status_rows}
+
+    # Approved sales (approved + processing + dispatched + delivered)
+    approved_statuses = ["Approved", "Processing", "Dispatched", "Delivered"]
+    approved_total = (
+        await session.execute(
+            select(func.coalesce(func.sum(SalesInventoryOrder.total_amount), 0)).where(
+                SalesInventoryOrder.company_id == company_id,
+                SalesInventoryOrder.sales_rep_id == rep_id,
+                SalesInventoryOrder.status.in_(approved_statuses),
+            )
+        )
+    ).scalar_one()
+
+    # Submitted = pending + approved + processing + dispatched + delivered + rejected
+    submitted_count = orders_by_status.get("Pending Approval", 0) + \
+        sum(orders_by_status.get(s, 0) for s in approved_statuses) + \
+        orders_by_status.get("Rejected", 0)
+    approved_count = sum(orders_by_status.get(s, 0) for s in approved_statuses)
+    rejected_count = orders_by_status.get("Rejected", 0)
+    pending_count = orders_by_status.get("Pending Approval", 0)
+
+    # Conversion rate
+    conversion_rate = 0.0
+    if submitted_count > 0:
+        conversion_rate = round((approved_count / submitted_count) * 100, 1)
+
+    # Average order value (approved only)
+    avg_order_value = str((approved_total / approved_count).quantize(CENT, rounding=ROUND_HALF_UP)) if approved_count > 0 else "0"
+
+    # Territories from dealers this rep has ordered with
+    dealer_ids = (
+        await session.execute(
+            select(SalesInventoryOrder.dealer_id)
+            .where(
+                SalesInventoryOrder.company_id == company_id,
+                SalesInventoryOrder.sales_rep_id == rep_id,
+            )
+            .distinct()
+        )
+    ).scalars().all()
+
+    territories = set()
+    top_dealers = []
+    if dealer_ids:
+        dealer_rows = (
+            await session.execute(
+                select(
+                    SalesInventoryDealer.id,
+                    SalesInventoryDealer.name,
+                    SalesInventoryDealer.territory,
+                    func.count(SalesInventoryOrder.id),
+                    func.coalesce(func.sum(SalesInventoryOrder.total_amount), 0),
+                )
+                .outerjoin(
+                    SalesInventoryOrder,
+                    (SalesInventoryOrder.dealer_id == SalesInventoryDealer.id)
+                    & (SalesInventoryOrder.sales_rep_id == rep_id)
+                    & (SalesInventoryOrder.status.in_(approved_statuses)),
+                )
+                .where(
+                    SalesInventoryDealer.company_id == company_id,
+                    SalesInventoryDealer.id.in_(dealer_ids),
+                    SalesInventoryDealer.is_active.is_(True),
+                )
+                .group_by(SalesInventoryDealer.id, SalesInventoryDealer.name, SalesInventoryDealer.territory)
+                .order_by(func.coalesce(func.sum(SalesInventoryOrder.total_amount), 0).desc())
+            )
+        ).all()
+        for dealer_id, dealer_name, territory, order_count, sales_total in dealer_rows:
+            if territory:
+                territories.add(territory)
+            top_dealers.append({
+                "dealer_id": str(dealer_id),
+                "dealer_name": dealer_name,
+                "order_count": order_count,
+                "sales_total": str(sales_total),
+            })
+
+    # Monthly sales for this rep (last 6 months)
+    monthly_rows = (
+        await session.execute(
+            select(
+                SalesInventoryOrder.created_at,
+                SalesInventoryOrder.total_amount,
+            )
+            .where(
+                SalesInventoryOrder.company_id == company_id,
+                SalesInventoryOrder.sales_rep_id == rep_id,
+                SalesInventoryOrder.status.in_(approved_statuses),
+            )
+            .order_by(SalesInventoryOrder.created_at)
+        )
+    ).all()
+    months: dict[str, dict[str, Decimal | int]] = {}
+    for created_at, total in monthly_rows:
+        month = created_at.strftime("%Y-%m")
+        monthly = months.setdefault(month, {"order_count": 0, "sales_total": ZERO})
+        monthly["order_count"] += 1
+        monthly["sales_total"] += total
+    monthly_sales = [
+        {
+            "month": month,
+            "order_count": values["order_count"],
+            "sales_total": str(values["sales_total"]),
+        }
+        for month, values in sorted(months.items())
+    ]
+
+    return {
+        "orders_by_status": orders_by_status,
+        "submitted_count": submitted_count,
+        "approved_count": approved_count,
+        "rejected_count": rejected_count,
+        "pending_count": pending_count,
+        "approved_sales_total": str(approved_total),
+        "conversion_rate": conversion_rate,
+        "avg_order_value": avg_order_value,
+        "territories": sorted(territories),
+        "top_dealers": top_dealers[:5],
+        "monthly_sales": monthly_sales[-6:],
+    }
+
+
 @router.get("/dealers")
 async def list_dealers(
     current_user: dict[str, str] = Depends(get_current_user),
@@ -1204,13 +1348,15 @@ async def rep_performance_report(
     session: AsyncSession = Depends(get_db_session),
 ) -> list[dict]:
     company_id = _tenant_id(current_user)
+    approved_statuses = ["Approved", "Processing", "Dispatched", "Delivered"]
     filters = [
         SalesInventoryOrder.company_id == company_id,
-        SalesInventoryOrder.status.in_(["Approved", "Processing", "Dispatched", "Delivered"]),
+        SalesInventoryOrder.status.in_(approved_statuses),
     ]
     if current_user["role"] == "Sales":
         filters.append(SalesInventoryOrder.sales_rep_id == uuid.UUID(current_user["id"]))
-    rows = (
+    # Approved orders per rep
+    approved_rows = (
         await session.execute(
             select(
                 User.id,
@@ -1224,15 +1370,54 @@ async def rep_performance_report(
             .order_by(func.sum(SalesInventoryOrder.total_amount).desc())
         )
     ).all()
-    return [
-        {
-            "sales_rep_id": str(row[0]),
+    # Total submitted orders per rep (all non-draft, non-cancelled)
+    all_filters = [SalesInventoryOrder.company_id == company_id]
+    if current_user["role"] == "Sales":
+        all_filters.append(SalesInventoryOrder.sales_rep_id == uuid.UUID(current_user["id"]))
+    submitted_rows = (
+        await session.execute(
+            select(
+                SalesInventoryOrder.sales_rep_id,
+                func.count(SalesInventoryOrder.id),
+            )
+            .where(*all_filters)
+            .group_by(SalesInventoryOrder.sales_rep_id)
+        )
+    ).all()
+    submitted_by_rep = {row[0]: row[1] for row in submitted_rows}
+    # Rejected count per rep
+    rejected_filters = [
+        SalesInventoryOrder.company_id == company_id,
+        SalesInventoryOrder.status == "Rejected",
+    ]
+    if current_user["role"] == "Sales":
+        rejected_filters.append(SalesInventoryOrder.sales_rep_id == uuid.UUID(current_user["id"]))
+    rejected_rows = (
+        await session.execute(
+            select(
+                SalesInventoryOrder.sales_rep_id,
+                func.count(SalesInventoryOrder.id),
+            )
+            .where(*rejected_filters)
+            .group_by(SalesInventoryOrder.sales_rep_id)
+        )
+    ).all()
+    rejected_by_rep = {row[0]: row[1] for row in rejected_rows}
+    result = []
+    for row in approved_rows:
+        rep_id = row[0]
+        submitted = submitted_by_rep.get(rep_id, 0)
+        rejected = rejected_by_rep.get(rep_id, 0)
+        conversion_rate = round((row[2] / submitted) * 100, 1) if submitted > 0 else 0.0
+        result.append({
+            "sales_rep_id": str(rep_id),
             "sales_rep_name": row[1],
             "order_count": row[2],
             "sales_total": str(row[3] or ZERO),
-        }
-        for row in rows
-    ]
+            "conversion_rate": conversion_rate,
+            "rejected_count": rejected,
+        })
+    return result
 
 
 @router.get("/reports/monthly-sales")

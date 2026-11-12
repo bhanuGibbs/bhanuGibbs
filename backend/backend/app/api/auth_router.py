@@ -563,3 +563,49 @@ async def update_current_user(
     except ConflictError as error:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
     return await read_current_user(current_user, session)
+
+
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
+async def change_password(
+    request: Request,
+    payload: dict[str, str],
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, str]:
+    """Change the authenticated user's password."""
+    from app.security import get_password_hash, verify_password
+
+    current_password = payload.get("current_password")
+    new_password = payload.get("new_password")
+
+    if not current_password or not new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password and new password are required.",
+        )
+
+    if len(new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 8 characters long.",
+        )
+
+    service = UserService(session)
+    user = await service.get_user_by_id(current_user["id"])
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    if not verify_password(current_password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect.",
+        )
+
+    user.hashed_password = get_password_hash(new_password)
+    await service.repository.commit()
+
+    return {"message": "Password has been updated successfully."}

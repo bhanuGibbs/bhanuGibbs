@@ -3,9 +3,9 @@ import { Building2, ChevronDown, Mail, Phone, Globe } from 'lucide-react';
 import { digitsOnly, nameOnly, NAME_REGEX, PHONE_NUMBER_REGEX, PINCODE_REGEX, URL_REGEX, GSTIN_REGEX, preventPaste } from '../utils/numericInput';
 import { indianStates, getCitiesForState } from '../utils/indianStates';
 
-const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100';
-const selectClass = 'w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60';
-const labelClass = 'mb-2 block text-sm font-medium text-slate-700';
+const inputClass = 'w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25';
+const selectClass = 'w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25 disabled:cursor-not-allowed disabled:opacity-60';
+const labelClass = 'mb-2 block text-sm font-medium text-[#1E3A5F]';
 
 const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
   const [collapsed, setCollapsed] = useState(true);
@@ -43,33 +43,33 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
   };
 
   return (
-    <section className={`rounded-lg border border-slate-200/60 bg-white ${collapsed ? 'pb-5 sm:pb-7' : ''}`}>
+    <section className={`rounded-xl border border-[#1E3A5F]/10 bg-white shadow-card-sm ${collapsed ? 'pb-5 sm:pb-7' : ''}`}>
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
         className="flex w-full items-center gap-3 p-5 sm:p-7"
       >
-        <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
+        <div className="rounded-xl bg-[#1E3A5F]/10 p-3 text-[#1E3A5F]">
           <Building2 size={18} />
         </div>
         <div className="flex-1 text-left">
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900">Company Details</h2>
-          <p className="mt-1 text-sm text-slate-500">Your business information that appears on documents.</p>
+          <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Company Details</h2>
+          <p className="mt-1 text-sm text-[#2D3748]/60">Your business information that appears on documents.</p>
         </div>
-        <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`} />
+        <ChevronDown size={20} className={`text-[#2D3748]/40 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`} />
       </button>
 
       {!collapsed && (
-        <div className="grid gap-5 border-t border-slate-200/60 px-5 pb-5 pt-5 md:grid-cols-2 sm:px-7 sm:pb-7 sm:pt-5">
+        <div className="grid gap-5 border-t border-[#1E3A5F]/10 px-5 pb-5 pt-5 md:grid-cols-2 sm:px-7 sm:pb-7 sm:pt-5">
         <div className="md:col-span-2">
           <label className={labelClass}>Company Logo</label>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 transition hover:border-emerald-500 hover:text-emerald-700">
+            <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-[#1E3A5F]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm font-medium text-[#1E3A5F] transition hover:border-[#FF6B35] hover:text-[#FF6B35]">
               <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
               Upload Logo
             </label>
             {logoPreview ? (
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg border border-[#1E3A5F]/10 bg-[#1E3A5F]/5">
                 <img src={logoPreview} alt="Company logo preview" className="h-full w-full object-cover" />
               </div>
             ) : null}
@@ -135,7 +135,7 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
         <div>
           <label className={labelClass}>Phone Number</label>
           <div className="relative">
-            <Phone className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
+            <Phone className="pointer-events-none absolute left-3 top-3 text-[#2D3748]/40" size={16} />
             <input className={`${inputClass} pl-10`} type="tel" inputMode="numeric" maxLength={10} {...register('company.phone', { pattern: { value: PHONE_NUMBER_REGEX, message: 'Please provide valid data: enter a 10-digit mobile number.' }, onChange: (event) => { event.target.value = digitsOnly(event.target.value, 10); } })} />
           </div>
           {errors.company?.phone ? <p className="mt-1 text-sm text-rose-500">Please provide valid data: enter a 10-digit mobile number.</p> : null}
@@ -144,7 +144,7 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
         <div>
           <label className={labelClass}>Email</label>
           <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
+            <Mail className="pointer-events-none absolute left-3 top-3 text-[#2D3748]/40" size={16} />
             <input className={`${inputClass} pl-10`} {...register('company.email', { pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Enter a valid email' } })} />
           </div>
           {errors.company?.email ? <p className="mt-1 text-sm text-rose-500">{errors.company.email.message}</p> : null}
@@ -153,7 +153,7 @@ const CompanyDetailsForm = ({ register, errors, watch, setValue }) => {
         <div className="md:col-span-2">
           <label className={labelClass}>Website</label>
           <div className="relative">
-            <Globe className="pointer-events-none absolute left-3 top-3 text-slate-400" size={16} />
+            <Globe className="pointer-events-none absolute left-3 top-3 text-[#2D3748]/40" size={16} />
             <input className={`${inputClass} pl-10`} type="url" {...register('company.website', { pattern: { value: URL_REGEX, message: 'Enter a valid website URL' } })} />
           </div>
           {errors.company?.website ? <p className="mt-1 text-sm text-rose-500">{errors.company.website.message}</p> : null}

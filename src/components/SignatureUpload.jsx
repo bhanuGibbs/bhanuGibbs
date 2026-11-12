@@ -32,24 +32,24 @@ const SignatureUpload = ({ register, watch, setValue }) => {
   };
 
   return (
-    <section className="rounded-lg border border-slate-200/60 bg-white p-5 sm:p-7">
+    <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
       <div className="mb-6 flex items-center gap-3">
-        <div className="rounded-xl bg-emerald-50 p-3 text-emerald-700">
+        <div className="rounded-xl bg-[#1E3A5F]/10 p-3 text-[#1E3A5F]">
           <Signature size={18} />
         </div>
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900">Authorized Signature</h2>
-          <p className="mt-1 text-sm text-slate-500">Upload a signature image to appear on your documents.</p>
+          <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">Authorized Signature</h2>
+          <p className="mt-1 text-sm text-[#2D3748]/60">Upload a signature image to appear on your documents.</p>
         </div>
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 transition hover:border-emerald-500 hover:text-emerald-700">
+        <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-[#1E3A5F]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm font-medium text-[#1E3A5F] transition hover:border-[#FF6B35] hover:text-[#FF6B35]">
           <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
           Upload Signature
         </label>
         {signaturePreview ? (
-          <div className="flex h-24 w-56 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white p-3">
+          <div className="flex h-24 w-56 items-center justify-center overflow-hidden rounded-lg border border-[#1E3A5F]/10 bg-white p-3">
             <img src={signaturePreview} alt="Signature preview" className="max-h-full max-w-full object-contain" />
           </div>
         ) : null}

@@ -1,8 +1,31 @@
 import unittest
 import uuid
+from datetime import datetime
+from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+from sqlalchemy import event
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+import app.models  # noqa: F401 - registers model tables and foreign-key targets
+from app.core.database import Base
+from app.models.audit_event import AuditEvent
+from app.models.auth_session import AuthSession
+from app.models.company import Company
+from app.models.customer import Customer
+from app.models.pos_category import POSCategory  # noqa: F401 - register related table
+from app.models.pos_payment import POSPayment  # noqa: F401 - register related table
+from app.models.pos_product import POSProduct  # noqa: F401 - register related table
+from app.models.pos_product_variant import POSProductVariant  # noqa: F401 - register related table
+from app.models.pos_return import POSReturn  # noqa: F401 - register related table
+from app.models.pos_return_item import POSReturnItem  # noqa: F401 - register related table
+from app.models.pos_stock_movement import POSStockMovement  # noqa: F401 - register related table
+from app.models.pos_transaction import POSTransaction  # noqa: F401 - register related table
+from app.models.pos_transaction_item import POSTransactionItem  # noqa: F401 - register related table
+from app.models.product import Product
+from app.models.quotation_finalization_usage import QuotationFinalizationUsage
+from app.models.role import Role
 from app.models.user import User
 from app.services.exceptions import NotFoundError
 from app.services.user_service import UserService
@@ -69,3 +92,94 @@ class UserServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await service.list_users("company-id"), [])
         service.repository.list_by_company.assert_awaited_once_with("company-id")
         service.repository.list_users.assert_not_awaited()
+
+
+class UserDeletionTests(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self) -> None:
+        self.engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+
+        @event.listens_for(self.engine.sync_engine, "connect")
+        def enable_foreign_keys(connection, _record) -> None:
+            cursor = connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
+
+        user_foreign_keys = [
+            (constraint, constraint.ondelete)
+            for table in Base.metadata.tables.values()
+            for constraint in table.foreign_key_constraints
+            if any(key.target_fullname == "users.id" for key in constraint.elements)
+        ]
+        for constraint, _ondelete in user_foreign_keys:
+            constraint.ondelete = None
+        try:
+            async with self.engine.begin() as connection:
+                await connection.run_sync(Base.metadata.create_all)
+        finally:
+            for constraint, ondelete in user_foreign_keys:
+                constraint.ondelete = ondelete
+        self.session_factory = async_sessionmaker(self.engine, expire_on_commit=False)
+        self.session = self.session_factory()
+
+    async def asyncTearDown(self) -> None:
+        await self.session.close()
+        await self.engine.dispose()
+
+    async def test_delete_user_cleans_references_and_preserves_company_records(self) -> None:
+        role = Role(name="Sales")
+        company = Company(name="Deletion Test Company")
+        self.session.add_all([role, company])
+        await self.session.flush()
+
+        user = User(
+            username="deletion-test-user",
+            email="deletion-test@example.com",
+            hashed_password="not-a-real-password-hash",
+            role_id=role.id,
+            company_id=company.id,
+        )
+        self.session.add(user)
+        await self.session.flush()
+
+        customer = Customer(
+            name="Retained Customer",
+            company_id=company.id,
+            created_by_id=user.id,
+        )
+        product = Product(
+            name="Retained Product",
+            price=Decimal("10.00"),
+            company_id=company.id,
+            created_by_id=user.id,
+        )
+        audit_event = AuditEvent(
+            actor_user_id=user.id,
+            resource_type="quotation",
+            resource_id=uuid.uuid4(),
+            action="created",
+        )
+        auth_session = AuthSession(
+            user_id=user.id,
+            refresh_token_hash="test-refresh-token-hash",
+            token_id="test-token-id",
+            expires_at=datetime.now(),
+        )
+        usage = QuotationFinalizationUsage(
+            user_id=user.id,
+            quotation_id=uuid.uuid4(),
+            finalized_at=datetime.now(),
+        )
+        self.session.add_all([customer, product, audit_event, auth_session, usage])
+        await self.session.commit()
+
+        await UserService(self.session).delete_user(str(user.id))
+
+        self.assertIsNone(await self.session.get(User, user.id))
+        self.assertIsNone(await self.session.get(AuthSession, auth_session.id))
+        self.assertIsNone(await self.session.get(QuotationFinalizationUsage, usage.id))
+        await self.session.refresh(customer)
+        await self.session.refresh(product)
+        await self.session.refresh(audit_event)
+        self.assertIsNone(customer.created_by_id)
+        self.assertIsNone(product.created_by_id)
+        self.assertIsNone(audit_event.actor_user_id)

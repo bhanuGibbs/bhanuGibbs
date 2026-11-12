@@ -16,6 +16,17 @@ from app.models.customer import Customer
 from app.models.product import Product
 from app.models.quotation import Quotation
 from app.models.quotation_daily_sequence import QuotationDailySequence
+from app.models.sales_inventory import (
+    SalesInventoryDealer,
+    SalesInventoryInvoice,
+    SalesInventoryNotification,
+    SalesInventoryOrder,
+    SalesInventoryOrderHistory,
+    SalesInventoryOrderItem,
+    SalesInventoryProduct,
+    SalesInventoryStock,
+    SalesInventoryTransaction,
+)
 from app.models.quotation_item import QuotationItem
 from app.models.role import Role
 from app.models.user import User

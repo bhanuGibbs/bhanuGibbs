@@ -123,10 +123,10 @@ const ChallanProducts = () => {
   };
 
   return (
-    <div className="challan-products-page min-h-screen bg-[#f7f8fa] text-slate-900">
+    <div className="challan-products-page min-h-screen bg-[#F8F9FA] text-[#2D3748]">
       <style>{`
-        .challan-products-page ::selection { background: #d1fae5; color: #065f46; }
-        .challan-products-page ::-moz-selection { background: #d1fae5; color: #065f46; }
+        .challan-products-page ::selection { background: #fed7aa; color: #9a3412; }
+        .challan-products-page ::-moz-selection { background: #fed7aa; color: #9a3412; }
         .challan-products-page ::-webkit-scrollbar { width: 8px; height: 8px; }
         .challan-products-page ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .challan-products-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -135,21 +135,21 @@ const ChallanProducts = () => {
       <Header onLogout={logout} user={user} />
       <main className="challan-products-page mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 xl:grid-cols-[700px_minmax(0,1fr)]">
-          <section className="rounded-lg border border-slate-200/60 bg-white p-6">
+          <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-6 shadow-card-sm">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-semibold text-emerald-700">Challan product management</p>
-                <h2 className="mt-2 text-lg font-semibold tracking-tight text-slate-900">Challan product catalog</h2>
-                <p className="mt-1 text-sm text-slate-500">Agriculture-specific products for delivery challans.</p>
+                <p className="text-xs font-semibold text-[#FF6B35]">Challan product management</p>
+                <h2 className="mt-2 text-lg font-semibold tracking-tight text-[#1E3A5F]">Challan product catalog</h2>
+                <p className="mt-1 text-sm text-[#2D3748]/60">Agriculture-specific products for delivery challans.</p>
               </div>
-              <div className="text-sm text-slate-500">
+              <div className="text-sm text-[#2D3748]/60">
                 {loading ? 'Loading…' : `${products.length} product${products.length === 1 ? '' : 's'}`}
               </div>
             </div>
 
             <div className="mt-6 overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                <thead className="bg-slate-50 text-slate-600">
+              <table className="min-w-full divide-y divide-[#1E3A5F]/10 text-left text-sm">
+                <thead className="bg-[#1E3A5F]/5 text-[#1E3A5F]">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Crop</th>
                   <th className="px-4 py-3 font-semibold">Variety</th>
@@ -158,19 +158,19 @@ const ChallanProducts = () => {
                   <th className="px-4 py-3 font-semibold">Actions</th>
                 </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-[#1E3A5F]/10">
                 {products.map((product) => (
-                    <tr key={product.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3">{product.crop}</td>
-                      <td className="px-4 py-3">{product.variety || '—'}</td>
-                      <td className="px-4 py-3">{product.lot_no || '—'}</td>
-                      <td className="px-4 py-3">₹{Number(product.value).toFixed(2)}</td>
+                    <tr key={product.id} className="hover:bg-[#1E3A5F]/5">
+                      <td className="px-4 py-3 text-[#1E3A5F]">{product.crop}</td>
+                      <td className="px-4 py-3 text-[#2D3748]">{product.variety || '—'}</td>
+                      <td className="px-4 py-3 text-[#2D3748]">{product.lot_no || '—'}</td>
+                      <td className="px-4 py-3 font-semibold text-[#1E3A5F]">₹{Number(product.value).toFixed(2)}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-2">
                           <button
                               type="button"
                               onClick={() => handleEdit(product)}
-                              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+                              className="rounded-lg border border-[#1E3A5F]/10 bg-white px-3 py-2 text-xs font-semibold text-[#1E3A5F] transition hover:border-[#FF6B35] hover:text-[#FF6B35]"
                           >
                             Edit
                           </button>
@@ -187,7 +187,7 @@ const ChallanProducts = () => {
                 ))}
                 {!loading && products.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-4 py-8 text-center text-sm text-slate-500">
+                      <td colSpan="5" className="px-4 py-8 text-center text-sm text-[#2D3748]/60">
                         No challan products found. Add one to get started.
                       </td>
                     </tr>
@@ -196,15 +196,15 @@ const ChallanProducts = () => {
               </table>
             </div>
           </section>
-          <section className="rounded-lg border border-slate-200/60 bg-white p-6">
-            <h2 className="text-lg font-semibold tracking-tight text-slate-900">{editingId ? 'Update Challan Product' : 'New Challan Product'}</h2>
-            <p className="mt-1 text-sm text-slate-500">Manage agriculture-specific products for delivery challans.</p>
+          <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-6 shadow-card-sm">
+            <h2 className="text-lg font-semibold tracking-tight text-[#1E3A5F]">{editingId ? 'Update Challan Product' : 'New Challan Product'}</h2>
+            <p className="mt-1 text-sm text-[#2D3748]/60">Manage agriculture-specific products for delivery challans.</p>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-[#1E3A5F]">
                 Crop <span className="text-rose-500">*</span>
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:bg-white focus:ring-2 focus:ring-[#FF6B35]/25"
                   value={form.crop}
                   onChange={(event) => setField('crop', event.target.value)}
                   placeholder="e.g. Rice, Wheat, Paddy"
@@ -212,10 +212,10 @@ const ChallanProducts = () => {
                 />
               </label>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-[#1E3A5F]">
                 Variety
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:bg-white focus:ring-2 focus:ring-[#FF6B35]/25"
                   value={form.variety}
                   onChange={(event) => setField('variety', event.target.value)}
                   placeholder="e.g. IR-64, Basmati"
@@ -223,19 +223,19 @@ const ChallanProducts = () => {
               </label>
 
               <div className="grid grid-cols-2 gap-3">
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-sm font-medium text-[#1E3A5F]">
                   Seed Class
                   <input
-                    className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                    className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:bg-white focus:ring-2 focus:ring-[#FF6B35]/25"
                     value={form.seed_class}
                     onChange={(event) => setField('seed_class', event.target.value)}
                     placeholder="e.g. Foundation, Certified"
                   />
                 </label>
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-sm font-medium text-[#1E3A5F]">
                   Lot No
                   <input
-                    className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                    className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:bg-white focus:ring-2 focus:ring-[#FF6B35]/25"
                     value={form.lot_no}
                     onChange={(event) => setField('lot_no', event.target.value)}
                     placeholder="Batch number"
@@ -243,10 +243,10 @@ const ChallanProducts = () => {
                 </label>
               </div>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-[#1E3A5F]">
                 Unit Size
                 <input
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:bg-white focus:ring-2 focus:ring-[#FF6B35]/25"
                   value={form.unit_size}
                   onChange={(event) => setField('unit_size', event.target.value)}
                   placeholder="e.g. 1 Kg, 5 Kg"
@@ -254,27 +254,27 @@ const ChallanProducts = () => {
               </label>
 
               <div className="grid grid-cols-2 gap-3">
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-sm font-medium text-[#1E3A5F]">
                   Units per Sack/Box
                   <input
                     type="number"
                     min="1"
                     step="1"
                     inputMode="numeric"
-                    className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                    className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:bg-white focus:ring-2 focus:ring-[#FF6B35]/25"
                     value={form.unit_per_sack_box}
                     onChange={(event) => setField('unit_per_sack_box', event.target.value.replace(/[^0-9]/g, ''))}
                     placeholder="e.g. 10"
                   />
                 </label>
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-sm font-medium text-[#1E3A5F]">
                   Sacks/Boxes
                   <input
                     type="number"
                     min="1"
                     step="1"
                     inputMode="numeric"
-                    className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                    className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:bg-white focus:ring-2 focus:ring-[#FF6B35]/25"
                     value={form.sack_box}
                     onChange={(event) => setField('sack_box', event.target.value.replace(/[^0-9]/g, ''))}
                     placeholder="e.g. 5"
@@ -282,14 +282,14 @@ const ChallanProducts = () => {
                 </label>
               </div>
 
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-sm font-medium text-[#1E3A5F]">
                 Price per Kg <span className="text-rose-500">*</span>
                 <input
                   type="number"
                   min="0.01"
                   step="0.01"
                   inputMode="decimal"
-                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                  className="mt-2 w-full rounded-lg border border-[#2D3748]/20 bg-[#1E3A5F]/5 px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:bg-white focus:ring-2 focus:ring-[#FF6B35]/25"
                   value={form.value}
                   onChange={(event) => setField('value', decimalOnly(event.target.value, 12))}
                   placeholder="0.00"
@@ -303,14 +303,14 @@ const ChallanProducts = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex items-center justify-center rounded-lg bg-[#FF6B35] px-4 py-3 text-sm font-semibold text-white shadow-cta transition hover:bg-[#e55a28] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {editingId ? 'Save changes' : 'Save'}
                 </button>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700"
+                  className="inline-flex items-center justify-center rounded-lg border border-[#1E3A5F]/10 bg-[#1E3A5F]/5 px-4 py-3 text-sm font-semibold text-[#1E3A5F] transition hover:border-[#FF6B35] hover:text-[#FF6B35]"
                 >
                   Cancel
                 </button>

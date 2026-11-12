@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Barcode,
+  Camera,
   ChevronLeft,
   ChevronRight,
   CreditCard,
@@ -17,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import Header from '../../components/Header';
+import BarcodeScannerModal from '../../components/BarcodeScannerModal';
 import { useAuth } from '../../context/useAuth';
 import toast from 'react-hot-toast';
 import {
@@ -50,6 +52,7 @@ const POSTerminal = () => {
   const [discount, setDiscount] = useState('0');
   const [showCheckout, setShowCheckout] = useState(false);
   const [taxRate, setTaxRate] = useState(DEFAULT_TAX_RATE);
+  const [showScanner, setShowScanner] = useState(false);
   const barcodeRef = useRef(null);
   const searchDebounceRef = useRef(null);
 
@@ -128,6 +131,25 @@ const POSTerminal = () => {
         },
       ];
     });
+  };
+
+  // Handle barcode scanned from camera
+  const handleCameraScan = async (code) => {
+    // Keep scanner open for continuous scanning - don't close modal
+    setBarcodeInput(code);
+    // Reuse the same lookup logic
+    try {
+      const product = await lookupPOSProductByBarcode(code);
+      if (product.stock_quantity <= 0) {
+        toast.error(`${product.name} is out of stock`);
+      } else {
+        addToCart(product);
+        toast.success(`${product.name} added to cart`);
+      }
+    } catch (err) {
+      toast.error(`Product not found: ${code}`);
+    }
+    setBarcodeInput('');
   };
 
   // Barcode scanner handler
@@ -317,38 +339,47 @@ const POSTerminal = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f7f8fa]">
+      <div className="min-h-screen bg-[#F8F9FA]">
         <Header />
         <div className="flex items-center justify-center py-32">
-          <p className="text-slate-500">Loading POS terminal...</p>
+          <p className="text-[#2D3748]/60">Loading POS terminal...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa]">
+    <div className="min-h-screen bg-[#F8F9FA]">
       <Header />
       <div className="flex h-[calc(100vh-64px)]">
         {/* Left: Product Selection */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Barcode Scanner */}
-          <div className="p-4 border-b border-slate-200 bg-white">
+          <div className="p-4 border-b border-[#1E3A5F]/10 bg-white">
             <form onSubmit={handleBarcodeSubmit} className="flex gap-2">
               <div className="relative flex-1">
-                <ScanLine className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <ScanLine className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#2D3748]/40" />
                 <input
                   ref={barcodeRef}
                   type="text"
                   value={barcodeInput}
                   onChange={(e) => setBarcodeInput(e.target.value)}
                   placeholder="Scan barcode or type to search..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-3 text-sm outline-none focus:border-emerald-500"
+                  className="w-full rounded-xl border border-[#1E3A5F]/10 bg-[#1E3A5F]/5 pl-10 pr-4 py-3 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35]"
                 />
               </div>
               <button
+                type="button"
+                onClick={() => setShowScanner(true)}
+                className="rounded-xl border border-[#1E3A5F]/10 bg-white px-4 py-3 text-sm font-semibold text-[#1E3A5F] hover:bg-[#1E3A5F]/5 flex items-center gap-2"
+                title="Scan with camera"
+              >
+                <Camera className="h-5 w-5" />
+                <span className="hidden sm:inline">Camera</span>
+              </button>
+              <button
                 type="submit"
-                className="rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
+                className="rounded-xl bg-[#FF6B35] px-4 py-3 text-sm font-semibold text-white shadow-cta hover:bg-[#e55a28]"
               >
                 Add
               </button>
@@ -356,14 +387,14 @@ const POSTerminal = () => {
           </div>
 
           {/* Categories */}
-          <div className="px-4 py-2 border-b border-slate-200 bg-white overflow-x-auto">
+          <div className="px-4 py-2 border-b border-[#1E3A5F]/10 bg-white overflow-x-auto">
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap ${
                   !selectedCategory
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-[#FF6B35] text-white'
+                    : 'bg-[#1E3A5F]/5 text-[#2D3748] hover:bg-[#1E3A5F]/10'
                 }`}
               >
                 All
@@ -374,8 +405,8 @@ const POSTerminal = () => {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap ${
                     selectedCategory === cat.id
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      ? 'bg-[#FF6B35] text-white'
+                      : 'bg-[#1E3A5F]/5 text-[#2D3748] hover:bg-[#1E3A5F]/10'
                   }`}
                 >
                   {cat.name}
@@ -394,16 +425,16 @@ const POSTerminal = () => {
                   disabled={product.stock_quantity <= 0}
                   className={`rounded-xl border p-4 text-left transition ${
                     product.stock_quantity <= 0
-                      ? 'border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed'
-                      : 'border-slate-200 bg-white hover:border-emerald-300 hover:shadow-sm'
+                      ? 'border-[#1E3A5F]/10 bg-[#1E3A5F]/5 opacity-50 cursor-not-allowed'
+                      : 'border-[#1E3A5F]/10 bg-white hover:border-[#FF6B35] hover:shadow-sm'
                   }`}
                 >
-                  <div className="font-semibold text-sm text-slate-900 truncate">
+                  <div className="font-semibold text-sm text-[#1E3A5F] truncate">
                     {product.name}
                   </div>
-                  <div className="text-xs text-slate-500 mt-1">{product.sku}</div>
+                  <div className="text-xs text-[#2D3748]/60 mt-1">{product.sku}</div>
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-sm font-bold text-emerald-700">
+                    <span className="text-sm font-bold text-[#FF6B35]">
                       {formatMoney(product.selling_price)}
                     </span>
                     <span
@@ -412,7 +443,7 @@ const POSTerminal = () => {
                           ? 'bg-rose-100 text-rose-700'
                           : product.stock_quantity <= product.low_stock_threshold
                           ? 'bg-amber-100 text-amber-700'
-                          : 'bg-emerald-100 text-emerald-700'
+                          : 'bg-green-100 text-green-700'
                       }`}
                     >
                       {product.stock_quantity} {product.unit}
@@ -422,12 +453,12 @@ const POSTerminal = () => {
               ))}
             </div>
             {products.length === 0 && (
-              <div className="text-center py-16 text-slate-400">
+              <div className="text-center py-16 text-[#2D3748]/40">
                 <Barcode className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>No products found</p>
                 <Link
                   to="/pos/products"
-                  className="text-sm text-emerald-600 hover:underline mt-2 inline-block"
+                  className="text-sm text-[#FF6B35] hover:underline mt-2 inline-block"
                 >
                   Add products
                 </Link>
@@ -437,12 +468,12 @@ const POSTerminal = () => {
         </div>
 
         {/* Right: Cart */}
-        <div className="w-96 bg-white border-l border-slate-200 flex flex-col">
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="w-96 bg-white border-l border-[#1E3A5F]/10 flex flex-col">
+          <div className="p-4 border-b border-[#1E3A5F]/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-slate-600" />
-              <h2 className="font-semibold text-slate-900">Cart</h2>
-              <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full">
+              <ShoppingCart className="h-5 w-5 text-[#1E3A5F]" />
+              <h2 className="font-semibold text-[#1E3A5F]">Cart</h2>
+              <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full">
                 {cart.length}
               </span>
             </div>
@@ -461,21 +492,21 @@ const POSTerminal = () => {
             {cart.map((item, index) => (
               <div
                 key={index}
-                className="rounded-lg border border-slate-200 p-3 bg-slate-50"
+                className="rounded-lg border border-[#1E3A5F]/10 p-3 bg-[#1E3A5F]/5"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-slate-900">
+                    <div className="text-sm font-medium text-[#1E3A5F]">
                       {item.product_name}
                     </div>
-                    <div className="text-xs text-slate-500">{item.sku}</div>
-                    <div className="text-sm font-semibold text-emerald-700 mt-1">
+                    <div className="text-xs text-[#2D3748]/60">{item.sku}</div>
+                    <div className="text-sm font-semibold text-[#FF6B35] mt-1">
                       {formatMoney(item.unit_price * item.quantity)}
                     </div>
                   </div>
                   <button
                     onClick={() => removeFromCart(index)}
-                    className="text-slate-400 hover:text-rose-600"
+                    className="text-[#2D3748]/40 hover:text-rose-600"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -484,28 +515,28 @@ const POSTerminal = () => {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => updateQuantity(index, -1)}
-                      className="rounded-lg border border-slate-200 p-1 hover:bg-slate-100"
+                      className="rounded-lg border border-[#1E3A5F]/10 p-1 hover:bg-[#1E3A5F]/10"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
-                    <span className="w-8 text-center text-sm font-medium">
+                    <span className="w-8 text-center text-sm font-medium text-[#1E3A5F]">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => updateQuantity(index, 1)}
-                      className="rounded-lg border border-slate-200 p-1 hover:bg-slate-100"
+                      className="rounded-lg border border-[#1E3A5F]/10 p-1 hover:bg-[#1E3A5F]/10"
                     >
                       <Plus className="h-3 w-3" />
                     </button>
                   </div>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-[#2D3748]/60">
                     {formatMoney(item.unit_price)} / {item.unit}
                   </span>
                 </div>
               </div>
             ))}
             {cart.length === 0 && (
-              <div className="text-center py-16 text-slate-400">
+              <div className="text-center py-16 text-[#2D3748]/40">
                 <ShoppingCart className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm">Cart is empty</p>
                 <p className="text-xs mt-1">Scan a barcode or select a product</p>
@@ -515,55 +546,55 @@ const POSTerminal = () => {
 
           {/* Totals & Checkout */}
           {cart.length > 0 && (
-            <div className="border-t border-slate-200 p-4 space-y-3">
+            <div className="border-t border-[#1E3A5F]/10 p-4 space-y-3">
               <div className="space-y-1 text-sm">
-                <div className="flex justify-between text-slate-600">
+                <div className="flex justify-between text-[#2D3748]">
                   <span>Subtotal</span>
                   <span>{formatMoney(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-slate-600 items-center">
+                <div className="flex justify-between text-[#2D3748] items-center">
                   <span>Discount</span>
                   <input
                     type="number"
                     value={discount}
                     onChange={(e) => setDiscount(e.target.value)}
-                    className="w-20 rounded-lg border border-slate-200 px-2 py-1 text-right text-sm"
+                    className="w-20 rounded-lg border border-[#1E3A5F]/10 px-2 py-1 text-right text-sm text-[#1E3A5F]"
                     min="0"
                   />
                 </div>
-                <div className="flex justify-between text-slate-600 items-center">
+                <div className="flex justify-between text-[#2D3748] items-center">
                   <span>Tax</span>
                   <div className="flex items-center gap-2">
                     <span>{formatMoney(taxAmount)}</span>
-                    <span className="text-xs text-slate-400">({averageTaxRate.toFixed(1)}%)</span>
+                    <span className="text-xs text-[#2D3748]/40">({averageTaxRate.toFixed(1)}%)</span>
                   </div>
                 </div>
-                <div className="flex justify-between text-slate-600 items-center">
+                <div className="flex justify-between text-[#2D3748] items-center">
                   <span className="text-xs">Default Rate</span>
                   <div className="flex items-center gap-1">
                     <input
                       type="number"
                       value={taxRate}
                       onChange={(e) => setTaxRate(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
-                      className="w-16 rounded-lg border border-slate-200 px-2 py-1 text-right text-xs"
+                      className="w-16 rounded-lg border border-[#1E3A5F]/10 px-2 py-1 text-right text-xs text-[#1E3A5F]"
                       min="0"
                       max="100"
                       step="0.5"
                       title="Default tax rate (%) for new cart items"
                     />
-                    <span className="text-xs text-slate-400">%</span>
+                    <span className="text-xs text-[#2D3748]/40">%</span>
                   </div>
                 </div>
-                <div className="flex justify-between font-bold text-lg text-slate-900 pt-2 border-t border-slate-200">
+                <div className="flex justify-between font-bold text-lg text-[#1E3A5F] pt-2 border-t border-[#1E3A5F]/10">
                   <span>Total</span>
-                  <span className="text-emerald-700">{formatMoney(grandTotal)}</span>
+                  <span className="text-[#FF6B35]">{formatMoney(grandTotal)}</span>
                 </div>
               </div>
 
               {!showCheckout ? (
                 <button
                   onClick={() => setShowCheckout(true)}
-                  className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
+                  className="w-full rounded-xl bg-[#FF6B35] py-3 text-sm font-semibold text-white shadow-cta hover:bg-[#e55a28]"
                 >
                   Proceed to Checkout
                 </button>
@@ -578,12 +609,12 @@ const POSTerminal = () => {
                           onClick={() => setPaymentMethod(method.id)}
                           className={`rounded-lg p-2 text-center transition ${
                             paymentMethod === method.id
-                              ? 'bg-emerald-100 border-2 border-emerald-500'
-                              : 'bg-slate-50 border-2 border-transparent hover:bg-slate-100'
+                              ? 'bg-orange-100 border-2 border-[#FF6B35]'
+                              : 'bg-[#1E3A5F]/5 border-2 border-transparent hover:bg-[#1E3A5F]/10'
                           }`}
                         >
-                          <Icon className={`h-5 w-5 mx-auto ${paymentMethod === method.id ? 'text-emerald-700' : 'text-slate-500'}`} />
-                          <span className={`text-xs mt-1 block ${paymentMethod === method.id ? 'text-emerald-700 font-medium' : 'text-slate-500'}`}>
+                          <Icon className={`h-5 w-5 mx-auto ${paymentMethod === method.id ? 'text-[#FF6B35]' : 'text-[#2D3748]/60'}`} />
+                          <span className={`text-xs mt-1 block ${paymentMethod === method.id ? 'text-[#FF6B35] font-medium' : 'text-[#2D3748]/60'}`}>
                             {method.label}
                           </span>
                         </button>
@@ -593,14 +624,14 @@ const POSTerminal = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowCheckout(false)}
-                      className="flex-1 rounded-xl border border-slate-200 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                      className="flex-1 rounded-xl border border-[#1E3A5F]/10 py-3 text-sm font-medium text-[#1E3A5F] hover:bg-[#1E3A5F]/5"
                     >
                       Back
                     </button>
                     <button
                       onClick={handleCheckout}
                       disabled={checkoutLoading}
-                      className="flex-1 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-70"
+                      className="flex-1 rounded-xl bg-[#FF6B35] py-3 text-sm font-semibold text-white shadow-cta hover:bg-[#e55a28] disabled:opacity-70"
                     >
                       {checkoutLoading ? 'Processing...' : 'Complete Sale'}
                     </button>
@@ -611,6 +642,14 @@ const POSTerminal = () => {
           )}
         </div>
       </div>
+
+      {/* Camera Barcode Scanner Modal */}
+      {showScanner && (
+        <BarcodeScannerModal
+          onClose={() => setShowScanner(false)}
+          onScan={handleCameraScan}
+        />
+      )}
     </div>
   );
 };
