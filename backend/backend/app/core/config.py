@@ -8,6 +8,7 @@ from typing import Any
 from dotenv import dotenv_values, load_dotenv
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+from azure.core.exceptions import ClientAuthenticationError
 
 
 logger = logging.getLogger(__name__)
@@ -58,28 +59,45 @@ def get_settings() -> Settings:
 
         key_vault_url = os.environ.get("KEY_VAULT_URL")
         secret_sources = {}  # tracks where each secret came from
+        use_key_vault = False
 
         if is_production and key_vault_url:
-            logger.info("Loading secrets from Azure Key Vault: %s", key_vault_url)
-            client = SecretClient(
-                vault_url=key_vault_url,
-                credential=DefaultAzureCredential(),
-            )
+            try:
+                logger.info("Attempting to load secrets from Azure Key Vault: %s", key_vault_url)
+                credential = DefaultAzureCredential()
+                # Force credential resolution early to catch auth failures
+                credential.get_token("https://vault.azure.net/.default")
+                client = SecretClient(vault_url=key_vault_url, credential=credential)
 
-            def get_secret(name: str) -> str:
-                value = client.get_secret(name).value
-                if not value:
-                    raise RuntimeError(f"Required Key Vault secret is empty: {name}")
-                secret_sources[name] = "Azure Key Vault"
-                return value
+                def get_secret(name: str) -> str:
+                    value = client.get_secret(name).value
+                    if not value:
+                        raise RuntimeError(f"Required Key Vault secret is empty: {name}")
+                    secret_sources[name] = "Azure Key Vault"
+                    return value
 
-            database_url = get_secret("DATABASE-URL")
-            jwt_secret_key = get_secret("JWT-SECRET-KEY")
-            smtp_username = get_secret("SMTP-USERNAME")
-            smtp_password = get_secret("SMTP-PASSWORD")
-            smtp_from_email = get_secret("SMTP-FROM-EMAIL")
-            smtp_to_email = get_secret("SMTP-TO-EMAIL")
-        else:
+                database_url = get_secret("DATABASE-URL")
+                jwt_secret_key = get_secret("JWT-SECRET-KEY")
+                smtp_username = get_secret("SMTP-USERNAME")
+                smtp_password = get_secret("SMTP-PASSWORD")
+                smtp_from_email = get_secret("SMTP-FROM-EMAIL")
+                smtp_to_email = get_secret("SMTP-TO-EMAIL")
+                use_key_vault = True
+                logger.info("Successfully loaded all secrets from Azure Key Vault")
+            except ClientAuthenticationError as e:
+                logger.warning(
+                    "Azure Key Vault authentication failed: %s. Falling back to environment variables.",
+                    e.message,
+                )
+                use_key_vault = False
+            except Exception as e:
+                logger.warning(
+                    "Azure Key Vault error: %s. Falling back to environment variables.",
+                    str(e),
+                )
+                use_key_vault = False
+
+        if not use_key_vault:
             def local_source(key: str) -> str:
                 if key in process_environment_keys:
                     return "process environment"
