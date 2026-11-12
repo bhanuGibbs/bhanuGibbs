@@ -60,9 +60,10 @@ def get_settings() -> Settings:
         ):
             raise RuntimeError("Production requires a JWT_SECRET_KEY of at least 32 bytes")
 
-        if is_production:
+        key_vault_url = os.environ.get("KEY_VAULT_URL")
+        if is_production and key_vault_url:
             client = SecretClient(
-                vault_url=os.environ["KEY_VAULT_URL"],
+                vault_url=key_vault_url,
                 credential=DefaultAzureCredential(),
             )
 
