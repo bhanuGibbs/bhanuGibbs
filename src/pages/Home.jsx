@@ -289,6 +289,7 @@ const Home = () => {
                     <QuotationDetailsForm
                         register={register}
                         errors={errors}
+                        watch={watch}
                         documentMode={documentMode}
                     />
                     <ItemTable

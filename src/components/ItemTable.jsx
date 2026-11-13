@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { calculateItemAmount } from '../utils/calculations';
 import { decimalOnly, percentOnly, HSN_CODE_REGEX, preventPaste } from '../utils/numericInput';
@@ -18,6 +18,16 @@ const ItemTable = ({
   onSaveProduct,
 }) => {
   const [openProductId, setOpenProductId] = useState('');
+  const [showFab, setShowFab] = useState(false);
+
+  const handleScroll = useCallback(() => {
+    setShowFab(window.scrollY > 300);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   return (
   <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
@@ -175,6 +185,16 @@ const ItemTable = ({
         </tbody>
       </table>
     </div>
+    {showFab && items.length > 0 && (
+      <button
+        type="button"
+        onClick={onAddItem}
+        aria-label="Add item"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#FF6B35] text-white shadow-lg transition hover:bg-[#e55a28]"
+      >
+        <Plus size={22} />
+      </button>
+    )}
   </section>
   );
 };

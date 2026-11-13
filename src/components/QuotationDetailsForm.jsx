@@ -4,9 +4,10 @@ import DateInput from './DateInput';
 const inputClass = 'block min-w-0 w-full max-w-full rounded-lg border border-[#2D3748]/20 bg-white px-4 py-3 text-sm text-[#1E3A5F] outline-none transition focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25';
 const labelClass = 'mb-2 block text-sm font-medium text-[#1E3A5F]';
 
-const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) => {
+const QuotationDetailsForm = ({ register, errors, watch, documentMode = 'quotation' }) => {
   const isInvoice = documentMode === 'billing' || documentMode === 'invoice';
   const documentLabel = isInvoice ? 'Invoice' : 'Quotation';
+  const quotationDate = watch ? watch('quotation.quotationDate') : undefined;
 
   return (
     <section className="rounded-xl border border-[#1E3A5F]/10 bg-white p-5 sm:p-7 shadow-card-sm">
@@ -43,7 +44,7 @@ const QuotationDetailsForm = ({ register, errors, documentMode = 'quotation' }) 
         </div>
 
         <DateInput label={`${documentLabel} Date`} registration={register('quotation.quotationDate')} error={errors.quotation?.quotationDate?.message} />
-        <DateInput label="Valid Until" registration={register('quotation.validUntil')} error={errors.quotation?.validUntil?.message} />
+        <DateInput label="Valid Until" registration={register('quotation.validUntil')} error={errors.quotation?.validUntil?.message} min={quotationDate || undefined} />
       </div>
     </section>
   );
