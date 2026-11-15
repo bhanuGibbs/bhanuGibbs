@@ -6,6 +6,7 @@ services:
     build:
       context: ./backend/backend
       dockerfile: Dockerfile
+    user: root
     environment:
       KEY_VAULT_URL: ${KEY_VAULT_URL:-https://keelbill.vault.azure.net/}
     entrypoint: ["python", "/app/app/scripts/fetch_db_secrets.py"]
