@@ -76,7 +76,7 @@ def get_settings() -> Settings:
                     secret_sources[name] = "Azure Key Vault"
                     return value
 
-                database_url = get_secret("DATABASE-URL")
+                database_url = get_secret("DATABASE_URL_DOCKER")
                 jwt_secret_key = get_secret("JWT-SECRET-KEY")
                 smtp_username = get_secret("SMTP-USERNAME")
                 smtp_password = get_secret("SMTP-PASSWORD")
