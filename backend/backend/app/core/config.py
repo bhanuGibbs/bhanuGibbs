@@ -52,10 +52,17 @@ def get_settings() -> Settings:
 
         env_path = Path(__file__).resolve().parent.parent.parent / ".env"
         process_environment_keys = set(os.environ)
-        dotenv_settings = dotenv_values(env_path)
-        load_dotenv(str(env_path), override=False)
         environment = os.getenv("ENVIRONMENT", "development")
         is_production = environment.lower() in {"production", "prod"}
+
+        # Only load .env file in non-production mode; production uses Azure Key Vault
+        dotenv_settings = {}
+        if not is_production and env_path.exists():
+            dotenv_settings = dotenv_values(env_path)
+            load_dotenv(str(env_path), override=False)
+            print(f"CONFIG: Development mode — loaded .env file from {env_path}", flush=True)
+        elif is_production:
+            print(f"CONFIG: Production mode — skipping .env file", flush=True)
         jwt_secret_key = os.getenv("JWT_SECRET_KEY", "changeme")
 
         key_vault_url = os.environ.get("KEY_VAULT_URL")
