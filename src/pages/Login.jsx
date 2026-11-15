@@ -7,7 +7,7 @@ import AuthLayout from '../components/AuthLayout';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, sessionExpired } = useAuth();
+  const { login, sessionExpired, loggedOutFromOtherDevice } = useAuth();
   const [form, setForm] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,7 +36,11 @@ const Login = () => {
       description="Enter your account details to continue to your billing workspace."
       variant="auth"
     >
-        {sessionExpired ? (
+        {loggedOutFromOtherDevice ? (
+          <p role="status" className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-950">
+            You have been logged in from another device. Your previous session was ended for security. Please sign in again.
+          </p>
+        ) : sessionExpired ? (
           <p role="status" className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
             Your session expired. Please sign in again to continue.
           </p>

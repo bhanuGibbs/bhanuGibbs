@@ -9,6 +9,7 @@ from app.core.database import get_session
 from app.models.company import Company
 from app.models.role import Role
 from app.security import decode_token
+from app.services.auth_session_service import AuthSessionService
 from app.services.user_service import UserService
 
 
@@ -50,6 +51,14 @@ async def get_optional_current_user(
     user = await user_service.get_user_by_id(payload.get("sub", ""))
     if not user or not user.is_active:
         return None
+
+    # Single-session enforcement: verify the session is still active in the database
+    refresh_token_id = payload.get("refresh_token_id")
+    if refresh_token_id:
+        auth_session_service = AuthSessionService(session)
+        stored_session = await auth_session_service.get_session_by_token_id(refresh_token_id)
+        if stored_session is None:
+            return None
 
     role = await session.get(Role, user.role_id)
     company = await session.get(Company, user.company_id) if user.company_id else None

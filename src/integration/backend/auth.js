@@ -140,6 +140,19 @@ export const logoutBackend = async () => {
   });
 };
 
+export const logoutAllDevices = async () => {
+  const token = getStoredToken();
+  if (!token) return;
+
+  await authenticatedFetch(`${API_BASE}/auth/logout-all`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
 export const getCurrentUser = async () => {
   const response = await authenticatedFetch(`${API_BASE}/auth/me`, {
     headers: {
@@ -244,7 +257,7 @@ export const authenticatedFetch = async (input, init = {}) => {
 
   logoutUser();
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event('ledger:session-expired'));
+    window.dispatchEvent(new CustomEvent('ledger:session-expired', { detail: { otherDevice: true } }));
   }
   throw new Error('Your session has expired. Please sign in again.');
 };

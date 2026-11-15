@@ -127,6 +127,11 @@ async def login(
 
     role = await session.get(Role, user.role_id)
     role_name = role.name if role else "Viewer"
+
+    # Single-session enforcement: revoke all existing sessions before creating a new one
+    auth_session_service = AuthSessionService(session)
+    await auth_session_service.revoke_all_sessions_for_user(str(user.id), commit=False)
+
     token_id = secrets.token_urlsafe(32)
     token_payload = {
         "sub": str(user.id),
@@ -139,7 +144,7 @@ async def login(
         "refresh_token_id": token_id,
     }
     refresh_token = create_refresh_token(token_payload)
-    await AuthSessionService(session).create_session(str(user.id), refresh_token, token_id)
+    await auth_session_service.create_session(str(user.id), refresh_token, token_id)
 
     return Token(
         access_token=create_access_token(token_payload),
@@ -200,7 +205,8 @@ async def refresh_token(request: Request, payload: TokenRefreshRequest, session:
     role = await session.get(Role, user.role_id)
     company = await session.get(Company, user.company_id) if user.company_id else None
 
-    await auth_session_service.revoke_session(token_id, commit=False)
+    # Single-session enforcement: revoke all sessions (including current) before creating a new one
+    await auth_session_service.revoke_all_sessions_for_user(str(token_payload["sub"]), commit=False)
 
     new_token_id = secrets.token_urlsafe(32)
     new_payload = {
@@ -252,6 +258,19 @@ async def logout(
         pass
 
     return {"message": "Logged out successfully."}
+
+
+@router.post("/logout-all", status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
+async def logout_all(
+    request: Request,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, str]:
+    """Revoke all refresh sessions for the current user — logs out from all devices."""
+    auth_session_service = AuthSessionService(session)
+    await auth_session_service.revoke_all_sessions_for_user(current_user["id"])
+    return {"message": "Logged out from all devices successfully."}
 
 
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)

@@ -8,6 +8,7 @@ import {
   loginUser,
   logoutUser,
   logoutBackend,
+  logoutAllDevices,
   registerUser,
   refreshAuthToken,
 } from '../integration/backend/auth';
@@ -18,11 +19,16 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [sessionExpired, setSessionExpired] = useState(false);
 
+  const [loggedOutFromOtherDevice, setLoggedOutFromOtherDevice] = useState(false);
+
   useEffect(() => {
-    const handleSessionExpired = () => {
+    const handleSessionExpired = (event) => {
       setUser(null);
       setIsAuthenticated(false);
       setSessionExpired(true);
+      if (event?.detail?.otherDevice) {
+        setLoggedOutFromOtherDevice(true);
+      }
     };
 
     window.addEventListener('ledger:session-expired', handleSessionExpired);
@@ -64,6 +70,7 @@ export const AuthProvider = ({ children }) => {
     setUser(currentUser);
     setIsAuthenticated(true);
     setSessionExpired(false);
+    setLoggedOutFromOtherDevice(false);
     return tokenData;
   };
 
@@ -90,6 +97,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     setSessionExpired(false);
+    setLoggedOutFromOtherDevice(false);
+  };
+
+  const handleLogoutAllDevices = async () => {
+    await logoutAllDevices();
+    logoutUser();
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
   const refreshToken = async () => {
@@ -108,9 +123,11 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         loading,
         sessionExpired,
+        loggedOutFromOtherDevice,
         login,
         register,
         logout,
+        logoutAllDevices: handleLogoutAllDevices,
         refreshToken,
         refreshUser,
       }}
