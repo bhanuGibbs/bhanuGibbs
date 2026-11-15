@@ -1,10 +1,24 @@
 services:
+  # ─────────────────────────────────────────────
+  # Init container: fetches DB secrets from Key Vault
+  # ─────────────────────────────────────────────
+  db-init:
+    build:
+      context: ./backend/backend
+      dockerfile: Dockerfile
+    environment:
+      KEY_VAULT_URL: ${KEY_VAULT_URL:-https://keelbill.vault.azure.net/}
+    entrypoint: ["python", "/app/app/scripts/fetch_db_secrets.py"]
+    volumes:
+      - shared_secrets:/shared/secrets
+
+  # ─────────────────────────────────────────────
+  # Backend: reads secrets from Key Vault at runtime
+  # ─────────────────────────────────────────────
   backend:
     build:
       context: ./backend/backend
       dockerfile: Dockerfile
-    env_file:
-      - ./backend/backend/.env
     environment:
       APP_NAME: ${APP_NAME:-KeelBill Ledger API}
       ENVIRONMENT: ${ENVIRONMENT:-production}
@@ -13,9 +27,10 @@ services:
       # No AZURE_TENANT_ID / AZURE_CLIENT_ID / AZURE_CLIENT_SECRET are needed.
       # Make sure the VM has a managed identity assigned with "Key Vault Secrets User" role.
       KEY_VAULT_URL: ${KEY_VAULT_URL:-https://keelbill.vault.azure.net/}
-      # Fallback secrets — used only if KEY_VAULT_URL is empty or authentication fails
-      DATABASE_URL: ${DATABASE-URL-DOCKER:-postgresql+asyncpg://postgres:Kbprakash%4078935@db:5432/quotation_db}
-      JWT_SECRET_KEY: ${JWT-SECRET-KEY:-gibbs_Production_Secret_Key_2026_SuperSecure!@#}
+      # Secrets are loaded from Azure Key Vault in production.
+      # These variables serve as fallbacks only if Key Vault is unavailable.
+      DATABASE_URL: ${DATABASE_URL_DOCKER}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       FRONTEND_URL: ${DOCKER_FRONTEND_URL:-https://keelbill.in}
       CORS_ORIGINS: ${DOCKER_CORS_ORIGINS:-https://keelbill.in,https://www.keelbill.in}
@@ -62,17 +77,26 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  # ─────────────────────────────────────────────
+  # Database: reads credentials from files written by db-init
+  # ─────────────────────────────────────────────
   db:
     image: postgres:16
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
     environment:
-      POSTGRES_USER: ${POSTGRES-USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES-PASSWORD:-Kbprakash@78935}
-      POSTGRES_DB: ${POSTGRES_DB:-quotation_db}
+      # POSTGRES_PASSWORD_FILE is natively supported by PostgreSQL Docker image
+      POSTGRES_PASSWORD_FILE: /shared/secrets/password.txt
+      # POSTGRES_USER and POSTGRES_DB are non-secret, set directly
+      POSTGRES_USER: postgres
+      POSTGRES_DB: quotation_db
     # Database port is intentionally not exposed to the host.
     # Access the database only through the backend service.
     # To debug, use: docker exec -it <container> psql -U postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - shared_secrets:/shared/secrets:ro
     healthcheck:
       test:
         - CMD-SHELL
@@ -85,3 +109,4 @@ services:
 
 volumes:
   postgres_data:
+  shared_secrets:

@@ -35,6 +35,7 @@ class Settings:
     smtp_password: str
     smtp_from_email: str
     smtp_to_email: str
+    postgres_password: str
 
 
     def as_dict(self) -> dict[str, Any]:
@@ -62,6 +63,7 @@ def get_settings() -> Settings:
         use_key_vault = False
 
         if is_production and key_vault_url:
+            print(f"CONFIG: Production mode detected, attempting Azure Key Vault: {key_vault_url}", flush=True)
             try:
                 logger.info("Attempting to load secrets from Azure Key Vault: %s", key_vault_url)
                 credential = DefaultAzureCredential()
@@ -78,19 +80,24 @@ def get_settings() -> Settings:
 
                 database_url = get_secret("DATABASE-URL-DOCKER")
                 jwt_secret_key = get_secret("JWT-SECRET-KEY")
+                postgres_password = get_secret("POSTGRES-PASSWORD")
                 smtp_username = get_secret("SMTP-USERNAME")
                 smtp_password = get_secret("SMTP-PASSWORD")
                 smtp_from_email = get_secret("SMTP-FROM-EMAIL")
                 smtp_to_email = get_secret("SMTP-TO-EMAIL")
                 use_key_vault = True
+                print(f"CONFIG: ✓ Successfully loaded all secrets from Azure Key Vault", flush=True)
+                print(f"CONFIG:   Database URL from Key Vault: {database_url[:30]}...", flush=True)
                 logger.info("Successfully loaded all secrets from Azure Key Vault")
             except ClientAuthenticationError as e:
+                print(f"CONFIG: ✗ Azure Key Vault authentication failed: {e.message}. Falling back to environment variables.", flush=True)
                 logger.warning(
                     "Azure Key Vault authentication failed: %s. Falling back to environment variables.",
                     e.message,
                 )
                 use_key_vault = False
             except Exception as e:
+                print(f"CONFIG: ✗ Azure Key Vault error: {e}. Falling back to environment variables.", flush=True)
                 logger.warning(
                     "Azure Key Vault error: %s. Falling back to environment variables.",
                     str(e),
@@ -98,6 +105,7 @@ def get_settings() -> Settings:
                 use_key_vault = False
 
         if not use_key_vault:
+            print(f"CONFIG: Using fallback — loading secrets from environment variables / .env", flush=True)
             def local_source(key: str) -> str:
                 if key in process_environment_keys:
                     return "process environment"
@@ -123,6 +131,11 @@ def get_settings() -> Settings:
             smtp_to_email = os.getenv("SMTP_TO_EMAIL", "")
             secret_sources["SMTP_TO_EMAIL"] = local_source("SMTP_TO_EMAIL")
 
+            postgres_password = os.getenv("POSTGRES_PASSWORD", "")
+            secret_sources["POSTGRES_PASSWORD"] = local_source("POSTGRES_PASSWORD")
+
+        print(f"CONFIG: Final database URL source: {'Azure Key Vault' if use_key_vault else secret_sources.get('DATABASE_URL', 'unknown')}", flush=True)
+        print(f"CONFIG: Final database URL: {database_url[:40]}...", flush=True)
         if not database_url:
             raise RuntimeError("Database URL is missing or empty")
 
@@ -152,6 +165,7 @@ def get_settings() -> Settings:
             smtp_password=smtp_password,
             smtp_from_email=smtp_from_email,
             smtp_to_email=smtp_to_email,
+            postgres_password=postgres_password,
         )
     return _SETTINGS
 
