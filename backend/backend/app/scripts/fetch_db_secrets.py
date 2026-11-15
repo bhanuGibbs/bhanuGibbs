@@ -36,7 +36,6 @@ def main():
 
     output_dir = Path("/shared/secrets")
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_dir.chmod(0o777)  # Ensure the Python process can write to the mounted volume
 
     print(f"Connecting to Azure Key Vault: {vault_url}", flush=True)
     try:
