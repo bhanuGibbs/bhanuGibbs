@@ -26,6 +26,7 @@ const POSTerminal = lazy(() => import('./pages/pos/POSTerminal'));
 const POSProducts = lazy(() => import('./pages/pos/POSProducts'));
 const POSTransactions = lazy(() => import('./pages/pos/POSTransactions'));
 const POSInventory = lazy(() => import('./pages/pos/POSInventory'));
+const CentralProducts = lazy(() => import('./pages/CentralProducts'));
 const DeliveryChallans = lazy(() => import('./pages/DeliveryChallans'));
 const DeliveryChallanForm = lazy(() => import('./components/DeliveryChallanForm'));
 const ChallanProducts = lazy(() => import('./pages/ChallanProducts'));
@@ -248,6 +249,16 @@ function App() {
               <RequireBusinessProfile profiles={['invoice', 'pos', 'delivery_challan']}>
                 <POSInventory />
               </RequireBusinessProfile>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/central-products"
+          element={
+            <RequireAuth>
+              <RequireAdmin>
+                <CentralProducts />
+              </RequireAdmin>
             </RequireAuth>
           }
         />

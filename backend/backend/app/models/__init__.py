@@ -5,6 +5,7 @@ from app.models import (
     audit_event,
     company,
     customer,
+    master_product,
     product,
     quotation,
     quotation_daily_sequence,
@@ -13,5 +14,6 @@ from app.models import (
     quotation_sequence,
     role,
     sales_inventory,
+    tenant_product,
     user,
 )

@@ -124,6 +124,13 @@ class POSProductService:
             product.is_active = is_active
         return await self.repository.update(product)
 
+    async def deactivate_product(self, product_id: str, company_id: str) -> POSProduct:
+        """Deactivate a product (soft delete) to preserve transaction history."""
+        product = await self.get_product(product_id, company_id)
+        product.is_active = False
+        await self.repository.update(product)
+        return product
+
     async def delete_product(self, product_id: str, company_id: str) -> None:
         """Delete a product."""
         product = await self.get_product(product_id, company_id)

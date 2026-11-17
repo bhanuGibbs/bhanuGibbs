@@ -35,6 +35,10 @@ const posNavigation = [
   { to: '/pos/inventory', label: 'Inventory', icon: FileText },
 ];
 
+const posAdminNavigation = [
+  { to: '/admin/central-products', label: 'Central Products', icon: Package },
+];
+
 const challanNavigation = [
   { to: '/delivery-challans', label: 'Challan List', icon: FileText, end: true },
   { to: '/delivery-challan/new', label: 'Create Challan', icon: Plus },
@@ -93,6 +97,19 @@ const Header = ({
           {label}
         </NavLink>
       ))}
+      {(effectiveUser?.role === 'Super Admin') || (isPOS && (effectiveUser?.role === 'Admin' || effectiveUser?.role === 'Super Admin')) ? (
+        posAdminNavigation.map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            onClick={onNavigate}
+            className={navLinkClass}
+          >
+            <Icon size={16} strokeWidth={1.8} />
+            {label}
+          </NavLink>
+        ))
+      ) : null}
       {!isPOS && !isChallan && (effectiveUser?.role === 'Admin' || effectiveUser?.role === 'Super Admin') ? (
         <NavLink
           to="/admin/users"

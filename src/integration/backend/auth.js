@@ -69,6 +69,7 @@ export const getStoredUser = () => {
       email: parsed.email || 'No email available',
       role: parsed.role || 'Viewer',
       business_profile: parsed.business_profile || 'invoice',
+      business_type: parsed.business_type || null,
       is_profile_complete: Boolean(parsed.is_profile_complete),
       expiresAt: parsed.exp ? new Date(parsed.exp * 1000).toISOString() : null,
     };

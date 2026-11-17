@@ -31,6 +31,7 @@ class CompanyBase(BaseModel):
     city: NameField = None
     pincode: Pincode = None
     business_profile: str = Field(default="invoice", pattern="^(invoice|pos|delivery_challan|sales_inventory)$")
+    business_type: str | None = Field(default=None, max_length=50)
 
 
 class CompanyCreate(CompanyBase):
@@ -77,6 +78,7 @@ class CompanyRead(CompanyBase):
     pincode: str | None = None
     gstin: str | None = None
     business_profile: str = "invoice"
+    business_type: str | None = None
     created_at: datetime
     updated_at: datetime
     currency: str | None = None

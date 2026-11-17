@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_current_user, get_db_session
@@ -68,3 +69,39 @@ async def list_all_companies(
     service = CompanyService(session)
     companies = await service.list_companies()
     return [CompanyRead.from_orm(c) for c in companies]
+
+
+class BusinessTypeUpdate(BaseModel):
+    business_type: str | None = Field(default=None, max_length=50)
+
+
+@router.put("/{company_id}/business-type", response_model=CompanyRead)
+async def update_business_type(
+    company_id: str,
+    payload: BusinessTypeUpdate,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Update the business type for a company.
+
+    Admin and Super Admin can update.
+    """
+    if current_user["role"] not in {"Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
+
+    service = CompanyService(session)
+    try:
+        company = await service.update_business_type(
+            company_id=company_id,
+            business_type=payload.business_type,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+
+    return CompanyRead.from_orm(company)

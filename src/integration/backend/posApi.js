@@ -246,3 +246,109 @@ export const getPOSCashierPerformance = async () => {
   if (!response.ok) throw await readApiError(response, 'Unable to load cashier performance.');
   return response.json();
 };
+
+// ---- Central Product Repository ----
+
+export const searchMasterProducts = async (query, skip = 0, limit = 50) => {
+  let url = `${API_BASE}/pos/master-search?`;
+  if (query) url += `q=${encodeURIComponent(query)}&`;
+  url += `skip=${skip}&limit=${limit}`;
+  const response = await authenticatedFetch(url);
+  if (!response.ok) throw await readApiError(response, 'Unable to search products.');
+  return response.json();
+};
+
+export const createTenantProduct = async (data) => {
+  const response = await authenticatedFetch(`${API_BASE}/pos/tenant-products`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthorizedHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw await readApiError(response, 'Unable to import product.');
+  return response.json();
+};
+
+export const getTenantProducts = async (skip = 0, limit = 50) => {
+  const response = await authenticatedFetch(
+    `${API_BASE}/pos/tenant-products?skip=${skip}&limit=${limit}`
+  );
+  if (!response.ok) throw await readApiError(response, 'Unable to load products.');
+  return response.json();
+};
+
+export const updateTenantProduct = async (id, data) => {
+  const response = await authenticatedFetch(`${API_BASE}/pos/tenant-products/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getAuthorizedHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw await readApiError(response, 'Unable to update product.');
+  return response.json();
+};
+
+export const deleteTenantProduct = async (id) => {
+  const response = await authenticatedFetch(`${API_BASE}/pos/tenant-products/${id}`, {
+    method: 'DELETE',
+    headers: getAuthorizedHeaders(),
+  });
+  if (!response.ok) throw await readApiError(response, 'Unable to delete product.');
+};
+
+// ---- Master Product Admin (Super Admin only) ----
+
+export const listMasterProducts = async (business_type, search, skip = 0, limit = 50, active_only = true) => {
+  let url = `${API_BASE}/master-products/?skip=${skip}&limit=${limit}&active_only=${active_only}`;
+  if (business_type) url += `&business_type=${encodeURIComponent(business_type)}`;
+  if (search) url += `&q=${encodeURIComponent(search)}`;
+  const response = await authenticatedFetch(url);
+  if (!response.ok) throw await readApiError(response, 'Unable to load master products.');
+  return response.json();
+};
+
+export const createMasterProduct = async (data) => {
+  const response = await authenticatedFetch(`${API_BASE}/master-products/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthorizedHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw await readApiError(response, 'Unable to create master product.');
+  return response.json();
+};
+
+export const updateMasterProduct = async (id, data) => {
+  const response = await authenticatedFetch(`${API_BASE}/master-products/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getAuthorizedHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw await readApiError(response, 'Unable to update master product.');
+  return response.json();
+};
+
+export const deactivateMasterProduct = async (id) => {
+  const response = await authenticatedFetch(`${API_BASE}/master-products/${id}`, {
+    method: 'DELETE',
+    headers: getAuthorizedHeaders(),
+  });
+  if (!response.ok) throw await readApiError(response, 'Unable to deactivate master product.');
+};
+
+export const importMasterProductsCsv = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const headers = getAuthorizedHeaders();
+  delete headers['Content-Type'];
+  const response = await authenticatedFetch(`${API_BASE}/master-products/import`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  if (!response.ok) throw await readApiError(response, 'Unable to import products.');
+  return response.json();
+};
+
+export const getMasterProductBusinessTypes = async () => {
+  const response = await authenticatedFetch(`${API_BASE}/master-products/business-types`);
+  if (!response.ok) throw await readApiError(response, 'Unable to load business types.');
+  return response.json();
+};

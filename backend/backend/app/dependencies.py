@@ -69,6 +69,7 @@ async def get_optional_current_user(
         "role": role.name if role else "Viewer",
         "company_id": str(user.company_id) if user.company_id else None,
         "business_profile": company.business_profile if company else user.business_profile,
+        "company_business_type": company.business_type if company else None,
     }
 
 

@@ -28,7 +28,7 @@ class POSStockMovement(Base):
     )
 
     company_id: Mapped[str] = mapped_column(ForeignKey("companies.id"), nullable=False, index=True)
-    product_id: Mapped[str | None] = mapped_column(ForeignKey("pos_products.id", ondelete="SET NULL"), nullable=True, index=True)
+    product_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     variant_id: Mapped[str | None] = mapped_column(ForeignKey("pos_product_variants.id", ondelete="SET NULL"), nullable=True, index=True)
     movement_type: Mapped[str] = mapped_column(String(20), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)

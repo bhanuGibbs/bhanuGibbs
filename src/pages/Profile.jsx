@@ -13,9 +13,19 @@ const money = (value) => new Intl.NumberFormat('en-IN', {
   maximumFractionDigits: 2,
 }).format(Number(value || 0));
 
+const VALID_BUSINESS_TYPES = [
+  'Paint Store',
+  'Grocery Store',
+  'Hardware Store',
+  'Electrical Store',
+  'Medical Store',
+  'Garments Store',
+  'Mobile Store',
+];
+
 const Profile = () => {
   const { user, logout, refreshUser } = useAuth();
-  const [form, setForm] = useState({ username: '', email: '', mobile_number: '' });
+  const [form, setForm] = useState({ username: '', email: '', mobile_number: '', business_type: '' });
   const [saving, setSaving] = useState(false);
   const [repStats, setRepStats] = useState(null);
   const [cashierStats, setCashierStats] = useState(null);
@@ -35,6 +45,7 @@ const Profile = () => {
       username: user?.username || '',
       email: user?.email || '',
       mobile_number: user?.mobile_number || '',
+      business_type: user?.business_type || '',
     });
   }, [user]);
 
@@ -89,6 +100,7 @@ const Profile = () => {
         username: form.username.trim(),
         email: form.email.trim(),
         mobile_number: form.mobile_number.trim() || null,
+        business_type: form.business_type || null,
       });
       await refreshUser();
       toast.success('Your profile was updated.');
@@ -215,6 +227,25 @@ const Profile = () => {
               </p>
               <p className="mt-1 text-xs text-[#2D3748]">Plan changes are managed by an administrator.</p>
             </div>
+            {isPOS && (
+              <label className="block text-sm font-medium text-[#1E3A5F]">
+                Business Type
+                <select
+                  name="business_type"
+                  value={form.business_type}
+                  onChange={handleChange}
+                  className="mt-2 w-full rounded-lg border border-[#1E3A5F]/10 px-3 py-2.5 text-sm outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-orange-100"
+                >
+                  <option value="">Select your business type</option>
+                  {VALID_BUSINESS_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-[#2D3748]/60">Determines which products appear in your catalog search.</p>
+              </label>
+            )}
           </div>
           <div className="mt-7 flex justify-end border-t border-[#1E3A5F]/5 pt-5">
             <button

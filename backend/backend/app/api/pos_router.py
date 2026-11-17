@@ -22,12 +22,22 @@ from app.schemas.pos_product import (
     POSTransactionRead,
     POSVariantCreate,
     POSVariantRead,
+    UnifiedProductRead,
 )
+from app.schemas.tenant_product import (
+    TenantProductCreate,
+    TenantProductListResult,
+    TenantProductRead,
+    TenantProductUpdate,
+)
+from app.schemas.master_product import MasterProductSearchResult
 from app.services.pos_category_service import POSCategoryService
 from app.services.pos_product_service import POSProductService
 from app.services.pos_transaction_service import POSTransactionService
 from app.services.pos_inventory_service import POSInventoryService
 from app.services.pos_dashboard_service import POSDashboardService
+from app.services.tenant_product_service import TenantProductService
+from app.services.master_product_service import MasterProductService
 from app.services.exceptions import ConflictError, NotFoundError, BadRequestError
 
 router = APIRouter(
@@ -166,7 +176,7 @@ async def create_product(
     })
 
 
-@router.get("/products", response_model=list[POSProductRead])
+@router.get("/products", response_model=list[UnifiedProductRead])
 async def list_products(
     category_id: str | None = Query(None),
     search: str | None = Query(None),
@@ -174,19 +184,61 @@ async def list_products(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ):
-    service = POSProductService(session)
-    products = await service.list_products(current_user["company_id"], category_id, search, active_only)
-    return [POSProductRead.model_validate({
-        "id": str(p.id), "company_id": str(p.company_id),
-        "category_id": str(p.category_id) if p.category_id else None,
-        "name": p.name, "sku": p.sku, "barcode": p.barcode,
-        "description": p.description, "purchase_price": p.purchase_price,
-        "selling_price": p.selling_price, "unit": p.unit,
-        "stock_quantity": p.stock_quantity, "low_stock_threshold": p.low_stock_threshold,
-        "image_path": p.image_path, "is_active": p.is_active,
-        "created_by_id": str(p.created_by_id) if p.created_by_id else None,
-        "created_at": p.created_at, "updated_at": p.updated_at,
-    }) for p in products]
+    company_id = current_user["company_id"]
+
+    # Fetch pos_products
+    pos_service = POSProductService(session)
+    pos_products = await pos_service.list_products(company_id, category_id, search, active_only)
+    unified = []
+    for p in pos_products:
+        unified.append(UnifiedProductRead(
+            id=str(p.id), company_id=str(p.company_id),
+            category_id=str(p.category_id) if p.category_id else None,
+            name=p.name, sku=p.sku, barcode=p.barcode,
+            description=p.description, purchase_price=p.purchase_price,
+            selling_price=p.selling_price, unit=p.unit,
+            stock_quantity=p.stock_quantity, low_stock_threshold=p.low_stock_threshold,
+            image_path=p.image_path, is_active=p.is_active,
+            created_by_id=str(p.created_by_id) if p.created_by_id else None,
+            created_at=p.created_at, updated_at=p.updated_at,
+            source="pos_product",
+            master_product_id=None,
+        ))
+
+    # Fetch tenant_products (imported from central repository)
+    tenant_service = TenantProductService(session)
+    tenant_result = await tenant_service.list_products(company_id, skip=0, limit=200)
+    for tp in tenant_result.products:
+        # Apply search filter if provided
+        if search:
+            search_lower = search.lower()
+            name_match = tp.product_name and search_lower in tp.product_name.lower()
+            sku_match = tp.sku and search_lower in tp.sku.lower()
+            barcode_match = tp.barcode and search_lower in tp.barcode.lower()
+            if not (name_match or sku_match or barcode_match):
+                continue
+        unified.append(UnifiedProductRead(
+            id=str(tp.id), company_id=str(tp.company_id),
+            category_id=None,
+            name=tp.product_name or "",
+            sku=tp.sku or "",
+            barcode=tp.barcode or "",
+            description=tp.description,
+            purchase_price=None,
+            selling_price=tp.selling_price,
+            unit=tp.unit,
+            stock_quantity=tp.stock_qty,
+            low_stock_threshold=tp.low_stock_threshold,
+            image_path=None,
+            is_active=True,
+            created_by_id=None,
+            created_at=tp.created_at,
+            updated_at=tp.updated_at,
+            source="tenant_product",
+            master_product_id=str(tp.master_product_id) if tp.master_product_id else None,
+        ))
+
+    return unified
 
 
 @router.get("/products/barcode/{barcode}", response_model=POSProductRead)
@@ -280,7 +332,8 @@ async def delete_product(
     _check_admin_role(current_user)
     service = POSProductService(session)
     try:
-        await service.delete_product(product_id, current_user["company_id"])
+        await service.deactivate_product(product_id, current_user["company_id"])
+        await service.save()
     except NotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
 
@@ -694,27 +747,17 @@ async def get_inventory(
     return await service.get_inventory_summary(current_user["company_id"])
 
 
-@router.get("/inventory/low-stock", response_model=list[POSProductRead])
+@router.get("/inventory/low-stock")
 async def get_low_stock(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ):
     service = POSInventoryService(session)
     products = await service.get_low_stock_products(current_user["company_id"])
-    return [POSProductRead.model_validate({
-        "id": str(p.id), "company_id": str(p.company_id),
-        "category_id": str(p.category_id) if p.category_id else None,
-        "name": p.name, "sku": p.sku, "barcode": p.barcode,
-        "description": p.description, "purchase_price": p.purchase_price,
-        "selling_price": p.selling_price, "unit": p.unit,
-        "stock_quantity": p.stock_quantity, "low_stock_threshold": p.low_stock_threshold,
-        "image_path": p.image_path, "is_active": p.is_active,
-        "created_by_id": str(p.created_by_id) if p.created_by_id else None,
-        "created_at": p.created_at, "updated_at": p.updated_at,
-    }) for p in products]
+    return products
 
 
-@router.post("/inventory/adjust", response_model=POSProductRead)
+@router.post("/inventory/adjust")
 async def adjust_stock(
     payload: POSStockAdjustment,
     current_user: dict[str, str] = Depends(get_current_user),
@@ -723,23 +766,13 @@ async def adjust_stock(
     _check_admin_role(current_user)
     service = POSInventoryService(session)
     try:
-        product = await service.adjust_stock(
+        result = await service.adjust_stock(
             current_user["company_id"], payload.product_id, payload.quantity,
             current_user["id"], payload.notes,
         )
     except NotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
-    return POSProductRead.model_validate({
-        "id": str(product.id), "company_id": str(product.company_id),
-        "category_id": str(product.category_id) if product.category_id else None,
-        "name": product.name, "sku": product.sku, "barcode": product.barcode,
-        "description": product.description, "purchase_price": product.purchase_price,
-        "selling_price": product.selling_price, "unit": product.unit,
-        "stock_quantity": product.stock_quantity, "low_stock_threshold": product.low_stock_threshold,
-        "image_path": product.image_path, "is_active": product.is_active,
-        "created_by_id": str(product.created_by_id) if product.created_by_id else None,
-        "created_at": product.created_at, "updated_at": product.updated_at,
-    })
+    return result
 
 
 @router.get("/stock-movements")
@@ -749,15 +782,54 @@ async def get_stock_movements(
     current_user: dict[str, str] = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ):
+    """Get stock movement history with product names."""
     service = POSInventoryService(session)
     movements = await service.get_stock_movements(current_user["company_id"], product_id, limit)
-    return [{
-        "id": str(m.id), "product_id": str(m.product_id) if m.product_id else None,
-        "variant_id": str(m.variant_id) if m.variant_id else None,
-        "movement_type": m.movement_type, "quantity": m.quantity,
-        "reference_type": m.reference_type, "reference_id": m.reference_id,
-        "notes": m.notes, "created_at": m.created_at,
-    } for m in movements]
+
+    # Build a product name lookup for all movements
+    product_ids = set()
+    for m in movements:
+        if m.product_id:
+            product_ids.add(m.product_id)
+
+    product_names = {}
+    if product_ids:
+        from app.models.pos_product import POSProduct
+        from app.models.tenant_product import TenantProduct
+        from app.models.master_product import MasterProduct
+        from sqlalchemy import select
+
+        # Get POS product names
+        pos_result = await session.execute(
+            select(POSProduct.id, POSProduct.name).where(POSProduct.id.in_(product_ids))
+        )
+        for row in pos_result.all():
+            product_names[str(row[0])] = row[1]
+
+        # Get tenant product names (join with master_products for name)
+        tenant_result = await session.execute(
+            select(TenantProduct.id, MasterProduct.product_name)
+            .outerjoin(MasterProduct, TenantProduct.master_product_id == MasterProduct.id)
+            .where(TenantProduct.id.in_(product_ids))
+        )
+        for row in tenant_result.all():
+            product_names[str(row[0])] = row[1] or "Unknown"
+
+    result = []
+    for m in movements:
+        result.append({
+            "id": str(m.id),
+            "product_id": str(m.product_id) if m.product_id else None,
+            "product_name": product_names.get(str(m.product_id)) if m.product_id else None,
+            "variant_id": str(m.variant_id) if m.variant_id else None,
+            "movement_type": m.movement_type,
+            "quantity": m.quantity,
+            "reference_type": m.reference_type,
+            "reference_id": m.reference_id,
+            "notes": m.notes,
+            "created_at": m.created_at,
+        })
+    return result
 
 
 # ---- Dashboard ----
@@ -995,3 +1067,145 @@ async def get_cashier_stats(
         "today_revenue": str(today_revenue),
         "monthly_sales": monthly_sales,
     }
+
+
+# ---- Tenant Products (Central Product Repository) ----
+
+
+@router.get("/master-search", response_model=MasterProductSearchResult)
+async def search_master_products_for_import(
+    q: str | None = Query(default=None, description="Search query"),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=200),
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Search master products for importing into tenant.
+
+    Results are filtered by the user's company business type.
+    """
+    service = MasterProductService(session)
+    business_type = current_user.get("company_business_type")
+
+    result = await service.search_products(
+        query=q,
+        business_type=business_type,
+        active_only=True,
+        skip=skip,
+        limit=limit,
+    )
+    return result
+
+
+@router.post("/tenant-products", response_model=TenantProductRead, status_code=status.HTTP_201_CREATED)
+async def create_tenant_product(
+    payload: TenantProductCreate,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Import a master product as a tenant product.
+
+    Admin and Super Admin can import products.
+    """
+    if current_user["role"] not in {"Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
+
+    service = TenantProductService(session)
+    try:
+        product = await service.import_from_master(
+            company_id=current_user["company_id"],
+            data=payload,
+        )
+        await service.repository.commit()
+    except (NotFoundError, ConflictError) as e:
+        status_code = status.HTTP_404_NOT_FOUND if isinstance(e, NotFoundError) else status.HTTP_409_CONFLICT
+        raise HTTPException(status_code=status_code, detail=str(e))
+
+    # Return enriched product
+    enriched = await service._enrich_with_master(product)
+    return enriched
+
+
+@router.get("/tenant-products", response_model=TenantProductListResult)
+async def list_tenant_products(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=200),
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """List all tenant products for the current company."""
+    service = TenantProductService(session)
+    return await service.list_products(
+        company_id=current_user["company_id"],
+        skip=skip,
+        limit=limit,
+    )
+
+
+@router.get("/tenant-products/{product_id}", response_model=TenantProductRead)
+async def get_tenant_product(
+    product_id: str,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Get a tenant product by ID."""
+    service = TenantProductService(session)
+    try:
+        return await service.get_product(product_id, current_user["company_id"])
+    except NotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.put("/tenant-products/{product_id}", response_model=TenantProductRead)
+async def update_tenant_product(
+    product_id: str,
+    payload: TenantProductUpdate,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Update tenant product price and stock.
+
+    Admin and Super Admin can update.
+    """
+    if current_user["role"] not in {"Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
+
+    service = TenantProductService(session)
+    try:
+        result = await service.update_product(product_id, current_user["company_id"], payload)
+        await service.repository.commit()
+        return result
+    except NotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except (ValueError, TypeError) as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.delete("/tenant-products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_tenant_product(
+    product_id: str,
+    current_user: dict[str, str] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Delete a tenant product.
+
+    Admin and Super Admin can delete.
+    """
+    if current_user["role"] not in {"Admin", "Super Admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient privileges.",
+        )
+
+    service = TenantProductService(session)
+    try:
+        await service.delete_product(product_id, current_user["company_id"])
+        await service.repository.commit()
+    except NotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

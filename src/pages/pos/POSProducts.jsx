@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Package, Plus, Search, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Download, Package, Plus, Search, Trash2, X } from 'lucide-react';
 import Header from '../../components/Header';
+import MasterProductSearch from '../../components/MasterProductSearch';
 import toast from 'react-hot-toast';
 import {
   createPOSProduct,
   createPOSCategory,
   deletePOSProduct,
+  deleteTenantProduct,
   getPOSCategories,
   getPOSProducts,
+  updatePOSProduct,
+  updateTenantProduct,
 } from '../../integration/backend/posApi';
 
 const formatMoney = (value) =>
@@ -21,6 +25,10 @@ const POSProducts = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editForm, setEditForm] = useState({ selling_price: '', stock_quantity: '' });
   const [form, setForm] = useState({
     name: '', sku: '', barcode: '', selling_price: '', unit: 'Pcs',
     category_id: '', description: '', purchase_price: '0', stock_quantity: 0, low_stock_threshold: 5,
@@ -36,6 +44,7 @@ const POSProducts = () => {
       setCategories(cats);
     } catch (err) {
       console.error('Failed to load products:', err);
+      toast.error(err.message || 'Failed to load products');
     } finally {
       setLoading(false);
     }
@@ -64,14 +73,50 @@ const POSProducts = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this product?')) return;
+  const handleDelete = async (id, source) => {
+    if (!confirm('Remove this product? It will be hidden from the product list but transaction history will be preserved.')) return;
     try {
-      await deletePOSProduct(id);
-      toast.success('Product deleted');
+      if (source === 'tenant_product') {
+        await deleteTenantProduct(id);
+      } else {
+        await deletePOSProduct(id);
+      }
+      toast.success('Product removed');
       loadData();
     } catch (err) {
-      toast.error(err.message || 'Failed to delete');
+      toast.error(err.message || 'Failed to remove product');
+    }
+  };
+
+  const handleEditProduct = (product) => {
+    setEditingProduct(product);
+    setEditForm({
+      selling_price: String(product.selling_price),
+      stock_quantity: String(product.stock_quantity),
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    try {
+      const payload = {
+        selling_price: Number(editForm.selling_price),
+      };
+      if (editingProduct.source === 'tenant_product') {
+        payload.stock_qty = Number(editForm.stock_quantity);
+        await updateTenantProduct(editingProduct.id, payload);
+      } else {
+        payload.stock_quantity = Number(editForm.stock_quantity);
+        await updatePOSProduct(editingProduct.id, payload);
+      }
+      toast.success('Product updated');
+      setShowEditModal(false);
+      setEditingProduct(null);
+      loadData();
+    } catch (err) {
+      toast.error(err.message || 'Failed to update product');
     }
   };
 
@@ -90,9 +135,17 @@ const POSProducts = () => {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-[#1E3A5F]">POS Products</h1>
-          <button onClick={() => setShowForm(true)} className="rounded-xl bg-[#FF6B35] px-4 py-2.5 text-sm font-semibold text-white shadow-cta hover:bg-[#e55a28] flex items-center gap-2">
-            <Plus className="h-4 w-4" /> Add Product
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="rounded-xl border border-[#1E3A5F]/20 bg-white px-4 py-2.5 text-sm font-semibold text-[#1E3A5F] shadow-cta hover:bg-slate-50 flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" /> Import from Catalog
+            </button>
+            <button onClick={() => setShowForm(true)} className="rounded-xl bg-[#FF6B35] px-4 py-2.5 text-sm font-semibold text-white shadow-cta hover:bg-[#e55a28] flex items-center gap-2">
+              <Plus className="h-4 w-4" /> Add Custom Product
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-3 mb-4">
@@ -131,7 +184,13 @@ const POSProducts = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <button onClick={() => handleDelete(p.id)} className="text-[#2D3748]/40 hover:text-rose-600"><Trash2 className="h-4 w-4" /></button>
+                    {p.source === 'tenant_product' && (
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 mr-2 inline-block align-middle">Catalog</span>
+                    )}
+                    <button onClick={() => handleEditProduct(p)} className="text-[#2D3748]/40 hover:text-blue-600 mr-2" title="Edit price/stock">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    </button>
+                    <button onClick={() => handleDelete(p.id, p.source)} className="text-[#2D3748]/40 hover:text-rose-600" title="Remove product"><Trash2 className="h-4 w-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -141,6 +200,58 @@ const POSProducts = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Import from Catalog Modal */}
+        {showImportModal && (
+          <MasterProductSearch
+            onClose={() => setShowImportModal(false)}
+            onSelect={() => loadData()}
+          />
+        )}
+
+        {/* Edit Product Modal */}
+        {showEditModal && editingProduct && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl w-full max-w-md shadow-card-lg">
+              <div className="flex items-center justify-between p-4 border-b border-[#1E3A5F]/10">
+                <h2 className="font-semibold text-[#1E3A5F]">Edit Product</h2>
+                <button onClick={() => setShowEditModal(false)} className="text-[#2D3748]/40 hover:text-[#1E3A5F]"><X className="h-5 w-5" /></button>
+              </div>
+              <form onSubmit={handleSaveEdit} className="p-4 space-y-3">
+                <div className="text-sm text-[#2D3748]">
+                  <p className="font-medium text-[#1E3A5F]">{editingProduct.name}</p>
+                  <p className="text-xs text-[#2D3748]/60">SKU: {editingProduct.sku}</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#2D3748] mb-1">Selling Price (₹)</label>
+                  <input
+                    required
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={editForm.selling_price}
+                    onChange={(e) => setEditForm({...editForm, selling_price: e.target.value})}
+                    className="w-full rounded-xl border border-[#1E3A5F]/10 px-4 py-2.5 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[#2D3748] mb-1">Stock Quantity</label>
+                  <input
+                    required
+                    type="number"
+                    min="0"
+                    value={editForm.stock_quantity}
+                    onChange={(e) => setEditForm({...editForm, stock_quantity: e.target.value})}
+                    className="w-full rounded-xl border border-[#1E3A5F]/10 px-4 py-2.5 text-sm text-[#1E3A5F] outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/25"
+                  />
+                </div>
+                <button type="submit" className="w-full rounded-xl bg-[#FF6B35] py-3 text-sm font-semibold text-white shadow-cta hover:bg-[#e55a28]">
+                  Save Changes
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Add Product Modal */}
         {showForm && (

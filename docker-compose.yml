@@ -1,21 +1,26 @@
 services:
-  # ─────────────────────────────────────────────
-  # Init container: fetches DB secrets from Key Vault
-  # ─────────────────────────────────────────────
+  # -----------------------------------------
+  # Init container: Fetch DB secret from AWS
+  # -----------------------------------------
+
   db-init:
     build:
       context: ./backend/backend
       dockerfile: Dockerfile
     user: root
     environment:
-      KEY_VAULT_URL: ${KEY_VAULT_URL:-https://keelbill.vault.azure.net/}
-    entrypoint: ["python", "/app/app/scripts/fetch_db_secrets.py"]
+      AWS_REGION: ap-south-2
+      AWS_SECRET_ID: prod/db
+    entrypoint:
+      - python
+      - /app/app/scripts/fetch_db_secrets.py
     volumes:
       - shared_secrets:/shared/secrets
 
-  # ─────────────────────────────────────────────
-  # Backend: reads secrets from Key Vault at runtime
-  # ─────────────────────────────────────────────
+  # -----------------------------------------
+  # Backend: Python API
+  # -----------------------------------------
+
   backend:
     build:
       context: ./backend/backend
@@ -24,24 +29,29 @@ services:
       APP_NAME: ${APP_NAME:-KeelBill Ledger API}
       ENVIRONMENT: ${ENVIRONMENT:-production}
       DEBUG: ${DEBUG:-False}
-      # Azure Key Vault: since the VM runs on Azure, Managed Identity is used automatically.
-      # No AZURE_TENANT_ID / AZURE_CLIENT_ID / AZURE_CLIENT_SECRET are needed.
-      # Make sure the VM has a managed identity assigned with "Key Vault Secrets User" role.
-      KEY_VAULT_URL: ${KEY_VAULT_URL:-https://keelbill.vault.azure.net/}
-      # Secrets are loaded from Azure Key Vault in production.
-      # These variables serve as fallbacks only if Key Vault is unavailable.
+
+      AWS_REGION: ap-south-2
+      AWS_SECRET_ID: prod/db
+
       DATABASE_URL: ${DATABASE_URL_DOCKER}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+
       FRONTEND_URL: ${DOCKER_FRONTEND_URL:-https://keelbill.in}
       CORS_ORIGINS: ${DOCKER_CORS_ORIGINS:-https://keelbill.in,https://www.keelbill.in}
 
       PORT: "8000"
+
+    volumes:
+      - shared_secrets:/shared/secrets:ro
+
     depends_on:
       db:
         condition: service_healthy
+
     ports:
       - "${BACKEND_PORT:-8000}:8000"
+
     healthcheck:
       test:
         - CMD
@@ -52,19 +62,28 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
     restart: unless-stopped
+
+  # -----------------------------------------
+  # Frontend
+  # -----------------------------------------
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
+
     environment:
       BACKEND_URL: http://backend:8000
+
     depends_on:
       backend:
         condition: service_healthy
+
     ports:
       - "${FRONTEND_PORT:-8080}:80"
+
     healthcheck:
       test:
         - CMD
@@ -72,40 +91,44 @@ services:
         - -q
         - --spider
         - http://127.0.0.1/
+
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+
     restart: unless-stopped
 
-  # ─────────────────────────────────────────────
-  # Database: reads credentials from files written by db-init
-  # ─────────────────────────────────────────────
+  # -----------------------------------------
+  # PostgreSQL database
+  # -----------------------------------------
+
   db:
     image: postgres:16
+
     depends_on:
       db-init:
         condition: service_completed_successfully
+
     environment:
-      # POSTGRES_PASSWORD_FILE is natively supported by PostgreSQL Docker image
       POSTGRES_PASSWORD_FILE: /shared/secrets/password.txt
-      # POSTGRES_USER and POSTGRES_DB are non-secret, set directly
       POSTGRES_USER: postgres
       POSTGRES_DB: quotation_db
-    # Database port is intentionally not exposed to the host.
-    # Access the database only through the backend service.
-    # To debug, use: docker exec -it <container> psql -U postgres
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - shared_secrets:/shared/secrets:ro
+
     healthcheck:
       test:
         - CMD-SHELL
         - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+
       interval: 5s
       timeout: 5s
       retries: 10
       start_period: 10s
+
     restart: unless-stopped
 
 volumes:

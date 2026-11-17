@@ -32,6 +32,7 @@ const POSInventory = () => {
       setProducts(prods);
     } catch (err) {
       console.error('Failed to load inventory:', err);
+      toast.error(err.message || 'Failed to load inventory');
     } finally {
       setLoading(false);
     }
@@ -131,6 +132,7 @@ const POSInventory = () => {
             <thead className="bg-[#1E3A5F]/5 border-b border-[#1E3A5F]/10">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-[#1E3A5F]">Type</th>
+                <th className="text-left px-4 py-3 font-medium text-[#1E3A5F]">Product</th>
                 <th className="text-left px-4 py-3 font-medium text-[#1E3A5F]">Quantity</th>
                 <th className="text-left px-4 py-3 font-medium text-[#1E3A5F]">Reference</th>
                 <th className="text-left px-4 py-3 font-medium text-[#1E3A5F]">Notes</th>
@@ -146,6 +148,7 @@ const POSInventory = () => {
                       {m.movement_type}
                     </span>
                   </td>
+                  <td className="px-4 py-3 font-medium text-[#1E3A5F]">{m.product_name || <span className="text-[#2D3748]/40">Unknown</span>}</td>
                   <td className="px-4 py-3 font-medium text-[#1E3A5F]">{m.quantity > 0 ? '+' : ''}{m.quantity}</td>
                   <td className="px-4 py-3 text-[#2D3748]">{m.reference_type || '-'}</td>
                   <td className="px-4 py-3 text-[#2D3748]">{m.notes || '-'}</td>
@@ -153,7 +156,7 @@ const POSInventory = () => {
                 </tr>
               ))}
               {movements.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-12 text-[#2D3748]/40">No movements yet</td></tr>
+                <tr><td colSpan={6} className="text-center py-12 text-[#2D3748]/40">No movements yet</td></tr>
               )}
             </tbody>
           </table>

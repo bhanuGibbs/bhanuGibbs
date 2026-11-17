@@ -67,6 +67,7 @@ class UserProfileUpdate(BaseModel):
     username: str | None = Field(default=None, min_length=3, max_length=100)
     email: EmailStr | None = None
     mobile_number: PhoneNumber = None
+    business_type: str | None = Field(default=None, max_length=50)
 
 
 class UserPlanUpdate(BaseModel):
@@ -126,6 +127,7 @@ class UserRead(UserBase):
     company_logo_data: str | None = Field(default=None, max_length=1_400_000)
     company_seal_data: str | None = Field(default=None, max_length=1_400_000)
     business_profile: str | None = "invoice"
+    business_type: str | None = None
     is_email_verified: bool = False
     created_at: datetime
     updated_at: datetime

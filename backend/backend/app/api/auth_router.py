@@ -140,6 +140,7 @@ async def login(
         "role": role_name,
         "company_id": str(user.company_id) if user.company_id else None,
         "business_profile": user.business_profile,
+        "business_type": company.business_type if (company := await session.get(Company, user.company_id)) else None,
         "is_profile_complete": user.is_profile_complete,
         "refresh_token_id": token_id,
     }
@@ -216,6 +217,7 @@ async def refresh_token(request: Request, payload: TokenRefreshRequest, session:
         "role": role.name if role else "Viewer",
         "company_id": str(user.company_id) if user.company_id else None,
         "business_profile": company.business_profile if company else user.business_profile,
+        "business_type": company.business_type if company else None,
         "is_profile_complete": user.is_profile_complete,
         "refresh_token_id": new_token_id,
     }
@@ -374,12 +376,12 @@ async def setup_company(
         company = existing_company
     else:
         # Create a new company
-        if payload.business_profile == "sales_inventory":
+        if payload.business_profile in ("sales_inventory", "pos"):
             admin_role = await RoleRepository(session).get_by_name("Admin")
             if not admin_role:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="The Sales & Inventory Admin role is not configured.",
+                    detail="The Admin role is not configured.",
                 )
             user.role_id = admin_role.id
         company = await company_service.create_company(
@@ -398,6 +400,8 @@ async def setup_company(
             seal_data=payload.seal_data,
             commit=False,
         )
+        if payload.business_type:
+            company.business_type = payload.business_type
         user.company_id = company.id
         user.is_profile_complete = True
         await session.commit()
@@ -417,6 +421,7 @@ async def setup_company(
         "city": company.city,
         "pincode": company.pincode,
         "business_profile": company.business_profile,
+        "business_type": company.business_type,
         "created_at": str(company.created_at),
         "updated_at": str(company.updated_at),
     }
@@ -483,6 +488,7 @@ async def read_current_user(
             if company
             else getattr(user, "business_profile", "invoice")
         ),
+        "business_type": company.business_type if company else None,
         "company_logo_data": company.logo_data if company else None,
         "company_seal_data": company.seal_data if company else None,
         "is_email_verified": user.is_email_verified,
@@ -577,6 +583,17 @@ async def update_current_user(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Username and email cannot be cleared.",
         )
+    
+    # Handle business_type update on the Company
+    if "business_type" in changes:
+        business_type_value = changes.pop("business_type")
+        user = await UserService(session).get_user_by_id(current_user["id"])
+        if user and user.company_id:
+            company = await session.get(Company, user.company_id)
+            if company:
+                company.business_type = business_type_value
+                await session.commit()
+    
     try:
         await UserService(session).update_profile(current_user["id"], changes)
     except ConflictError as error:

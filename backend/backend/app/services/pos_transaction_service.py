@@ -15,9 +15,11 @@ from app.models.pos_return import POSReturn
 from app.models.pos_return_item import POSReturnItem
 from app.models.pos_product import POSProduct
 from app.models.pos_product_variant import POSProductVariant
+from app.models.tenant_product import TenantProduct
 from app.repositories.pos_transaction_repository import POSTransactionRepository
 from app.repositories.pos_product_repository import POSProductRepository
 from app.repositories.pos_inventory_repository import POSInventoryRepository
+from app.repositories.tenant_product_repository import TenantProductRepository
 from app.services.exceptions import NotFoundError, BadRequestError
 
 
@@ -28,6 +30,7 @@ class POSTransactionService:
         self.transaction_repo = POSTransactionRepository(session)
         self.product_repo = POSProductRepository(session)
         self.inventory_repo = POSInventoryRepository(session)
+        self.tenant_repo = TenantProductRepository(session)
 
     def _generate_transaction_number(self, company_id: str) -> str:
         """Generate a unique transaction number like POS-01112026-001."""
@@ -66,9 +69,18 @@ class POSTransactionService:
                 if not variant or variant.stock_quantity < quantity:
                     raise BadRequestError(f"Insufficient stock for variant: {item.get('product_name', 'Unknown')}")
             else:
+                # Try POS product first
                 product = await self.product_repo.get(product_id)
-                if not product or product.stock_quantity < quantity:
-                    raise BadRequestError(f"Insufficient stock for: {item.get('product_name', 'Unknown')}")
+                if product and str(product.company_id) == company_id:
+                    if product.stock_quantity < quantity:
+                        raise BadRequestError(f"Insufficient stock for: {item.get('product_name', 'Unknown')}")
+                else:
+                    # Try tenant product
+                    tenant_product = await self.tenant_repo.get(product_id)
+                    if not tenant_product or str(tenant_product.company_id) != company_id:
+                        raise BadRequestError(f"Product not found: {item.get('product_name', 'Unknown')}")
+                    if tenant_product.stock_qty < quantity:
+                        raise BadRequestError(f"Insufficient stock for: {item.get('product_name', 'Unknown')}")
 
             line_total = (unit_price * quantity) - item_discount
             tax = line_total * item_tax / Decimal("100")
@@ -110,9 +122,9 @@ class POSTransactionService:
                 company_id=company_id,
                 product_id=product_id,
                 variant_id=variant_id,
-                product_name=item.get("product_name", ""),
-                sku=item.get("sku", ""),
-                barcode=item.get("barcode", ""),
+                product_name=item.get("product_name") or "",
+                sku=item.get("sku") or "",
+                barcode=item.get("barcode") or "",
                 quantity=quantity,
                 unit_price=unit_price,
                 discount=item_discount,
@@ -138,8 +150,9 @@ class POSTransactionService:
                     )
                     await self.inventory_repo.add_movement(movement)
             else:
+                # Try POS product first
                 product = await self.product_repo.get(product_id)
-                if product:
+                if product and str(product.company_id) == company_id:
                     product.stock_quantity -= quantity
                     movement = POSStockMovement(
                         company_id=company_id,
@@ -151,6 +164,21 @@ class POSTransactionService:
                         created_by_id=created_by_id,
                     )
                     await self.inventory_repo.add_movement(movement)
+                else:
+                    # Try tenant product
+                    tenant_product = await self.tenant_repo.get(product_id)
+                    if tenant_product and str(tenant_product.company_id) == company_id:
+                        tenant_product.stock_qty -= quantity
+                        movement = POSStockMovement(
+                            company_id=company_id,
+                            product_id=product_id,
+                            movement_type="out",
+                            quantity=-quantity,
+                            reference_type="transaction",
+                            reference_id=str(transaction.id),
+                            created_by_id=created_by_id,
+                        )
+                        await self.inventory_repo.add_movement(movement)
 
         # Create payment record
         payment = POSPayment(
@@ -205,8 +233,9 @@ class POSTransactionService:
                     )
                     await self.inventory_repo.add_movement(movement)
             else:
+                # Try POS product first
                 product = await self.product_repo.get(item.product_id)
-                if product:
+                if product and str(product.company_id) == company_id:
                     product.stock_quantity += item.quantity
                     movement = POSStockMovement(
                         company_id=company_id,
@@ -219,6 +248,22 @@ class POSTransactionService:
                         created_by_id=created_by_id,
                     )
                     await self.inventory_repo.add_movement(movement)
+                else:
+                    # Try tenant product
+                    tenant_product = await self.tenant_repo.get(item.product_id)
+                    if tenant_product and str(tenant_product.company_id) == company_id:
+                        tenant_product.stock_qty += item.quantity
+                        movement = POSStockMovement(
+                            company_id=company_id,
+                            product_id=item.product_id,
+                            movement_type="return",
+                            quantity=item.quantity,
+                            reference_type="transaction",
+                            reference_id=str(transaction_id),
+                            notes="Stock restored on cancellation",
+                            created_by_id=created_by_id,
+                        )
+                        await self.inventory_repo.add_movement(movement)
 
         await self.transaction_repo.commit()
         return transaction
@@ -283,8 +328,9 @@ class POSTransactionService:
                     )
                     await self.inventory_repo.add_movement(movement)
             else:
+                # Try POS product first
                 product = await self.product_repo.get(product_id)
-                if product:
+                if product and str(product.company_id) == company_id:
                     product.stock_quantity += quantity
                     movement = POSStockMovement(
                         company_id=company_id,
@@ -296,6 +342,21 @@ class POSTransactionService:
                         created_by_id=created_by_id,
                     )
                     await self.inventory_repo.add_movement(movement)
+                else:
+                    # Try tenant product
+                    tenant_product = await self.tenant_repo.get(product_id)
+                    if tenant_product and str(tenant_product.company_id) == company_id:
+                        tenant_product.stock_qty += quantity
+                        movement = POSStockMovement(
+                            company_id=company_id,
+                            product_id=product_id,
+                            movement_type="return",
+                            quantity=quantity,
+                            reference_type="return",
+                            reference_id=str(ret.id),
+                            created_by_id=created_by_id,
+                        )
+                        await self.inventory_repo.add_movement(movement)
 
         await self.transaction_repo.commit()
         return ret

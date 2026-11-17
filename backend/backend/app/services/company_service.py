@@ -70,3 +70,15 @@ class CompanyService:
     ) -> Company | None:
         """Return a company by name, optionally scoped to its business profile."""
         return await self.repository.get_by_name(name, business_profile=business_profile)
+
+    async def update_business_type(
+        self, company_id: str, business_type: str | None
+    ) -> Company:
+        """Update the business type for a company."""
+        company = await self.repository.get(company_id)
+        if not company:
+            from app.services.exceptions import NotFoundError
+            raise NotFoundError("Company not found.")
+        company.business_type = business_type
+        await self.repository.commit()
+        return company

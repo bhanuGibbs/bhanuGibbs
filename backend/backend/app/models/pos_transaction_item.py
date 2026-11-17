@@ -15,7 +15,7 @@ class POSTransactionItem(BaseModel):
 
     transaction_id: Mapped[str] = mapped_column(ForeignKey("pos_transactions.id", ondelete="CASCADE"), nullable=False, index=True)
     company_id: Mapped[str] = mapped_column(ForeignKey("companies.id"), nullable=False, index=True)
-    product_id: Mapped[str] = mapped_column(ForeignKey("pos_products.id"), nullable=False, index=True)
+    product_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     variant_id: Mapped[str | None] = mapped_column(ForeignKey("pos_product_variants.id"), nullable=True, index=True)
     product_name: Mapped[str] = mapped_column(String(255), nullable=False)
     sku: Mapped[str] = mapped_column(String(100), nullable=False)

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.pos_stock_movement import POSStockMovement
 from app.models.pos_product import POSProduct
 from app.models.pos_product_variant import POSProductVariant
+from app.models.tenant_product import TenantProduct
 
 
 class POSInventoryRepository:
@@ -59,12 +60,27 @@ class POSInventoryRepository:
         return list(result.scalars().all())
 
     async def get_inventory_summary(self, company_id: str) -> dict:
-        """Get inventory summary for a company."""
+        """Get inventory summary for a company, including tenant products."""
         products = await self.list_by_company(company_id)
-        total_products = len(products)
-        total_stock = sum(p.stock_quantity for p in products)
-        low_stock_count = sum(1 for p in products if p.stock_quantity <= p.low_stock_threshold)
-        out_of_stock = sum(1 for p in products if p.stock_quantity == 0)
+        
+        # Also count tenant products (imported from central repository)
+        tenant_result = await self.session.execute(
+            select(TenantProduct).where(
+                TenantProduct.company_id == uuid.UUID(company_id)
+            )
+        )
+        tenant_products = list(tenant_result.scalars().all())
+        
+        total_products = len(products) + len(tenant_products)
+        total_stock = sum(p.stock_quantity for p in products) + sum(tp.stock_qty for tp in tenant_products)
+        low_stock_count = (
+            sum(1 for p in products if p.stock_quantity <= p.low_stock_threshold) +
+            sum(1 for tp in tenant_products if tp.stock_qty <= tp.low_stock_threshold)
+        )
+        out_of_stock = (
+            sum(1 for p in products if p.stock_quantity == 0) +
+            sum(1 for tp in tenant_products if tp.stock_qty == 0)
+        )
         return {
             "total_products": total_products,
             "total_stock": total_stock,
@@ -73,9 +89,14 @@ class POSInventoryRepository:
         }
 
     async def list_by_company(self, company_id: str) -> list[POSProduct]:
-        """List all products for inventory tracking."""
+        """List active products for inventory tracking."""
         result = await self.session.execute(
-            select(POSProduct).where(POSProduct.company_id == uuid.UUID(company_id))
+            select(POSProduct).where(
+                and_(
+                    POSProduct.company_id == uuid.UUID(company_id),
+                    POSProduct.is_active == True,
+                )
+            )
         )
         return list(result.scalars().all())
 

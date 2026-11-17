@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class POSCategoryCreate(BaseModel):
@@ -47,7 +47,7 @@ class POSProductUpdate(BaseModel):
     name: str | None = Field(default=None, max_length=255)
     sku: str | None = Field(default=None, max_length=100)
     barcode: str | None = Field(default=None, max_length=100)
-    selling_price: Decimal | None = Field(default=None, gt=0)
+    selling_price: Decimal | None = Field(default=None)
     unit: str | None = Field(default=None, max_length=50)
     category_id: str | None = None
     description: str | None = None
@@ -55,6 +55,13 @@ class POSProductUpdate(BaseModel):
     stock_quantity: int | None = Field(default=None, ge=0)
     low_stock_threshold: int | None = Field(default=None, ge=0)
     is_active: bool | None = None
+
+    @field_validator("selling_price")
+    @classmethod
+    def validate_selling_price(cls, v):
+        if v is not None and v <= 0:
+            raise ValueError("selling_price must be greater than 0")
+        return v
 
 
 class POSProductRead(BaseModel):
@@ -75,6 +82,35 @@ class POSProductRead(BaseModel):
     created_by_id: UUID | str | None = None
     created_at: datetime
     updated_at: datetime
+    # Source: "pos_product" or "tenant_product" (for unified list)
+    source: str | None = None
+    # For tenant products, the master product ID
+    master_product_id: UUID | str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class UnifiedProductRead(BaseModel):
+    """Unified product read schema for merged pos_products + tenant_products."""
+    id: UUID | str
+    company_id: UUID | str
+    category_id: UUID | str | None = None
+    name: str
+    sku: str
+    barcode: str | None = None
+    description: str | None = None
+    purchase_price: Decimal | None = None
+    selling_price: Decimal
+    unit: str | None = None
+    stock_quantity: int
+    low_stock_threshold: int
+    image_path: str | None = None
+    is_active: bool = True
+    created_by_id: UUID | str | None = None
+    created_at: datetime
+    updated_at: datetime
+    source: str  # "pos_product" or "tenant_product"
+    master_product_id: UUID | str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -110,7 +146,7 @@ class POSCartItem(BaseModel):
     variant_id: str | None = None
     product_name: str
     sku: str
-    barcode: str
+    barcode: str | None = None
     quantity: int = Field(..., gt=0)
     unit_price: Decimal
     discount: Decimal = Field(default=Decimal("0"), ge=0)

@@ -1,17 +1,18 @@
+
 from __future__ import annotations
 
 import os
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
+from urllib.parse import quote_plus
 
 from dotenv import dotenv_values, load_dotenv
-from azure.identity import DefaultAzureCredential
-from azure.keyvault.secrets import SecretClient
-from azure.core.exceptions import ClientAuthenticationError
-
 
 logger = logging.getLogger(__name__)
+
+SECRET_DIR = Path("/shared/secrets")
 
 
 @dataclass
@@ -37,7 +38,6 @@ class Settings:
     smtp_to_email: str
     postgres_password: str
 
-
     def as_dict(self) -> dict[str, Any]:
         return self.__dict__
 
@@ -45,139 +45,137 @@ class Settings:
 _SETTINGS: Settings | None = None
 
 
+def read_secret_file(filename: str) -> str:
+    """Read a database credential written by db-init."""
+
+    file_path = SECRET_DIR / filename
+
+    if not file_path.is_file():
+        raise RuntimeError(
+            f"Required AWS secret file is missing: {file_path}"
+        )
+
+    value = file_path.read_text(encoding="utf-8").strip()
+
+    if not value:
+        raise RuntimeError(
+            f"AWS secret file is empty: {file_path}"
+        )
+
+    return value
+
+
 def get_settings() -> Settings:
     global _SETTINGS
-    if _SETTINGS is None:
-        from pathlib import Path
 
-        env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-        process_environment_keys = set(os.environ)
+    if _SETTINGS is None:
+
+        env_path = (
+                Path(__file__).resolve().parent.parent.parent / ".env"
+        )
+
         environment = os.getenv("ENVIRONMENT", "development")
         is_production = environment.lower() in {"production", "prod"}
 
-        # Only load .env file in non-production mode; production uses Azure Key Vault
-        dotenv_settings = {}
+        # Development: load local .env
         if not is_production and env_path.exists():
-            dotenv_settings = dotenv_values(env_path)
             load_dotenv(str(env_path), override=False)
-            print(f"CONFIG: Development mode — loaded .env file from {env_path}", flush=True)
-        elif is_production:
-            print(f"CONFIG: Production mode — skipping .env file", flush=True)
+            print("CONFIG: Development .env loaded", flush=True)
+
+        # Production: read DB credentials from AWS db-init files
+        if is_production:
+            print(
+                "CONFIG: Production mode - reading AWS credentials",
+                flush=True
+            )
+
+            postgres_password = read_secret_file("password.txt")
+            postgres_user = read_secret_file("user.txt")
+            postgres_db = read_secret_file("dbname.txt")
+
+            db_host = os.getenv("DB_HOST", "db")
+            db_port = os.getenv("DB_PORT", "5432")
+
+            database_url = (
+                f"postgresql://{quote_plus(postgres_user)}:"
+                f"{quote_plus(postgres_password)}@"
+                f"{db_host}:{db_port}/{quote_plus(postgres_db)}"
+            )
+
+            print(
+                "CONFIG: Database credentials loaded from AWS secret files",
+                flush=True
+            )
+
+        else:
+            # Development: use local database configuration
+            database_url = os.getenv("DATABASE_URL", "")
+            postgres_password = os.getenv("POSTGRES_PASSWORD", "")
+
+            if not database_url:
+                raise RuntimeError(
+                    "DATABASE_URL is missing in development mode"
+                )
+
         jwt_secret_key = os.getenv("JWT_SECRET_KEY", "changeme")
 
-        key_vault_url = os.environ.get("KEY_VAULT_URL")
-        secret_sources = {}  # tracks where each secret came from
-        use_key_vault = False
-
-        if is_production and key_vault_url:
-            print(f"CONFIG: Production mode detected, attempting Azure Key Vault: {key_vault_url}", flush=True)
-            try:
-                logger.info("Attempting to load secrets from Azure Key Vault: %s", key_vault_url)
-                credential = DefaultAzureCredential()
-                # Force credential resolution early to catch auth failures
-                credential.get_token("https://vault.azure.net/.default")
-                client = SecretClient(vault_url=key_vault_url, credential=credential)
-
-                def get_secret(name: str) -> str:
-                    value = client.get_secret(name).value
-                    if not value:
-                        raise RuntimeError(f"Required Key Vault secret is empty: {name}")
-                    secret_sources[name] = "Azure Key Vault"
-                    return value
-
-                database_url = get_secret("DATABASE-URL-DOCKER")
-                jwt_secret_key = get_secret("JWT-SECRET-KEY")
-                postgres_password = get_secret("POSTGRES-PASSWORD")
-                smtp_username = get_secret("SMTP-USERNAME")
-                smtp_password = get_secret("SMTP-PASSWORD")
-                smtp_from_email = get_secret("SMTP-FROM-EMAIL")
-                smtp_to_email = get_secret("SMTP-TO-EMAIL")
-                use_key_vault = True
-                print(f"CONFIG: ✓ Successfully loaded all secrets from Azure Key Vault", flush=True)
-                print(f"CONFIG:   Database URL from Key Vault: {database_url[:30]}...", flush=True)
-                logger.info("Successfully loaded all secrets from Azure Key Vault")
-            except ClientAuthenticationError as e:
-                print(f"CONFIG: ✗ Azure Key Vault authentication failed: {e.message}. Falling back to environment variables.", flush=True)
-                logger.warning(
-                    "Azure Key Vault authentication failed: %s. Falling back to environment variables.",
-                    e.message,
+        if is_production:
+            if (
+                    jwt_secret_key == "changeme"
+                    or len(jwt_secret_key.encode("utf-8")) < 32
+            ):
+                raise RuntimeError(
+                    "Production requires a JWT_SECRET_KEY of at least 32 bytes"
                 )
-                use_key_vault = False
-            except Exception as e:
-                print(f"CONFIG: ✗ Azure Key Vault error: {e}. Falling back to environment variables.", flush=True)
-                logger.warning(
-                    "Azure Key Vault error: %s. Falling back to environment variables.",
-                    str(e),
-                )
-                use_key_vault = False
 
-        if not use_key_vault:
-            print(f"CONFIG: Using fallback — loading secrets from environment variables / .env", flush=True)
-            def local_source(key: str) -> str:
-                if key in process_environment_keys:
-                    return "process environment"
-                if key in dotenv_settings:
-                    return ".env file"
-                return "not set"
-
-            database_url = os.getenv("DATABASE_URL")
-            secret_sources["DATABASE_URL"] = local_source("DATABASE_URL")
-
-            jwt_source = local_source("JWT_SECRET_KEY")
-            secret_sources["JWT_SECRET_KEY"] = jwt_source
-
-            smtp_username = os.getenv("SMTP_USERNAME", "")
-            secret_sources["SMTP_USERNAME"] = local_source("SMTP_USERNAME")
-
-            smtp_password = os.getenv("SMTP_PASSWORD", "")
-            secret_sources["SMTP_PASSWORD"] = local_source("SMTP_PASSWORD")
-
-            smtp_from_email = os.getenv("SMTP_FROM_EMAIL", "")
-            secret_sources["SMTP_FROM_EMAIL"] = local_source("SMTP_FROM_EMAIL")
-
-            smtp_to_email = os.getenv("SMTP_TO_EMAIL", "")
-            secret_sources["SMTP_TO_EMAIL"] = local_source("SMTP_TO_EMAIL")
-
-            postgres_password = os.getenv("POSTGRES_PASSWORD", "")
-            secret_sources["POSTGRES_PASSWORD"] = local_source("POSTGRES_PASSWORD")
-
-        print(f"CONFIG: Final database URL source: {'Azure Key Vault' if use_key_vault else secret_sources.get('DATABASE_URL', 'unknown')}", flush=True)
-        print(f"CONFIG: Final database URL: {database_url[:40]}...", flush=True)
         if not database_url:
-            raise RuntimeError("Database URL is missing or empty")
-
-        if is_production and (
-            jwt_secret_key == "changeme" or len(jwt_secret_key.encode("utf-8")) < 32
-        ):
-            raise RuntimeError("Production requires a JWT_SECRET_KEY of at least 32 bytes")
-
-        # Log the source of each secret for debugging
-        for secret_name, source in secret_sources.items():
-            logger.info("Secret %s → loaded from %s", secret_name, source)
+            raise RuntimeError("Database URL is missing")
 
         _SETTINGS = Settings(
-            app_name=os.getenv("APP_NAME", "KeelBill Ledger API"),
+            app_name=os.getenv(
+                "APP_NAME", "KeelBill Ledger API"
+            ),
             environment=environment,
-            debug=os.getenv("DEBUG", "False").lower() in ("1", "true", "yes"),
+            debug=os.getenv(
+                "DEBUG", "False"
+            ).lower() in ("1", "true", "yes"),
+
             database_url=database_url,
+
             jwt_secret_key=jwt_secret_key,
             jwt_algorithm=os.getenv("JWT_ALGORITHM", "HS256"),
-            jwt_access_token_expires_minutes=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_MINUTES", "15")),
-            jwt_refresh_token_expires_days=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES_DAYS", "30")),
+            jwt_access_token_expires_minutes=int(
+                os.getenv("JWT_ACCESS_TOKEN_EXPIRES_MINUTES", "15")
+            ),
+            jwt_refresh_token_expires_days=int(
+                os.getenv("JWT_REFRESH_TOKEN_EXPIRES_DAYS", "30")
+            ),
+
             bcrypt_rounds=int(os.getenv("BCRYPT_ROUNDS", "12")),
-            frontend_url=os.getenv("FRONTEND_URL", "http://localhost:3002").rstrip("/"),
+            frontend_url=os.getenv(
+                "FRONTEND_URL", "http://localhost:3002"
+            ).rstrip("/"),
+
             smtp_host=os.getenv("SMTP_HOST", ""),
             smtp_port=int(os.getenv("SMTP_PORT", "587")),
-            smtp_username=smtp_username,
-            smtp_password=smtp_password,
-            smtp_from_email=smtp_from_email,
-            smtp_to_email=smtp_to_email,
+            smtp_username=os.getenv("SMTP_USERNAME", ""),
+            smtp_password=os.getenv("SMTP_PASSWORD", ""),
+            smtp_from_email=os.getenv("SMTP_FROM_EMAIL", ""),
+            smtp_to_email=os.getenv("SMTP_TO_EMAIL", ""),
+
             postgres_password=postgres_password,
         )
+
+        logger.info(
+            "Application settings initialized for %s",
+            environment
+        )
+
     return _SETTINGS
 
 
 def reset_settings() -> None:
-    """Reset cached settings (useful for reload during development)."""
+    """Reset cached settings."""
+
     global _SETTINGS
     _SETTINGS = None

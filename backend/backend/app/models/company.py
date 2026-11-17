@@ -30,3 +30,4 @@ class Company(BaseModel):
     logo_data: Mapped[str | None] = mapped_column(Text, nullable=True)
     seal_data: Mapped[str | None] = mapped_column(Text, nullable=True)
     business_profile: Mapped[str] = mapped_column(String(20), nullable=False, default="invoice")
+    business_type: Mapped[str | None] = mapped_column(String(50), nullable=True)

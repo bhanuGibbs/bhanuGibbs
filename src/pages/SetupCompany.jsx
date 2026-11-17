@@ -23,6 +23,7 @@ const SetupCompany = () => {
     city: '',
     pincode: '',
     business_profile: user?.business_profile || 'invoice',
+    business_type: '',
     logo_data: '',
     seal_data: '',
   });
@@ -83,6 +84,7 @@ const SetupCompany = () => {
         city: form.city.trim() || undefined,
         pincode: form.pincode.trim() || undefined,
         business_profile: form.business_profile,
+        business_type: form.business_profile === 'pos' ? (form.business_type || undefined) : undefined,
       });
       await refreshUser();
       toast.success('Company details saved successfully');
@@ -331,6 +333,30 @@ const SetupCompany = () => {
               title="Enter a valid 15-character GSTIN"
             />
           </label>
+
+          {form.business_profile === 'pos' && (
+            <label className="block text-sm font-medium text-slate-700">
+              Store type <span className="text-rose-500">*</span>
+              <select
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:bg-white"
+                value={form.business_type}
+                onChange={(event) => setForm({ ...form, business_type: event.target.value })}
+                required
+              >
+                <option value="">Select your store type</option>
+                <option value="Paint Store">Paint Store</option>
+                <option value="Grocery Store">Grocery Store</option>
+                <option value="Hardware Store">Hardware Store</option>
+                <option value="Electrical Store">Electrical Store</option>
+                <option value="Medical Store">Medical Store</option>
+                <option value="Garments Store">Garments Store</option>
+                <option value="Mobile Store">Mobile Store</option>
+              </select>
+              <p className="mt-1 text-xs text-slate-500">
+                Products available in your catalog will match this store type.
+              </p>
+            </label>
+          )}
 
           {error ? <p className="text-sm text-rose-600">{error}</p> : null}
 
