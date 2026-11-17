@@ -98,7 +98,7 @@ def write_secret(filename, value):
 
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    OUTPUT_DIR.chmod(0o700)
+    OUTPUT_DIR.chmod(0o755)
 
     logger.info("Connecting to AWS Secrets Manager")
     logger.info("AWS Region: %s", AWS_REGION)
