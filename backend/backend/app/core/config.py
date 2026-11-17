@@ -6,9 +6,8 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote_plus
 
-from dotenv import dotenv_values, load_dotenv
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +29,14 @@ class Settings:
 
     bcrypt_rounds: int
     frontend_url: str
+
     smtp_host: str
     smtp_port: int
     smtp_username: str
     smtp_password: str
     smtp_from_email: str
     smtp_to_email: str
+
     postgres_password: str
 
     def as_dict(self) -> dict[str, Any]:
@@ -46,20 +47,20 @@ _SETTINGS: Settings | None = None
 
 
 def read_secret_file(filename: str) -> str:
-    """Read a database credential written by db-init."""
+    """Read a secret file created by the AWS db-init container."""
 
     file_path = SECRET_DIR / filename
 
     if not file_path.is_file():
         raise RuntimeError(
-            f"Required AWS secret file is missing: {file_path}"
+            f"Required AWS secret file is missing: {filename}"
         )
 
     value = file_path.read_text(encoding="utf-8").strip()
 
     if not value:
         raise RuntimeError(
-            f"AWS secret file is empty: {file_path}"
+            f"AWS secret file is empty: {filename}"
         )
 
     return value
@@ -77,47 +78,102 @@ def get_settings() -> Settings:
         environment = os.getenv("ENVIRONMENT", "development")
         is_production = environment.lower() in {"production", "prod"}
 
-        # Development: load local .env
-        if not is_production and env_path.exists():
-            load_dotenv(str(env_path), override=False)
-            print("CONFIG: Development .env loaded", flush=True)
+        # ------------------------------------------
+        # LOCAL DEVELOPMENT: Load .env
+        # ------------------------------------------
 
-        # Production: read DB credentials from AWS db-init files
+        if not is_production:
+            if env_path.exists():
+                load_dotenv(str(env_path), override=False)
+
+            environment = os.getenv("ENVIRONMENT", "development")
+            print(
+                "CONFIG: Development mode - using environment/.env",
+                flush=True,
+            )
+
+        # ------------------------------------------
+        # PRODUCTION: Load secrets from AWS files
+        # ------------------------------------------
+
         if is_production:
             print(
-                "CONFIG: Production mode - reading AWS credentials",
-                flush=True
+                "CONFIG: Production mode - reading AWS secret files",
+                flush=True,
             )
 
-            postgres_password = read_secret_file("password.txt")
-            postgres_user = read_secret_file("user.txt")
-            postgres_db = read_secret_file("dbname.txt")
+            database_url = read_secret_file(
+                "database_url_docker.txt"
+            )
 
-            db_host = os.getenv("DB_HOST", "db")
-            db_port = os.getenv("DB_PORT", "5432")
+            postgres_password = read_secret_file(
+                "password.txt"
+            )
 
-            database_url = (
-                f"postgresql://{quote_plus(postgres_user)}:"
-                f"{quote_plus(postgres_password)}@"
-                f"{db_host}:{db_port}/{quote_plus(postgres_db)}"
+            jwt_secret_key = read_secret_file(
+                "jwt_secret_key.txt"
+            )
+
+            smtp_username = read_secret_file(
+                "smtp_username.txt"
+            )
+
+            smtp_password = read_secret_file(
+                "smtp_password.txt"
+            )
+
+            smtp_from_email = read_secret_file(
+                "smtp_from_email.txt"
+            )
+
+            smtp_to_email = read_secret_file(
+                "smtp_to_email.txt"
             )
 
             print(
-                "CONFIG: Database credentials loaded from AWS secret files",
-                flush=True
+                "CONFIG: Database, JWT and SMTP secrets loaded from AWS files",
+                flush=True,
             )
 
+        # ------------------------------------------
+        # LOCAL DEVELOPMENT: Read environment values
+        # ------------------------------------------
+
         else:
-            # Development: use local database configuration
             database_url = os.getenv("DATABASE_URL", "")
-            postgres_password = os.getenv("POSTGRES_PASSWORD", "")
 
-            if not database_url:
-                raise RuntimeError(
-                    "DATABASE_URL is missing in development mode"
-                )
+            postgres_password = os.getenv(
+                "POSTGRES_PASSWORD", ""
+            )
 
-        jwt_secret_key = os.getenv("JWT_SECRET_KEY", "changeme")
+            jwt_secret_key = os.getenv(
+                "JWT_SECRET_KEY", "changeme"
+            )
+
+            smtp_username = os.getenv(
+                "SMTP_USERNAME", ""
+            )
+
+            smtp_password = os.getenv(
+                "SMTP_PASSWORD", ""
+            )
+
+            smtp_from_email = os.getenv(
+                "SMTP_FROM_EMAIL", ""
+            )
+
+            smtp_to_email = os.getenv(
+                "SMTP_TO_EMAIL", ""
+            )
+
+        # ------------------------------------------
+        # Validate required settings
+        # ------------------------------------------
+
+        if not database_url:
+            raise RuntimeError(
+                "Database URL is missing"
+            )
 
         if is_production:
             if (
@@ -125,17 +181,22 @@ def get_settings() -> Settings:
                     or len(jwt_secret_key.encode("utf-8")) < 32
             ):
                 raise RuntimeError(
-                    "Production requires a JWT_SECRET_KEY of at least 32 bytes"
+                    "Production requires a JWT_SECRET_KEY "
+                    "of at least 32 bytes"
                 )
 
-        if not database_url:
-            raise RuntimeError("Database URL is missing")
+        # ------------------------------------------
+        # Initialize application settings
+        # ------------------------------------------
 
         _SETTINGS = Settings(
             app_name=os.getenv(
-                "APP_NAME", "KeelBill Ledger API"
+                "APP_NAME",
+                "KeelBill Ledger API",
             ),
+
             environment=environment,
+
             debug=os.getenv(
                 "DEBUG", "False"
             ).lower() in ("1", "true", "yes"),
@@ -143,39 +204,60 @@ def get_settings() -> Settings:
             database_url=database_url,
 
             jwt_secret_key=jwt_secret_key,
-            jwt_algorithm=os.getenv("JWT_ALGORITHM", "HS256"),
-            jwt_access_token_expires_minutes=int(
-                os.getenv("JWT_ACCESS_TOKEN_EXPIRES_MINUTES", "15")
-            ),
-            jwt_refresh_token_expires_days=int(
-                os.getenv("JWT_REFRESH_TOKEN_EXPIRES_DAYS", "30")
+
+            jwt_algorithm=os.getenv(
+                "JWT_ALGORITHM", "HS256"
             ),
 
-            bcrypt_rounds=int(os.getenv("BCRYPT_ROUNDS", "12")),
+            jwt_access_token_expires_minutes=int(
+                os.getenv(
+                    "JWT_ACCESS_TOKEN_EXPIRES_MINUTES",
+                    "15",
+                )
+            ),
+
+            jwt_refresh_token_expires_days=int(
+                os.getenv(
+                    "JWT_REFRESH_TOKEN_EXPIRES_DAYS",
+                    "30",
+                )
+            ),
+
+            bcrypt_rounds=int(
+                os.getenv("BCRYPT_ROUNDS", "12")
+            ),
+
             frontend_url=os.getenv(
-                "FRONTEND_URL", "http://localhost:3002"
+                "FRONTEND_URL",
+                "http://localhost:3002",
             ).rstrip("/"),
 
-            smtp_host=os.getenv("SMTP_HOST", ""),
-            smtp_port=int(os.getenv("SMTP_PORT", "587")),
-            smtp_username=os.getenv("SMTP_USERNAME", ""),
-            smtp_password=os.getenv("SMTP_PASSWORD", ""),
-            smtp_from_email=os.getenv("SMTP_FROM_EMAIL", ""),
-            smtp_to_email=os.getenv("SMTP_TO_EMAIL", ""),
+            smtp_host=os.getenv(
+                "SMTP_HOST", ""
+            ),
+
+            smtp_port=int(
+                os.getenv("SMTP_PORT", "587")
+            ),
+
+            smtp_username=smtp_username,
+            smtp_password=smtp_password,
+            smtp_from_email=smtp_from_email,
+            smtp_to_email=smtp_to_email,
 
             postgres_password=postgres_password,
         )
 
         logger.info(
             "Application settings initialized for %s",
-            environment
+            environment,
         )
 
     return _SETTINGS
 
 
 def reset_settings() -> None:
-    """Reset cached settings."""
+    """Reset cached settings (useful during development)."""
 
     global _SETTINGS
     _SETTINGS = None

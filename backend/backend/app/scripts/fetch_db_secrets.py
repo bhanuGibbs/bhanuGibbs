@@ -1,7 +1,7 @@
 
 """
-Fetch PostgreSQL credentials from AWS Secrets Manager
-and write them to files for Docker PostgreSQL.
+Fetch application credentials from AWS Secrets Manager
+and write them to shared files for Docker containers.
 """
 
 import json
@@ -30,38 +30,36 @@ def fetch_secret(client, secret_id, max_retries=3, retry_delay=5):
             secret_string = response.get("SecretString")
 
             if not secret_string:
-                raise RuntimeError("SecretString is empty or unavailable")
+                raise RuntimeError("SecretString is empty")
 
             credentials = json.loads(secret_string)
 
             if not isinstance(credentials, dict):
-                raise RuntimeError("Secret must contain a JSON object")
+                raise RuntimeError("Secret must be a JSON object")
 
             return credentials
 
         except ClientError as exc:
-            error_code = exc.response.get("Error", {}).get("Code", "")
+            code = exc.response.get("Error", {}).get("Code", "")
 
-            if error_code in {
+            if code in {
                 "AccessDeniedException",
                 "ResourceNotFoundException",
                 "DecryptionFailure",
                 "InvalidRequestException",
             }:
                 raise RuntimeError(
-                    f"AWS Secrets Manager request failed: {error_code}"
+                    f"AWS Secrets Manager request failed: {code}"
                 ) from exc
 
             if attempt == max_retries:
                 raise RuntimeError(
-                    f"Failed to retrieve secret after {max_retries} attempts"
+                    "Failed to retrieve AWS secret"
                 ) from exc
 
             logger.warning(
-                "Attempt %s/%s failed. Retrying in %s seconds.",
-                attempt,
-                max_retries,
-                retry_delay,
+                "AWS request failed. Attempt %s/%s; retrying.",
+                attempt, max_retries
             )
             time.sleep(retry_delay)
 
@@ -72,39 +70,39 @@ def fetch_secret(client, secret_id, max_retries=3, retry_delay=5):
                 ) from exc
 
             logger.warning(
-                "Attempt %s/%s failed. Retrying in %s seconds.",
-                attempt,
-                max_retries,
-                retry_delay,
+                "Secret retrieval failed. Attempt %s/%s; retrying.",
+                attempt, max_retries
             )
             time.sleep(retry_delay)
 
-    raise RuntimeError("Unable to retrieve database credentials")
+    raise RuntimeError("Unable to retrieve AWS credentials")
 
 
 def write_secret(filename, value):
-    """Write a credential securely to a shared file."""
+    """Write a secret to a read-only shared file."""
 
-    if value is None or not str(value):
-        raise RuntimeError(f"Required credential is empty: {filename}")
+    if value is None or not str(value).strip():
+        raise RuntimeError(
+            f"Required AWS secret is missing: {filename}"
+        )
 
     file_path = OUTPUT_DIR / filename
 
     file_path.write_text(str(value), encoding="utf-8")
     file_path.chmod(0o444)
 
-    logger.info("Successfully wrote %s", filename)
+    logger.info("Created secret file: %s", filename)
 
 
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     OUTPUT_DIR.chmod(0o755)
 
-    logger.info("Connecting to AWS Secrets Manager")
-    logger.info("AWS Region: %s", AWS_REGION)
-    logger.info("Secret ID: %s", SECRET_ID)
-
     try:
+        logger.info("Connecting to AWS Secrets Manager")
+        logger.info("AWS Region: %s", AWS_REGION)
+        logger.info("Secret ID: %s", SECRET_ID)
+
         client = boto3.client(
             "secretsmanager",
             region_name=AWS_REGION,
@@ -112,34 +110,40 @@ def main():
 
         credentials = fetch_secret(client, SECRET_ID)
 
-        # Accept common JSON key naming conventions.
-        username = (
-                credentials.get("username")
-                or credentials.get("POSTGRES_USER")
-                or credentials.get("POSTGRES-USER")
+        # AWS JSON key -> shared secret filename
+        secret_files = {
+            "user.txt": "POSTGRES-USER",
+            "password.txt": "POSTGRES-PASSWORD",
+            "dbname.txt": "POSTGRES-DB",
+            "database_url_docker.txt": "DATABASE-URL-DOCKER",
+            "database_url.txt": "DATABASE-URL",
+            "jwt_secret_key.txt": "JWT-SECRET-KEY",
+            "smtp_username.txt": "SMTP-USERNAME",
+            "smtp_password.txt": "SMTP-PASSWORD",
+            "smtp_from_email.txt": "SMTP-FROM-EMAIL",
+            "smtp_to_email.txt": "SMTP-TO-EMAIL",
+        }
+
+        # Validate every required value before writing any files.
+        for filename, key in secret_files.items():
+            value = credentials.get(key)
+
+            if value is None or not str(value).strip():
+                raise RuntimeError(
+                    f"Required AWS JSON key is missing: {key}"
+                )
+
+        # Write all validated secrets.
+        for filename, key in secret_files.items():
+            write_secret(filename, credentials[key])
+
+        logger.info(
+            "Successfully created all %s secret files",
+            len(secret_files),
         )
-
-        password = (
-                credentials.get("password")
-                or credentials.get("POSTGRES_PASSWORD")
-                or credentials.get("POSTGRES-PASSWORD")
-        )
-
-        dbname = (
-                credentials.get("dbname")
-                or credentials.get("database")
-                or credentials.get("POSTGRES_DB")
-                or credentials.get("POSTGRES-DB")
-        )
-
-        write_secret("user.txt", username)
-        write_secret("password.txt", password)
-        write_secret("dbname.txt", dbname)
-
-        logger.info("All PostgreSQL credential files created successfully")
 
     except Exception as exc:
-        logger.error("Database initialization failed: %s", exc)
+        logger.error("Secret initialization failed: %s", exc)
         sys.exit(1)
 
 
