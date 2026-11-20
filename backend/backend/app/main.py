@@ -64,7 +64,6 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
         status_code=429,
         content={"detail": "Too many requests. Please try again later."},
     )
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
@@ -72,8 +71,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept"],
 )
-
-
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Structured request/response logging middleware."""
 
@@ -139,3 +136,12 @@ async def startup_event() -> None:
 async def health_check() -> JSONResponse:
     """Return service health status."""
     return JSONResponse(status_code=200, content={"status": "ok"})
+
+@app.get("/")
+async def root():
+    return {
+        "application": "KeelBill Ledger API",
+        "version": "0.1.0",
+        "status": "running",
+        "docs": "/docs"
+    }
